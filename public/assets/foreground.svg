@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#34d399" stop-opacity="0.05"/>
+      <stop offset="0.35" stop-color="#34d399" stop-opacity="0.55"/>
+      <stop offset="0.65" stop-color="#67e8f9" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#34d399" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="mass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a0d0e"/>
+      <stop offset="0.4" stop-color="#050607"/>
+      <stop offset="1" stop-color="#040405"/>
+    </linearGradient>
+    <filter id="soft" x="-5%" y="-20%" width="110%" height="140%">
+      <feGaussianBlur stdDeviation="1.6"/>
+    </filter>
+    <filter id="glow" x="-5%" y="-40%" width="110%" height="180%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <!-- back mass with lit rim -->
+  <path id="edge" d="M0,200 C120,140 200,120 300,150 C380,175 420,240 520,210 C600,185 640,110 760,130 C860,148 900,220 1020,200 C1120,183 1160,110 1260,120 C1340,128 1400,170 1440,150"/>
+  <path d="M0,200 C120,140 200,120 300,150 C380,175 420,240 520,210 C600,185 640,110 760,130 C860,148 900,220 1020,200 C1120,183 1160,110 1260,120 C1340,128 1400,170 1440,150 L1440,360 L0,360 Z" fill="url(#mass)"/>
+  <use href="#edge" fill="none" stroke="url(#rim)" stroke-width="10" opacity="0.35" filter="url(#glow)"/>
+  <use href="#edge" fill="none" stroke="url(#rim)" stroke-width="1.5" opacity="0.9" filter="url(#soft)"/>
+
+  <!-- tufts and leaves rising from the ridge -->
+  <g fill="none" stroke="#070809" stroke-linecap="round">
+    <path d="M296,152 C292,120 306,98 302,62" stroke-width="7"/>
+    <path d="M318,146 C322,118 336,108 344,84" stroke-width="5"/>
+    <path d="M268,158 C258,132 246,124 236,104" stroke-width="5"/>
+    <path d="M756,131 C752,98 766,80 760,48" stroke-width="7"/>
+    <path d="M778,132 C786,106 802,98 812,74" stroke-width="5"/>
+    <path d="M734,136 C724,110 712,100 704,82" stroke-width="5"/>
+    <path d="M1262,121 C1258,92 1272,74 1266,44" stroke-width="7"/>
+    <path d="M1286,124 C1292,100 1308,92 1316,70" stroke-width="5"/>
+    <path d="M1236,126 C1226,102 1214,94 1206,76" stroke-width="5"/>
+    <path d="M520,212 C516,186 526,176 522,156" stroke-width="5"/>
+    <path d="M1020,202 C1016,176 1028,166 1024,146" stroke-width="5"/>
+  </g>
+  <g fill="#070809">
+    <ellipse cx="302" cy="60" rx="9" ry="16" transform="rotate(-18 302 60)"/>
+    <ellipse cx="344" cy="82" rx="7" ry="13" transform="rotate(28 344 82)"/>
+    <ellipse cx="236" cy="102" rx="7" ry="13" transform="rotate(-34 236 102)"/>
+    <ellipse cx="760" cy="46" rx="9" ry="16" transform="rotate(-12 760 46)"/>
+    <ellipse cx="812" cy="72" rx="7" ry="13" transform="rotate(30 812 72)"/>
+    <ellipse cx="704" cy="80" rx="7" ry="13" transform="rotate(-36 704 80)"/>
+    <ellipse cx="1266" cy="42" rx="9" ry="16" transform="rotate(-16 1266 42)"/>
+    <ellipse cx="1316" cy="68" rx="7" ry="13" transform="rotate(26 1316 68)"/>
+    <ellipse cx="1206" cy="74" rx="7" ry="13" transform="rotate(-38 1206 74)"/>
+    <ellipse cx="522" cy="154" rx="6" ry="11" transform="rotate(-10 522 154)"/>
+    <ellipse cx="1024" cy="144" rx="6" ry="11" transform="rotate(-10 1024 144)"/>
+  </g>
+
+  <!-- front mass -->
+  <path d="M0,290 C150,250 260,260 380,280 C500,300 560,330 700,300 C820,275 900,240 1040,270 C1160,296 1260,320 1440,280 L1440,360 L0,360 Z" fill="#030304"/>
+  <path d="M0,290 C150,250 260,260 380,280 C500,300 560,330 700,300 C820,275 900,240 1040,270 C1160,296 1260,320 1440,280" fill="none" stroke="url(#rim)" stroke-width="1" opacity="0.35" filter="url(#soft)"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#10b981" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#10b981" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="ridgeFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#132022"/>
+      <stop offset="1" stop-color="#0c1214"/>
+    </linearGradient>
+    <linearGradient id="ridgeMid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1618"/>
+      <stop offset="1" stop-color="#090d0f"/>
+    </linearGradient>
+    <linearGradient id="ridgeNear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a0f11"/>
+      <stop offset="1" stop-color="#07090a"/>
+    </linearGradient>
+    <linearGradient id="rimFar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#34d399" stop-opacity="0.0"/>
+      <stop offset="0.5" stop-color="#67e8f9" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#34d399" stop-opacity="0.0"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="120" width="1440" height="480" fill="url(#mist)"/>
+  <path d="M0,330 C90,300 160,250 260,270 C360,290 400,220 520,235 C620,248 680,300 780,280 C880,260 940,190 1060,210 C1160,227 1220,280 1320,262 C1380,252 1410,240 1440,230 L1440,600 L0,600 Z" fill="url(#ridgeFar)"/>
+  <path d="M0,330 C90,300 160,250 260,270 C360,290 400,220 520,235 C620,248 680,300 780,280 C880,260 940,190 1060,210 C1160,227 1220,280 1320,262 C1380,252 1410,240 1440,230" fill="none" stroke="url(#rimFar)" stroke-width="1.5"/>
+  <path d="M0,400 C120,380 200,330 320,350 C440,370 500,420 620,395 C740,370 800,310 920,335 C1040,360 1100,410 1220,390 C1320,373 1380,340 1440,350 L1440,600 L0,600 Z" fill="url(#ridgeMid)"/>
+  <path d="M0,470 C160,450 260,480 400,470 C540,460 620,430 760,450 C900,470 980,500 1120,480 C1260,460 1340,440 1440,455 L1440,600 L0,600 Z" fill="url(#ridgeNear)"/>
+</svg>
