@@ -4,3 +4,4 @@ shots
 .wrangler
 .DS_Store
 *.log
+scripts/tmp-*
