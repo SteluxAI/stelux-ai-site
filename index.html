@@ -162,8 +162,8 @@
                   <ul id="dash-log" class="dash-log"></ul>
                 </div>
 
-                <div class="dash-widget swarm relative mx-5 mb-6 mt-5 lg:absolute lg:left-4 lg:top-4 lg:mx-0 lg:my-0 lg:w-[236px]">
-                  <div class="dash-widget-title"><span class="whitespace-nowrap">Swarm</span><span id="m-tasks" class="whitespace-nowrap text-emerald-700">4,812 tasks/min</span></div>
+                <div class="dash-widget swarm hidden lg:absolute lg:left-4 lg:top-4 lg:block lg:w-[236px]">
+                  <div class="dash-widget-title"><span class="whitespace-nowrap">Swarm · 4 of 6</span><span id="m-tasks" class="whitespace-nowrap text-emerald-700">4,812 tasks/min</span></div>
                   <div id="agent-list"></div>
                 </div>
                 <div class="dash-widget compute hidden lg:absolute lg:right-4 lg:top-4 lg:block lg:w-[176px]">
@@ -234,7 +234,7 @@
           </div>
         </div>
 
-        <div class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
+        <div id="about" class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
           <div class="about-stat"><div class="about-num">76+</div><p>Metro cities analyzed daily across Michigan</p></div>
           <div class="about-stat"><div class="about-num">Daily</div><p>Fresh AI-curated reports every morning</p></div>
           <div class="about-stat"><div class="about-num">100%</div><p>Automated — zero manual curation required</p></div>
@@ -305,7 +305,7 @@
                     <circle cx="240" cy="312" r="22" fill="#0d1416" stroke="rgba(52,211,153,0.7)"/><text class="lbl" x="240" y="316" text-anchor="middle">CRIT</text>
                     <circle cx="66" cy="300" r="18" fill="#0d1416" stroke="rgba(251,191,36,0.55)"/><text class="lbl" x="66" y="304" text-anchor="middle">MEM</text>
                   </g>
-                  <text class="lbl-dim" x="24" y="34">swarm: research-desk · 3 roles · 6 agents · consensus ≥ 0.9</text>
+                  <text class="lbl-dim" x="24" y="34">swarm: research-desk · 3 roles · consensus ≥ 0.9</text>
                   <text class="lbl-dim" x="456" y="340" text-anchor="end">run #4182 · replayable</text>
                 </svg>
               </div>
@@ -616,7 +616,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
   <!-- ===== Footer ===== -->
   <footer id="contact" class="relative border-t border-white/8 pb-10 pt-14">
     <div class="mx-auto max-w-7xl px-5 sm:px-8">
-      <div class="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 lg:grid-cols-[1.4fr_repeat(5,minmax(0,1fr))]">
+      <div class="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 lg:grid-cols-[1.6fr_repeat(5,minmax(0,1fr))]">
         <div class="col-span-2 md:col-span-5 lg:col-span-1">
           <a href="#top" class="inline-flex items-center gap-2.5" aria-label="Stelux AI home">
             <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
@@ -628,13 +628,13 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
             <span class="font-display text-[16px] font-semibold tracking-tight">Stelux AI</span>
           </a>
           <p class="mt-4 max-w-xs text-[13.5px] leading-relaxed text-white/50">Enterprise AI agents, workflow orchestration and high-performance compute — built in Michigan, USA.</p>
-          <div class="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/[0.06] px-3 py-1.5 font-mono text-[11px] text-emerald-200">
+          <div class="mt-5 inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-emerald-400/25 bg-emerald-400/[0.06] px-3 py-1.5 font-mono text-[11px] text-emerald-200">
             <span class="live-dot"></span> All systems operational
           </div>
         </div>
         <div>
           <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Products</div>
-          <ul class="mt-3 space-y-1">
+          <ul class="mt-2">
             <li><a class="foot-link" href="https://michigan.stelux.ai" target="_blank" rel="noopener">Michigan Property Intelligence</a></li>
             <li><a class="foot-link" href="https://style.stelux.ai" target="_blank" rel="noopener">StyleAI</a></li>
             <li><a class="foot-link" href="#products">Market Signal Pro</a></li>
@@ -643,7 +643,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
         </div>
         <div>
           <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Platform</div>
-          <ul class="mt-3 space-y-1">
+          <ul class="mt-2">
             <li><a class="foot-link" href="#agents">Agent Swarms</a></li>
             <li><a class="foot-link" href="#data">Lakebase</a></li>
             <li><a class="foot-link" href="#compute">Compute</a></li>
@@ -652,7 +652,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
         </div>
         <div>
           <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Developers</div>
-          <ul class="mt-3 space-y-1">
+          <ul class="mt-2">
             <li><a class="foot-link" href="#showcase">CLI &amp; SDK</a></li>
             <li><a class="foot-link" href="#showcase">REST API</a></li>
             <li><a class="foot-link" href="#telemetry">Telemetry</a></li>
@@ -661,8 +661,8 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
         </div>
         <div>
           <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Company</div>
-          <ul class="mt-3 space-y-1">
-            <li><a class="foot-link" href="#products">About</a></li>
+          <ul class="mt-2">
+            <li><a class="foot-link" href="#about">About</a></li>
             <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Careers%20at%20Stelux%20AI">Careers</a></li>
             <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Partnership">Partners</a></li>
             <li><a class="foot-link" href="mailto:steluxai@gmail.com">Contact</a></li>
@@ -670,7 +670,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
         </div>
         <div>
           <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Legal</div>
-          <ul class="mt-3 space-y-1">
+          <ul class="mt-2">
             <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Privacy%20policy%20request">Privacy</a></li>
             <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Terms%20request">Terms</a></li>
             <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Security%20report">Report a vulnerability</a></li>

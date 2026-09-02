@@ -47,6 +47,7 @@ function scrollToTarget(target) {
   else window.scrollTo({ top: y, behavior: 'auto' })
 }
 document.addEventListener('click', (e) => {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
   const a = e.target.closest('a[href^="#"]')
   if (!a) return
   const id = a.getAttribute('href').slice(1)
@@ -160,7 +161,7 @@ const hero = $('#hero')
 if (!reduceMotion) {
   const st = () => ({ trigger: hero, start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true })
   gsap.to('.hero-bg', { y: () => hero.offsetHeight * 0.7, ease: 'none', scrollTrigger: st() })
-  gsap.to('.hero-fg', { y: () => -hero.offsetHeight * (isMobile() ? 0.22 : 0.4), ease: 'none', scrollTrigger: st() })
+  gsap.to('.hero-fg', { y: () => -hero.offsetHeight * (innerWidth < 1024 ? 0.22 : 0.4), ease: 'none', scrollTrigger: st() })
   gsap.to('.hero-copy', { y: -70, opacity: 0.15, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: '55% top', scrub: true } })
 }
 
@@ -223,7 +224,7 @@ const TICKER = [
   () => `[analyst-${randi(1, 4)}] fetched ${fmt(randi(400, 2400))} rows from lakebase://finance/filings`,
   () => `[scheduler] placed job on local:h100-0${randi(1, 8)} · util ${randi(55, 93)}%`,
   () => `[critic] verified analyst-${randi(1, 4)} output · confidence 0.${randi(88, 98)}`,
-  () => `[burst] +${randi(2, 4)}× A100 on cloud (spot) · $${rand(1.6, 2.9).toFixed(2)}/h`,
+  () => `[burst] +4× A100 on cloud (spot) · $${rand(1.6, 2.9).toFixed(2)}/h`,
   () => `[memory] wrote ${randi(12, 60)} facts → swarm memory`,
   () => `[lakebase] sync finance/filings · ${randi(1, 4)}.${randi(0, 9)}s · ${randi(0, 3)} conflicts resolved`,
   () => `[guardrails] pii scan passed · budget ${randi(48, 71)}% of daily cap`,
@@ -285,7 +286,10 @@ function simTick() {
 }
 function startSim() { if (!simTimer && !reduceMotion) simTimer = setInterval(simTick, 1600) }
 function stopSim() { clearInterval(simTimer); simTimer = 0 }
-new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? startSim() : stopSim())).observe($('#terminal'))
+let termVisible = false
+new IntersectionObserver(([e]) => { termVisible = e.isIntersecting; termVisible && !document.hidden ? startSim() : stopSim() }).observe($('#terminal'))
+document.addEventListener('visibilitychange', () => (document.hidden ? stopSim() : termVisible && startSim()))
+addEventListener('pagehide', stopSim)
 
 /* ---------------- stacking cards (desktop) ---------------- */
 const mm = gsap.matchMedia()

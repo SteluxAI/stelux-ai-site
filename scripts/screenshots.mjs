@@ -9,6 +9,7 @@ const OUT = process.env.SHOT_DIR || 'shots'
 const VIEWPORTS = [
   { name: 'desktop', width: 1440, height: 900 },
   { name: 'mobile', width: 375, height: 812, isMobile: true, hasTouch: true },
+  { name: 'tablet', width: 768, height: 1024, isMobile: true, hasTouch: true },
 ]
 const DEPTHS = process.env.SHOT_DEPTHS ? process.env.SHOT_DEPTHS.split(',').map(Number) : [0, 0.25, 0.5, 0.75, 1]
 
