@@ -5,3 +5,4 @@ shots
 .DS_Store
 *.log
 scripts/tmp-*
+output/
