@@ -36,7 +36,8 @@ document.addEventListener('click', (e) => {
   e.preventDefault()
   closeMenu()
   const inStack = target.classList.contains('stack-card')
-  scrollToTarget(target, inStack && !isMobile() ? -(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stack-top')) + 18 * (+target.style.getPropertyValue('--i') || 0)) : -96)
+  const stackTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stack-top')) || 88
+  scrollToTarget(target, inStack && !isMobile() ? -(stackTop + 18 * (+target.style.getPropertyValue('--i') || 0)) : -96)
   history.replaceState(null, '', '#' + id)
 })
 
@@ -66,15 +67,20 @@ menuBtn.addEventListener('click', () => (menu.hidden ? openMenu() : closeMenu())
 addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu() })
 addEventListener('resize', () => { if (!isMobile()) closeMenu() })
 
-/* ---------------- aurora shader (canvas) ---------------- */
-function initAurora(canvas) {
+/* ---------------- dusk sky shader (canvas) ---------------- */
+function initSky(canvas) {
   const ctx = canvas.getContext('2d', { alpha: false })
+  // vertical dusk ramp: black at the top, warm mauve at the horizon
+  const RAMP = [
+    [0.00, '#050506'], [0.10, '#141214'], [0.26, '#2f2a2c'], [0.44, '#514648'],
+    [0.60, '#6f5f62'], [0.74, '#8a7578'], [0.86, '#9b8488'], [1.00, '#a68e92'],
+  ]
   const blobs = [
-    { x: 0.22, y: 0.32, r: 0.62, c: '16,185,129', a: 0.40, sx: 0.00011, sy: 0.00009, p: 0.0 },
-    { x: 0.80, y: 0.22, r: 0.55, c: '34,211,238', a: 0.30, sx: 0.00009, sy: 0.00013, p: 2.1 },
-    { x: 0.55, y: 0.72, r: 0.70, c: '13,148,136', a: 0.34, sx: 0.00007, sy: 0.00008, p: 4.2 },
-    { x: 0.08, y: 0.85, r: 0.50, c: '5,150,105', a: 0.26, sx: 0.00010, sy: 0.00006, p: 1.3 },
-    { x: 0.92, y: 0.70, r: 0.45, c: '8,145,178', a: 0.22, sx: 0.00008, sy: 0.00011, p: 3.4 },
+    { x: 0.30, y: 0.30, r: 0.40, c: '214,168,176', a: 0.14, sx: 0.00009, sy: 0.00007, p: 0.0 },
+    { x: 0.76, y: 0.26, r: 0.36, c: '176,160,190', a: 0.12, sx: 0.00007, sy: 0.00010, p: 2.1 },
+    { x: 0.52, y: 0.40, r: 0.42, c: '226,200,196', a: 0.10, sx: 0.00006, sy: 0.00008, p: 4.2 },
+    { x: 0.12, y: 0.06, r: 0.34, c: '10,9,11', a: 0.45, sx: 0.00008, sy: 0.00006, p: 1.3 },
+    { x: 0.90, y: 0.05, r: 0.30, c: '12,10,13', a: 0.40, sx: 0.00007, sy: 0.00009, p: 3.4 },
   ]
   const SCALE = 0.16
   let w = 2, h = 2, running = true, raf = 0
@@ -84,21 +90,33 @@ function initAurora(canvas) {
     h = canvas.height = Math.max(2, Math.round(r.height * SCALE))
     draw(performance.now())
   }
+  const hills = document.querySelector('.hills-wrap')
+  function horizon() {
+    // fraction of the canvas height where the hill crests sit (the sky ramp ends there)
+    const ch = canvas.clientHeight || 1
+    const crest = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crest')) || 0
+    const crestPx = crest / 100 * innerWidth
+    const top = hills ? hills.offsetTop + crestPx : ch * 0.6
+    return Math.min(0.98, Math.max(0.2, top / ch))
+  }
   function draw(t) {
     ctx.globalCompositeOperation = 'source-over'
-    ctx.fillStyle = '#08080a'
+    const hz = horizon()
+    const g = ctx.createLinearGradient(0, 0, 0, h)
+    RAMP.forEach(([o, c]) => g.addColorStop(o * hz, c))
+    g.addColorStop(1, RAMP[RAMP.length - 1][1])
+    ctx.fillStyle = g
     ctx.fillRect(0, 0, w, h)
-    ctx.globalCompositeOperation = 'lighter'
     const m = Math.max(w, h)
     for (const b of blobs) {
       const cx = (b.x + Math.sin(t * b.sx + b.p) * 0.10) * w
-      const cy = (b.y + Math.cos(t * b.sy + b.p) * 0.08) * h
+      const cy = (b.y + Math.cos(t * b.sy + b.p) * 0.06) * h
       const rad = b.r * m
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad)
-      g.addColorStop(0, `rgba(${b.c},${b.a})`)
-      g.addColorStop(0.45, `rgba(${b.c},${b.a * 0.35})`)
-      g.addColorStop(1, `rgba(${b.c},0)`)
-      ctx.fillStyle = g
+      const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad)
+      rg.addColorStop(0, `rgba(${b.c},${b.a})`)
+      rg.addColorStop(0.5, `rgba(${b.c},${b.a * 0.4})`)
+      rg.addColorStop(1, `rgba(${b.c},0)`)
+      ctx.fillStyle = rg
       ctx.fillRect(0, 0, w, h)
     }
   }
@@ -122,7 +140,7 @@ function initAurora(canvas) {
     if (running && !was) raf = requestAnimationFrame(frame)
   })
 }
-initAurora($('#aurora'))
+initSky($('#aurora'))
 
 /* ---------------- hero parallax: 0.3x / 1.0x / 1.4x ---------------- */
 const hero = $('#hero')
@@ -136,7 +154,7 @@ if (!reduceMotion) {
   })
 }
 
-/* ---------------- terminal: tilt + live simulation ---------------- */
+/* ---------------- dashboard: tilt, views, live simulation ---------------- */
 const termInner = $('.terminal-inner')
 if (canHover && !reduceMotion) {
   const term = $('#terminal')
@@ -144,29 +162,35 @@ if (canHover && !reduceMotion) {
     const r = term.getBoundingClientRect()
     const px = (e.clientX - r.left) / r.width - 0.5
     const py = (e.clientY - r.top) / r.height - 0.5
-    termInner.style.transform = `rotateX(${(-py * 4).toFixed(2)}deg) rotateY(${(px * 5).toFixed(2)}deg)`
+    termInner.style.transform = `rotateX(${(-py * 3).toFixed(2)}deg) rotateY(${(px * 4).toFixed(2)}deg)`
   })
   term.addEventListener('mouseleave', () => { termInner.style.transform = '' })
 }
 
-const termMain = $('#term-main')
-$$('.term-nav, .term-tab').forEach((btn) => {
+const VIEWS = {
+  overview: { title: 'Stelux Orchestrator', sub: 'research-desk' },
+  agents: { title: 'Swarm · research-desk', sub: 'planner · analyst ×4 · critic' },
+  tasks: { title: 'Task queue', sub: '23 queued · 4 checkpoints pending' },
+  data: { title: 'Lakebase · finance/filings', sub: '1,204 tables · 38 streams' },
+  compute: { title: 'Compute pool', sub: '8× H100 local · 4× A100 burst' },
+  logs: { title: 'Event stream', sub: 'tail -f · 9 sources' },
+  products: { title: 'Stelux products', sub: '2 live · 2 in development' },
+}
+const dashTitle = $('#dash-title'), dashSubText = $('#dash-sub-text')
+$$('.dash-nav').forEach((btn) => {
   btn.addEventListener('click', () => {
-    const view = btn.dataset.view
-    termMain.dataset.view = view
-    $$('.term-nav').forEach((b) => b.classList.toggle('active', b.dataset.view === view))
-    $$('.term-tab').forEach((b) => b.classList.toggle('active', b.dataset.view === view))
+    const v = VIEWS[btn.dataset.view] || VIEWS.overview
+    $$('.dash-nav').forEach((b) => b.classList.toggle('active', b === btn))
+    dashTitle.textContent = v.title
+    dashSubText.textContent = v.sub
+    if (!reduceMotion) gsap.fromTo([dashTitle, dashSubText], { opacity: 0.2, y: 4 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out', clearProps: 'all' })
   })
 })
-if (isMobile()) termMain.dataset.view = 'agents'
 
 const AGENTS = [
-  { id: 'PL', name: 'planner', tasks: ['Decomposing goal', 'Assigning subtasks', 'Re-prioritizing queue', 'Merging analyst outputs'], p: 100, s: 'running' },
+  { id: 'PL', name: 'planner', tasks: ['Decomposing goal', 'Assigning subtasks', 'Re-prioritizing', 'Merging outputs'], p: 100, s: 'running' },
   { id: 'A1', name: 'analyst-1', tasks: ['Reading 10-K filings', 'Extracting risk factors', 'Scoring exposures'], p: 62, s: 'running' },
-  { id: 'A2', name: 'analyst-2', tasks: ['Parsing earnings calls', 'Clustering sentiment', 'Tagging guidance changes'], p: 41, s: 'running' },
-  { id: 'A3', name: 'analyst-3', tasks: ['Joining Lakebase tables', 'Backfilling Q2 deltas', 'Validating schema'], p: 18, s: 'running' },
-  { id: 'CR', name: 'critic', tasks: ['Verifying analyst-1', 'Flagging low-confidence claims', 'Approving batch #42'], p: 74, s: 'verifying' },
-  { id: 'ME', name: 'memory', tasks: ['Indexing 38 facts', 'Deduplicating claims', 'Compacting context'], p: 88, s: 'idle' },
+  { id: 'CR', name: 'critic', tasks: ['Verifying analyst-1', 'Flagging low confidence', 'Approving batch #42'], p: 74, s: 'verifying' },
 ]
 const agentList = $('#agent-list')
 AGENTS.forEach((a) => {
@@ -175,34 +199,31 @@ AGENTS.forEach((a) => {
   row.className = 'agent-row'
   row.innerHTML = `
     <span class="avatar">${a.id}</span>
-    <span class="truncate font-mono text-[11.5px] text-white/85">${a.name}</span>
-    <span class="agent-task min-w-0"><span class="block truncate text-[11px] text-white/45">${a.tasks[0]}</span><span class="bar mt-1"><i style="width:${a.p}%"></i></span></span>
+    <span class="min-w-0" title="${a.tasks[0]}"><span class="block truncate font-mono text-[10.5px] text-white/85">${a.name}</span><span class="bar mt-1"><i style="width:${a.p}%"></i></span></span>
     <span class="status" data-s="${a.s}">${a.s}</span>`
   agentList.appendChild(row)
-  a.el = { task: row.querySelector('.agent-task > span'), bar: row.querySelector('.bar > i'), status: row.querySelector('.status') }
+  a.el = { task: row.querySelector('.min-w-0'), bar: row.querySelector('.bar > i'), status: row.querySelector('.status') }
 })
-const LOG_POOL = [
-  () => `<span class="k">[planner]</span> decomposed goal into ${randi(4, 9)} subtasks`,
-  () => `<span class="c">[analyst-${randi(1, 3)}]</span> fetched ${fmt(randi(400, 2400))} rows from lakebase://finance/filings`,
-  () => `<span class="k">[scheduler]</span> placed job on local:h100-0${randi(1, 8)} (util ${randi(55, 93)}%)`,
-  () => `<span class="c">[critic]</span> verified analyst-${randi(1, 3)} output · confidence 0.${randi(88, 98)}`,
-  () => `<span class="w">[burst]</span> +${randi(2, 6)}× A100 on cloud (spot) · $${rand(1.6, 2.9).toFixed(2)}/h`,
-  () => `<span class="k">[memory]</span> wrote ${randi(12, 60)} facts → swarm memory`,
-  () => `<span class="c">[lakebase]</span> sync finance/filings · ${randi(1, 4)}.${randi(0, 9)}s · ${randi(0, 3)} conflicts resolved`,
-  () => `<span class="k">[guardrails]</span> pii scan passed · budget ${randi(48, 71)}% of daily cap`,
-  () => `<span class="c">[planner]</span> checkpoint requested → approved by ops@finance`,
+const TICKER = [
+  () => `[planner] decomposed goal into ${randi(4, 9)} subtasks`,
+  () => `[analyst-${randi(1, 3)}] fetched ${fmt(randi(400, 2400))} rows from lakebase://finance/filings`,
+  () => `[scheduler] placed job on local:h100-0${randi(1, 8)} · util ${randi(55, 93)}%`,
+  () => `[critic] verified analyst-${randi(1, 3)} output · confidence 0.${randi(88, 98)}`,
+  () => `[burst] +${randi(2, 6)}× A100 on cloud (spot) · $${rand(1.6, 2.9).toFixed(2)}/h`,
+  () => `[memory] wrote ${randi(12, 60)} facts → swarm memory`,
+  () => `[lakebase] sync finance/filings · ${randi(1, 4)}.${randi(0, 9)}s · ${randi(0, 3)} conflicts resolved`,
+  () => `[guardrails] pii scan passed · budget ${randi(48, 71)}% of daily cap`,
+  () => `[planner] checkpoint requested → approved by ops@finance`,
 ]
-const log = $('#term-log')
-let logTick = 0
-function pushLog() {
-  const li = document.createElement('li')
-  const t = new Date()
-  const ts = `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}:${String(t.getSeconds()).padStart(2, '0')}`
-  li.innerHTML = `<span class="t">${ts}</span> ${LOG_POOL[(logTick++ * 7 + randi(0, 2)) % LOG_POOL.length]()}`
-  log.appendChild(li)
-  while (log.children.length > 6) log.removeChild(log.firstChild)
+const ticker = $('#dash-ticker')
+let tick = 0
+function pushTicker(instant) {
+  const text = '▸ ' + TICKER[(tick++ * 7 + randi(0, 2)) % TICKER.length]()
+  if (instant || reduceMotion) { ticker.textContent = text; return }
+  ticker.classList.add('fade')
+  setTimeout(() => { ticker.textContent = text; ticker.classList.remove('fade') }, 300)
 }
-for (let i = 0; i < 4; i++) pushLog()
+pushTicker(true)
 
 const gpuGrid = $('#gpu-grid')
 const gpuCells = Array.from({ length: 8 }, (_, i) => {
@@ -214,7 +235,7 @@ const gpuCells = Array.from({ length: 8 }, (_, i) => {
   return c
 })
 
-const mTasks = $('#m-tasks'), mGpu = $('#m-gpu'), mQueue = $('#m-queue'), mCost = $('#m-cost'), termLive = $('#term-live')
+const mTasks = $('#m-tasks'), mGpu = $('#m-gpu'), termLive = $('#term-live')
 let simTimer = 0
 function simTick() {
   const a = AGENTS[randi(0, AGENTS.length - 1)]
@@ -223,7 +244,7 @@ function simTick() {
     if (a.p >= 100) {
       a.p = 0
       a.ti = (a.ti + 1) % a.tasks.length
-      a.el.task.textContent = a.tasks[a.ti]
+      a.el.task.title = a.tasks[a.ti]
       a.s = a.name === 'critic' ? 'verifying' : Math.random() < 0.15 ? 'idle' : 'running'
       a.el.status.dataset.s = a.s
       a.el.status.textContent = a.s
@@ -231,7 +252,7 @@ function simTick() {
     a.el.bar.style.width = a.p + '%'
   } else {
     a.ti = (a.ti + 1) % a.tasks.length
-    a.el.task.textContent = a.tasks[a.ti]
+    a.el.task.title = a.tasks[a.ti]
   }
   let util = 0
   gpuCells.forEach((c) => {
@@ -241,13 +262,11 @@ function simTick() {
     c.dataset.hot = v > 92 ? '1' : '0'
   })
   mGpu.textContent = Math.round(util / gpuCells.length) + '%'
-  mTasks.textContent = fmt(randi(4400, 5300))
-  mQueue.textContent = randi(8, 41)
-  mCost.textContent = `$${rand(1.8, 2.6).toFixed(2)}/h`
+  mTasks.textContent = fmt(randi(4400, 5300)) + ' tasks/min'
   if (Math.random() < 0.3) termLive.textContent = `${randi(11, 14)} agents live`
-  pushLog()
+  pushTicker()
 }
-function startSim() { if (!simTimer && !reduceMotion) simTimer = setInterval(simTick, 1500) }
+function startSim() { if (!simTimer && !reduceMotion) simTimer = setInterval(simTick, 1600) }
 function stopSim() { clearInterval(simTimer); simTimer = 0 }
 new IntersectionObserver(([e]) => (e.isIntersecting ? startSim() : stopSim())).observe($('#terminal'))
 
@@ -266,7 +285,7 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
   }
   const triggers = cards.map((card, j) => {
     if (j === 0) return null
-    const top = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stack-top')) + 18 * j
+    const top = () => (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stack-top')) || 88) + 18 * j
     return ScrollTrigger.create({
       trigger: card,
       start: 'top bottom',

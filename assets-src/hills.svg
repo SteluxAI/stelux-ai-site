@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 760" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="hz" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a48a8e" stop-opacity="0"/>
+      <stop offset="0.7" stop-color="#a48a8e" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#b0959a" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="hFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5c6a45"/>
+      <stop offset="0.28" stop-color="#3d4a30"/>
+      <stop offset="1" stop-color="#1d2418"/>
+    </linearGradient>
+    <linearGradient id="hMid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4b5a38"/>
+      <stop offset="0.3" stop-color="#2f3a24"/>
+      <stop offset="1" stop-color="#141a10"/>
+    </linearGradient>
+    <linearGradient id="hNear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4a2c"/>
+      <stop offset="0.35" stop-color="#232d1b"/>
+      <stop offset="1" stop-color="#0f140c"/>
+    </linearGradient>
+    <radialGradient id="crest" cx="0.4" cy="0" r="0.9">
+      <stop offset="0" stop-color="#8a8a58" stop-opacity="0.45"/>
+      <stop offset="0.5" stop-color="#6a7248" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#6a7248" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="tex" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="3"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="table" tableValues="0 0.22"/></feComponentTransfer>
+    </filter>
+    <filter id="softer" x="-5%" y="-10%" width="110%" height="120%"><feGaussianBlur stdDeviation="1.2"/></filter>
+    <clipPath id="allhills">
+      <path d="M0,330 C120,296 210,250 330,286 C430,316 480,326 570,300 C640,280 700,290 760,318 L760,600 L0,600 Z"/>
+      <path d="M980,430 C1080,320 1240,232 1440,262 L1440,600 L980,600 Z"/>
+      <path d="M0,428 C90,362 210,344 330,384 C420,414 490,426 580,406 C640,394 690,404 740,428 L740,600 L0,600 Z"/>
+      <path d="M700,486 C820,440 950,392 1100,408 C1240,424 1350,446 1440,432 L1440,600 L700,600 Z"/>
+    </clipPath>
+  </defs>
+  <g transform="translate(0,160)">
+
+  <!-- horizon haze -->
+  <rect x="0" y="180" width="1440" height="420" fill="url(#hz)"/>
+
+  <!-- far hills, left cluster (hazy) -->
+  <g filter="url(#softer)" opacity="0.92">
+    <path d="M0,330 C120,296 210,250 330,286 C430,316 480,326 570,300 C640,280 700,290 760,318 L760,600 L0,600 Z" fill="url(#hFar)"/>
+    <ellipse cx="300" cy="262" rx="190" ry="70" fill="url(#crest)"/>
+  </g>
+  <!-- far hill, right big mound -->
+  <g filter="url(#softer)" opacity="0.95">
+    <path d="M980,430 C1080,320 1240,232 1440,262 L1440,600 L980,600 Z" fill="url(#hFar)"/>
+    <ellipse cx="1330" cy="250" rx="240" ry="80" fill="url(#crest)"/>
+  </g>
+
+  <!-- mid hills left -->
+  <path d="M0,428 C90,362 210,344 330,384 C420,414 490,426 580,406 C640,394 690,404 740,428 L740,600 L0,600 Z" fill="url(#hMid)"/>
+  <ellipse cx="240" cy="360" rx="200" ry="60" fill="url(#crest)" opacity="0.8"/>
+
+  <!-- near hills right -->
+  <path d="M700,486 C820,440 950,392 1100,408 C1240,424 1350,446 1440,432 L1440,600 L700,600 Z" fill="url(#hNear)"/>
+  <ellipse cx="1080" cy="404" rx="210" ry="56" fill="url(#crest)" opacity="0.7"/>
+
+  <!-- grass texture over all hills -->
+  <rect x="0" y="0" width="1440" height="600" filter="url(#tex)" clip-path="url(#allhills)" style="mix-blend-mode:overlay"/>
+
+  </g>
+  <defs><linearGradient id="base" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f140c" stop-opacity="0"/><stop offset="1" stop-color="#0f140c" stop-opacity="1"/></linearGradient></defs>
+  <rect x="0" y="620" width="1440" height="140" fill="url(#base)"/>
+</svg>

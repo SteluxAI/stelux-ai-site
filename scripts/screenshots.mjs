@@ -104,7 +104,7 @@ for (const vp of VIEWPORTS) {
       window.scrollTo(0, y)
       return y
     }, d)
-    await page.waitForTimeout(1500)
+    await page.waitForTimeout(1900)
     const audit = await page.evaluate(auditPage)
     const file = path.join(OUT, `${vp.name}-${Math.round(d * 100)}.png`)
     await page.screenshot({ path: file })
