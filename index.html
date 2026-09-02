@@ -42,20 +42,20 @@
 </head>
 <body class="bg-bg text-ink">
 
-  <!-- ===== Sticky pill nav ===== -->
-  <header class="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:pt-5">
-    <nav id="nav" aria-label="Primary"
-         class="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] py-1.5 pl-2 pr-1.5 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.9)] backdrop-blur-xl transition-colors duration-300">
-      <a href="#top" class="flex items-center gap-2.5 rounded-full py-1.5 pl-2 pr-3" aria-label="Stelux AI home">
-        <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true">
+  <!-- ===== Top bar (fora-style: full width, progressive-blur veil, no box) ===== -->
+  <header id="site-header" class="pointer-events-none fixed inset-x-0 top-0 z-50">
+    <div class="nav-veil" aria-hidden="true"></div>
+    <nav id="nav" aria-label="Primary" class="pointer-events-auto relative mx-auto flex h-[68px] max-w-7xl items-center px-5 sm:h-[76px] sm:px-8">
+      <a href="#top" class="flex items-center gap-2.5 py-2" aria-label="Stelux AI home">
+        <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
           <defs><linearGradient id="lg-nav" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
           <rect width="64" height="64" rx="16" fill="#0f1514"/>
           <path d="M42 22.5c-1.8-3.3-5.4-5-9.8-5-5.8 0-9.7 3-9.7 7.4 0 3.8 2.7 5.8 8.2 7.1l3.4.8c4.2 1 5.6 2.1 5.6 4.3 0 2.8-2.7 4.6-6.9 4.6-4.4 0-7.6-1.9-8.8-5.2" fill="none" stroke="url(#lg-nav)" stroke-width="4.2" stroke-linecap="round"/>
           <circle cx="45" cy="19" r="3.2" fill="#67e8f9"/><circle cx="19" cy="45" r="3.2" fill="#34d399"/>
         </svg>
-        <span class="font-display text-[15px] font-semibold tracking-tight">Stelux AI</span>
+        <span class="font-display text-[17px] font-semibold tracking-tight">Stelux AI</span>
       </a>
-      <ul class="hidden items-center gap-0.5 text-[13.5px] md:flex">
+      <ul class="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 text-[14px] md:flex">
         <li><a class="nav-link" href="#products">Products</a></li>
         <li><a class="nav-link" href="#platform">Platform</a></li>
         <li class="hidden lg:block"><a class="nav-link" href="#agents">Agents</a></li>
@@ -63,12 +63,15 @@
         <li class="hidden lg:block"><a class="nav-link" href="#showcase">Developers</a></li>
         <li><a class="nav-link" href="#pricing">Pricing</a></li>
       </ul>
-      <a href="#pricing" class="btn-glow ml-1 hidden px-4 py-2.5 text-[13px] sm:inline-flex">Launch Platform</a>
-      <button id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"
-              class="ml-1 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/80 md:hidden">
-        <svg class="ico-burger" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4.5h12"/><path d="M2 8h12"/><path d="M2 11.5h12"/></svg>
-        <svg class="ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg>
-      </button>
+      <div class="ml-auto flex items-center gap-2 sm:gap-3">
+        <a href="mailto:steluxai@gmail.com" class="hidden rounded-full px-3.5 py-2.5 text-[14px] text-white/75 transition-colors hover:text-white sm:inline-flex">Contact</a>
+        <a href="#pricing" class="nav-cta">Launch Platform</a>
+        <button id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"
+                class="ml-1 flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] text-white/85 md:hidden">
+          <svg class="ico-burger" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4.5h12"/><path d="M2 8h12"/><path d="M2 11.5h12"/></svg>
+          <svg class="ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg>
+        </button>
+      </div>
     </nav>
   </header>
 
