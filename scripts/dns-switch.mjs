@@ -36,7 +36,9 @@ const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 if (rollbackFile) {
   const backup = JSON.parse(fs.readFileSync(rollbackFile, 'utf8'))
   console.log(`Rolling back ${backup.touched.length} record(s) from ${rollbackFile}`)
-  for (const rec of records.filter((r) => backup.touched.some((t) => t.name === r.name && (t.type === r.type || r.type === 'CNAME' || t.type === 'CNAME')))) {
+  // Rollback touches only the two names' A/AAAA/CNAME records (the same set the forward path replaces); MX/TXT etc. are never matched.
+  const names = new Set(backup.touched.map((t) => t.name))
+  for (const rec of records.filter((r) => names.has(r.name) && ['A', 'AAAA', 'CNAME'].includes(r.type))) {
     if (!dry) await api(`/zones/${zoneId}/dns_records/${rec.id}`, { method: 'DELETE' })
     console.log('  deleted', rec.type, rec.name, rec.content)
   }

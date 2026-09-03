@@ -21,13 +21,13 @@ The six hero layers live in `public/img/hero-v4/` (desktop 2172×724, mobile 144
 
 ## Deployment
 
-**GitHub Pages (live now).** Every push to `main` runs `.github/workflows/deploy-pages.yml`, builds, and publishes to GitHub Pages. Custom domain: `stelux.ai` (set in the repository's Pages settings).
+**GitHub Pages (live at https://stelux.ai since 2026-09-03).** Every push to `main` runs `.github/workflows/deploy-pages.yml`, builds, and publishes to GitHub Pages. Custom domain `stelux.ai` is bound in the repository's Pages settings, the certificate is issued by GitHub and HTTPS is enforced; `www.stelux.ai` redirects to the apex. The previous site was served through a Cloudflare Tunnel (`michigan-api`), which still fronts `style.stelux.ai`.
 
 **Cloudflare Pages (ready).** `.github/workflows/deploy-cloudflare.yml` is a manual workflow. Add the repository secrets `CLOUDFLARE_API_TOKEN` (Pages:Edit + Account:Read) and `CLOUDFLARE_ACCOUNT_ID`, then run it from the Actions tab. Or deploy locally with `npx wrangler login && pnpm deploy`.
 
 ## DNS for stelux.ai (zone is on Cloudflare)
 
-Point the apex and `www` at GitHub Pages. Keep the records **DNS-only (grey cloud)** until GitHub has issued the certificate; the proxy can be enabled afterwards with SSL mode *Full*.
+These records are live as of 2026-09-03 (applied DNS-only, grey cloud). Keep them DNS-only; if the Cloudflare proxy is ever enabled, use SSL mode *Full*, not *Full (strict)*. `scripts/dns-switch.mjs` can re-apply or roll back the `@`/`www` records with a scoped `CLOUDFLARE_API_TOKEN`.
 
 | Type | Name | Content | Proxy |
 | --- | --- | --- | --- |
@@ -41,6 +41,6 @@ Point the apex and `www` at GitHub Pages. Keep the records **DNS-only (grey clou
 | AAAA | `@` | `2606:50c0:8003::153` | DNS only |
 | CNAME | `www` | `steluxai.github.io` | DNS only |
 
-Remove any existing A/AAAA/CNAME records for `@` and `www` that point at the previous host first. Once DNS resolves, enable *Enforce HTTPS* in the repo's Pages settings (or `gh api -X PUT repos/SteluxAI/stelux-ai-site/pages -F https_enforced=true`). `www.stelux.ai` redirects to `stelux.ai` automatically.
+HTTPS enforcement is already on (`gh api -X PUT repos/SteluxAI/stelux-ai-site/pages -F https_enforced=true`). `www.stelux.ai` redirects to `stelux.ai` automatically.
 
 If the site is later moved to Cloudflare Pages, replace the records above with `CNAME @ → stelux-ai.pages.dev` and `CNAME www → stelux-ai.pages.dev` (Cloudflare adds these automatically when the custom domain is attached to the Pages project).
