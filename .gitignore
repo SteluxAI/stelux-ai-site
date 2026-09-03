@@ -6,3 +6,4 @@ shots
 *.log
 scripts/tmp-*
 output/
+dns-backup-*.json
