@@ -2,7 +2,7 @@
 
 Dark, depth-driven marketing site for [stelux.ai](https://stelux.ai): a fora.so-style dusk hero (sky shader, rolling hills behind an orchestration dashboard, foliage in front) with 3-layer parallax (0.3x / 1.0x / 1.4x), the existing Stelux products, fora-style stacking feature cards, an interactive CLI/SDK showcase, live-feel telemetry, an access matrix and a minimalist footer.
 
-**Stack:** Vite 6 · Tailwind CSS v4 · GSAP ScrollTrigger · Lenis · Playwright (visual audit) · numpy/Pillow (scenery renderer) · static output in `dist/`.
+**Stack:** Vite 6 · Tailwind CSS v4 · GSAP ScrollTrigger · Lenis · Playwright (visual audit) · static output in `dist/`.
 
 ## Scripts
 
@@ -13,8 +13,11 @@ Dark, depth-driven marketing site for [stelux.ai](https://stelux.ai): a fora.so-
 | `pnpm preview` | Serve `dist/` on http://localhost:4173 |
 | `pnpm shots` | Screenshot + audit loop: 1440px and 375px at 0/25/50/75/100% scroll. Flags horizontal overflow, clipped text and text collisions. Output in `shots/` (`SHOT_URL`, `SHOT_DIR`, `SHOT_DEPTHS` env overrides) |
 | `node scripts/og.mjs` | Re-render `public/og.png` from the live hero |
-| `python scripts/render-scene.py` | Procedurally render the hero scenery (`public/img/hills.webp`, `public/img/foliage.webp`) — lit rolling hills with grass texture and haze, particle treetops with dusk highlights. Deterministic; needs `numpy` + `pillow` |
 | `pnpm deploy` | `wrangler pages deploy dist` to the Cloudflare Pages project `stelux-ai` (needs `npx wrangler login` or `CLOUDFLARE_API_TOKEN`) |
+
+## Hero assets
+
+The six hero layers live in `public/img/hero-v4/` (desktop 2172×724, mobile 1448×1086, WebP with alpha) and were generated outside this repo; their masters, manifest and the foreground alpha profile come from the `output/hero-assets-v4/` handoff (git-ignored). `src/data/hero-foreground-profiles.json` is bundled so the panel's scroll lag is capped 24px clear of the CTA. Replace a layer by dropping a new WebP with the same name and re-checking `SHOT_DIR=shots/check node scripts/screenshots.mjs`.
 
 ## Deployment
 

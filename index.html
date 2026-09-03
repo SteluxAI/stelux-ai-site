@@ -7,6 +7,7 @@
   <meta name="description" content="Stelux AI — home of Michigan Property Intelligence, StyleAI, Market Signal Pro and Lux AI Assistant. Autonomous agent swarms on your data and your GPUs.">
   <meta name="theme-color" content="#08080a">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="canonical" href="https://stelux.ai/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Stelux AI">
@@ -25,7 +26,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="/img/hills.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="/img/hero-v4/hills-desktop.webp" type="image/webp" media="(min-width: 768px)">
+  <link rel="preload" as="image" href="/img/hero-v4/foreground-desktop.webp" type="image/webp" media="(min-width: 768px)">
+  <link rel="preload" as="image" href="/img/hero-v4/far-desktop.webp" type="image/webp" media="(min-width: 768px)">
+  <link rel="preload" as="image" href="/img/hero-v4/hills-mobile.webp" type="image/webp" media="(max-width: 767px)">
+  <link rel="preload" as="image" href="/img/hero-v4/foreground-mobile.webp" type="image/webp" media="(max-width: 767px)">
+  <link rel="preload" as="image" href="/img/hero-v4/far-mobile.webp" type="image/webp" media="(max-width: 767px)">
   <link rel="stylesheet" href="/src/style.css">
   <script type="application/ld+json">
   {
@@ -95,15 +101,22 @@
 
   <main id="top">
 
-    <!-- ===== Hero: 3-layer depth (dusk sky + hills · dashboard · foliage) ===== -->
-    <section id="hero" class="hero grain relative min-h-[100svh] overflow-hidden">
-      <!-- Background layer · 0.3x -->
-      <div class="hero-bg" data-layer="bg" data-allow-overflow aria-hidden="true">
-        <canvas id="aurora"></canvas>
-        <div class="hills-wrap"><img class="hills" src="/img/hills.webp" width="2880" height="1520" alt="" decoding="async" fetchpriority="high"></div>
+    <!-- ===== Hero (v4): CSS sky → far terrain → near hills → copy + live dashboard → foreground, all anchored to the panel's flow bottom ===== -->
+    <section id="hero" class="hero relative overflow-hidden">
+      <div class="hero-sky" aria-hidden="true"></div>
+      <div class="hero-layer hero-layer-far" data-scene-rate="0.31" aria-hidden="true">
+        <picture>
+          <source media="(max-width: 767px)" type="image/webp" srcset="/img/hero-v4/far-mobile.webp" width="1448" height="1086">
+          <img src="/img/hero-v4/far-desktop.webp" width="2172" height="724" alt="" decoding="async" data-asset-role="far">
+        </picture>
+      </div>
+      <div class="hero-layer hero-layer-hills" data-scene-rate="0.17" aria-hidden="true">
+        <picture>
+          <source media="(max-width: 767px)" type="image/webp" srcset="/img/hero-v4/hills-mobile.webp" width="1448" height="1086">
+          <img src="/img/hero-v4/hills-desktop.webp" width="2172" height="724" alt="" decoding="async" fetchpriority="high" data-asset-role="hills">
+        </picture>
       </div>
 
-      <!-- Midground layer · 1.0x -->
       <div class="hero-content relative z-10 mx-auto max-w-7xl px-5 pt-32 sm:px-8 sm:pt-36">
         <div class="hero-copy mx-auto max-w-4xl text-center">
           <span class="pill">Enterprise agent platform · Early access</span>
@@ -117,8 +130,9 @@
           </div>
         </div>
 
-        <!-- Orchestration dashboard (fora-style panel) -->
-        <div id="terminal" class="terminal mx-auto mt-10 max-w-5xl">
+        <!-- Scroll-lag track for the panel; #terminal keeps its id, mouse events and inner tilt -->
+        <div class="hero-panel-track" data-scene-rate="0.2">
+          <div id="terminal" class="terminal mx-auto mt-10 max-w-[960px]">
           <div class="terminal-inner dash relative overflow-hidden rounded-2xl sm:rounded-[22px]">
             <div class="grid md:grid-cols-[228px_1fr]">
               <aside class="dash-side hidden flex-col p-4 pt-5 md:flex" aria-label="Dashboard views">
@@ -178,17 +192,20 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
 
-      <!-- Foreground layer · 1.4x -->
-      <div class="hero-fg" data-layer="fg" data-allow-overflow aria-hidden="true">
-        <img src="/img/foliage.webp" width="2880" height="1000" alt="" decoding="async" fetchpriority="high">
+      <div class="hero-layer hero-layer-foreground" data-scene-rate="0" aria-hidden="true">
+        <picture>
+          <source media="(max-width: 767px)" type="image/webp" srcset="/img/hero-v4/foreground-mobile.webp" width="1448" height="1086">
+          <img src="/img/hero-v4/foreground-desktop.webp" width="2172" height="724" alt="" decoding="async" fetchpriority="high" data-asset-role="foreground">
+        </picture>
       </div>
       <div class="hero-fade" aria-hidden="true"></div>
     </section>
 
     <!-- ===== Products ===== -->
-    <section id="products" class="relative z-[1] -mt-16 pb-24 pt-2 sm:-mt-24 sm:pb-32 sm:pt-4">
+    <section id="products" class="relative pb-24 pt-16 sm:pb-32 sm:pt-24">
       <div class="mx-auto max-w-7xl px-5 sm:px-8">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between" data-reveal>
           <div class="max-w-2xl">

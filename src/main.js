@@ -1,6 +1,7 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
+import heroProfiles from './data/hero-foreground-profiles.json'
 
 gsap.registerPlugin(ScrollTrigger)
 ScrollTrigger.config({ ignoreMobileResize: true })
@@ -90,79 +91,70 @@ menuBtn.addEventListener('click', () => (menu.hidden ? openMenu() : closeMenu())
 addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu() })
 addEventListener('resize', () => { if (!isMobile()) closeMenu() })
 
-/* ---------------- dusk sky shader (canvas) ---------------- */
-function initSky(canvas) {
-  const ctx = canvas.getContext('2d', { alpha: false })
-  const RAMP = [
-    [0.00, '#08080a'], [0.10, '#161315'], [0.26, '#332c2e'], [0.44, '#57484a'],
-    [0.60, '#7a6664'], [0.74, '#957b7b'], [0.86, '#ad918f'], [1.00, '#bd9e9a'],
-  ]
-  const blobs = [
-    { x: 0.30, y: 0.30, r: 0.40, c: '222,176,178', a: 0.16, sx: 0.00009, sy: 0.00007, p: 0.0 },
-    { x: 0.76, y: 0.26, r: 0.36, c: '184,164,190', a: 0.12, sx: 0.00007, sy: 0.00010, p: 2.1 },
-    { x: 0.52, y: 0.40, r: 0.42, c: '236,206,196', a: 0.16, sx: 0.00006, sy: 0.00008, p: 4.2 },
-    { x: 0.12, y: 0.06, r: 0.34, c: '10,9,11', a: 0.45, sx: 0.00008, sy: 0.00006, p: 1.3 },
-    { x: 0.90, y: 0.05, r: 0.30, c: '12,10,13', a: 0.40, sx: 0.00007, sy: 0.00009, p: 3.4 },
-  ]
-  const SCALE = 0.16
-  const hills = $('.hills-wrap')
-  let w = 2, h = 2, raf = 0, visible = !document.hidden, intersecting = true
-  function horizon() {
-    const ch = canvas.clientHeight || 1
-    const top = hills ? hills.offsetTop + cssNum('--crest', 0) / 100 * innerWidth : ch * 0.6
-    return Math.min(0.98, Math.max(0.2, top / ch))
-  }
-  function draw(t) {
-    ctx.globalCompositeOperation = 'source-over'
-    const hz = horizon()
-    const g = ctx.createLinearGradient(0, 0, 0, h)
-    RAMP.forEach(([o, c]) => g.addColorStop(o * hz, c))
-    g.addColorStop(1, RAMP[RAMP.length - 1][1])
-    ctx.fillStyle = g
-    ctx.fillRect(0, 0, w, h)
-    const m = Math.max(w, h)
-    for (const b of blobs) {
-      const cx = (b.x + Math.sin(t * b.sx + b.p) * 0.10) * w
-      const cy = (b.y + Math.cos(t * b.sy + b.p) * 0.06) * h
-      const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, b.r * m)
-      rg.addColorStop(0, `rgba(${b.c},${b.a})`)
-      rg.addColorStop(0.5, `rgba(${b.c},${b.a * 0.4})`)
-      rg.addColorStop(1, `rgba(${b.c},0)`)
-      ctx.fillStyle = rg
-      ctx.fillRect(0, 0, w, h)
-    }
-  }
-  function frame(t) {
-    draw(t)
-    raf = visible && intersecting ? requestAnimationFrame(frame) : 0
-  }
-  function sync() {
-    const should = visible && intersecting && !reduceMotion
-    if (should && !raf) raf = requestAnimationFrame(frame)
-    if (!should && raf) { cancelAnimationFrame(raf); raf = 0 }
-  }
-  function resize() {
-    const r = canvas.getBoundingClientRect()
-    w = canvas.width = Math.max(2, Math.round(r.width * SCALE))
-    h = canvas.height = Math.max(2, Math.round(r.height * SCALE))
-    draw(performance.now())
-  }
-  resize()
-  addEventListener('resize', resize)
-  if (reduceMotion) return
-  new IntersectionObserver(([e]) => { intersecting = e.isIntersecting; sync() }, { threshold: 0 }).observe(canvas)
-  document.addEventListener('visibilitychange', () => { visible = !document.hidden; sync() })
-  sync()
-}
-initSky($('#aurora'))
-
-/* ---------------- hero parallax: 0.3x / 1.0x / 1.4x ---------------- */
+/* ---------------- hero v4 scene ----------------
+   Measured on fora.so (1440x900, scrollY 0 -> 720): extra downward shift per scrolled px is
+   far 0.31, near hills 0.17, panel 0.20, foreground 0. Each track owns its own transform.
+   The panel lag is capped so the foreground keeps CTA_CLEARANCE px clear of the CTA, using the
+   foreground alpha profile (first visible row per column) over the CTA's x-range. */
 const hero = $('#hero')
+const sceneTracks = $$('[data-scene-rate]')
+const panelTrack = $('.hero-panel-track')
+const foregroundImg = $('.hero-layer-foreground img')
+const panelCTA = $('.dash-cta')
+const CTA_CLEARANCE = 24
+let heroTop = 0, heroHeight = 0, panelMaxLag = Infinity, panelShiftNow = 0
+function measureScene() {
+  heroTop = hero.getBoundingClientRect().top + scrollY
+  heroHeight = hero.offsetHeight
+  const variant = /foreground-mobile\./i.test(foregroundImg.currentSrc || foregroundImg.src) ? 'mobile' : 'desktop'
+  const profile = heroProfiles[variant]
+  const fb = foregroundImg.getBoundingClientRect(), cb = panelCTA.getBoundingClientRect()
+  panelMaxLag = Infinity
+  if (profile && fb.width > 0 && fb.height > 0 && cb.width > 0) {
+    const left = Math.max(cb.left, fb.left), right = Math.min(cb.right, fb.right)
+    let minCrest = Infinity
+    if (right > left) {
+      const c0 = Math.max(0, Math.floor((left - fb.left) / fb.width * profile.width))
+      const c1 = Math.min(profile.width - 1, Math.ceil((right - fb.left) / fb.width * profile.width) - 1)
+      for (let x = c0; x <= c1; x++) {
+        const row = profile.firstVisibleRow[x]
+        if (Number.isFinite(row) && row < profile.height) minCrest = Math.min(minCrest, fb.top + row / profile.height * fb.height)
+      }
+    }
+    // both screen coordinates carry the same -scrollY; subtract our own panel shift so the cap does not feed back
+    if (Number.isFinite(minCrest)) panelMaxLag = Math.max(0, minCrest - (cb.bottom - panelShiftNow) - CTA_CLEARANCE)
+  }
+  window.__heroScene = { heroTop, heroHeight, panelMaxLag, variant }
+  drawScene()
+}
+function drawScene() {
+  if (reduceMotion) return
+  const s = Math.max(0, Math.min(heroHeight, scrollY - heroTop))
+  for (const track of sceneTracks) {
+    const rate = Number(track.dataset.sceneRate)
+    let shift = s * rate
+    if (track === panelTrack) { shift = Math.min(shift, panelMaxLag); panelShiftNow = shift }
+    track.style.transform = shift ? `translate3d(0, ${shift.toFixed(2)}px, 0)` : ''
+  }
+}
 if (!reduceMotion) {
-  const st = () => ({ trigger: hero, start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true })
-  gsap.to('.hero-bg', { y: () => hero.offsetHeight * 0.7, ease: 'none', scrollTrigger: st() })
-  gsap.to('.hero-fg', { y: () => -hero.offsetHeight * (innerWidth < 1024 ? 0.22 : 0.4), ease: 'none', scrollTrigger: st() })
+  ScrollTrigger.create({ trigger: hero, start: 'top top', end: 'bottom top', onUpdate: drawScene, onRefresh: measureScene })
+  addEventListener('scroll', drawScene, { passive: true })
+  new ResizeObserver(() => measureScene()).observe(hero)
+  $$('.hero-layer img').forEach((img) => { if (img.complete) measureScene(); else img.addEventListener('load', measureScene, { once: true }) })
+  document.fonts?.ready.then(measureScene)
+  addEventListener('load', measureScene)
+  addEventListener('orientationchange', () => setTimeout(measureScene, 300))
   gsap.to('.hero-copy', { y: -70, opacity: 0.15, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: '55% top', scrub: true } })
+
+  // entrance (fora: layers rise into place, staggered by depth; copy and panel fade in). Inner elements only,
+  // so the scroll tracks above and the hover tilt on .terminal-inner keep exclusive ownership of their transforms.
+  const intro = gsap.timeline({ defaults: { ease: 'power3.out' } })
+  intro.from('.hero-layer-far picture', { y: 70, duration: 1.2, clearProps: 'transform' }, 0)
+    .from('.hero-layer-hills picture', { y: 47, duration: 1.2, clearProps: 'transform' }, 0)
+    .from('.hero-layer-foreground picture', { y: 35, duration: 1.2, clearProps: 'transform' }, 0)
+    .from('.hero-copy > *', { y: 18, opacity: 0, duration: 0.9, stagger: 0.08, clearProps: 'transform,opacity' }, 0.05)
+    .from('#terminal', { y: 40, opacity: 0, duration: 1.1, clearProps: 'transform,opacity' }, 0.25)
 }
 
 /* ---------------- dashboard: tilt, views, live simulation ---------------- */
@@ -197,6 +189,7 @@ $$('.dash-nav').forEach((btn) => {
     dashTitle.textContent = v.title
     dashSubText.textContent = v.sub
     if (!reduceMotion) gsap.fromTo([dashTitle, dashSubText], { opacity: 0.2, y: 4 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out', clearProps: 'all' })
+    if (!reduceMotion) measureScene()
   })
 })
 
@@ -254,7 +247,7 @@ const gpuCells = Array.from({ length: 8 }, (_, i) => {
   return c
 })
 
-const mTasks = $('#m-tasks'), mGpu = $('#m-gpu'), termLive = $('#term-live')
+const mTasks = $('#m-tasks'), mGpu = $('#m-gpu')
 let simTimer = 0
 function simTick() {
   const a = AGENTS[randi(0, AGENTS.length - 1)]
@@ -436,4 +429,4 @@ $$('[data-count]').forEach((el) => {
 const refresh = () => ScrollTrigger.refresh()
 document.fonts?.ready.then(refresh)
 addEventListener('load', refresh)
-$$('.hills, .hero-fg img').forEach((img) => { if (!img.complete) img.addEventListener('load', refresh, { once: true }) })
+$$('.hero-layer img').forEach((img) => { if (!img.complete) img.addEventListener('load', refresh, { once: true }) })
