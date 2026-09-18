@@ -393,6 +393,31 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmpzoom .grpbtn{width:28px;height:26px;padding:0;font-size:14px;line-height:1;display:grid;place-items:center}
 .cmpzoom .grpbtn[disabled]{opacity:.4;cursor:default}
 .cmp.panning{cursor:grabbing}
+/* the navigator: the whole range at low contrast, with a window over the slice the chart is showing */
+.cmpnav{display:block;width:100%;height:36px;touch-action:pan-y;cursor:crosshair;outline:none;
+  margin-top:2px;border-radius:var(--r-sm);}
+.cmpnav:focus-visible{box-shadow:0 0 0 2px var(--blue)}
+.cmpnav .navtrack{fill:var(--hair2)}
+.cmpnav .navln{fill:none;stroke-width:1.2;opacity:.8;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.cmpnav .navbase{stroke:var(--ink3);stroke-width:1;stroke-dasharray:3 3;opacity:.45}
+.cmpnav .sessband{fill:var(--ink3);opacity:.07}
+.cmpnav .sessrule{stroke:var(--hair);stroke-width:1}
+/* the slice on screen stays clear and everything else is dimmed, so the eye reads the window as a cut-out */
+.cmpnav .navdim{fill:var(--card-solid);opacity:.66}
+.cmpnav .navwin{fill:none;stroke:var(--ink3);stroke-width:1.2;opacity:.5;rx:5}
+.cmpnav.zoomed .navwin{opacity:1;stroke:var(--blue);stroke-width:1.5}
+.cmpnav.zoomed{cursor:grab}
+.cmpnav.dragging,.cmpnav.dragging *{cursor:grabbing}
+.cmpnav .navgrip{fill:var(--ink3);opacity:.5;cursor:ew-resize}
+.cmpnav.zoomed .navgrip{fill:var(--blue);opacity:.9}
+/* the hint explains the strip by sitting on top of it, so it waits for the pointer rather than living there -
+   and where there is no pointer to wait for, it shows until the first zoom. The halo keeps it legible over a line. */
+.cmpnav .navhint{font-size:10.5px;fill:var(--ink2);letter-spacing:.02em;pointer-events:none;opacity:.92;
+  stroke:var(--card-solid);stroke-width:3.5;paint-order:stroke;transition:opacity .2s var(--ease)}
+@media(hover:hover) and (pointer:fine){
+  .cmpnav .navhint{opacity:0}
+  .cmpnav:hover .navhint,.cmpnav:focus-visible .navhint{opacity:.92}
+}
 .cmplegend{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 0}
 .cmpchip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;border:0;
   background:var(--hair2);color:var(--ink2);font-size:var(--fs-meta);font-weight:500;white-space:nowrap;cursor:pointer;
@@ -551,6 +576,9 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
 
   .cmp{height:230px}
   .cmp text{font-size:12px}
+  /* a 36px strip is under the 44px tap target, so the phone gets a taller one with fatter grips */
+  .cmpnav{height:46px}
+  .cmpnav .navgrip{opacity:.8}
   .cmpchip{height:34px;padding:0 11px}
   /* ten rows at desktop metrics are taller than the chart itself on a phone: tighten them so the readout still
      fits inside the plot instead of covering it and the legend */
@@ -723,6 +751,9 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   </div>
   <div class="card pad cmpwrap">
     <svg class="cmp" id="cmpchart" role="img" aria-label="十个 Agent 的净值对比曲线"></svg>
+    <svg class="cmpnav" id="cmpnav" tabindex="0" role="group"
+         aria-label="时间轴导航条：拖动窗口左右移动，拖动两端改变时长，左右方向键逐步移动"
+         title="拖动窗口左右移动 · 拖两端改变时长 · 空白处拖选一段 · ← → 逐步移动"></svg>
     <div class="cmptip" id="cmptip" style="display:none"></div>
     <div class="cmplegend" id="cmplegend" role="group" aria-label="选择要显示的 Agent"></div>
   </div>
@@ -1082,6 +1113,14 @@ const I18N = {
     "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
     "当前时段": "Current session", "今日全时段": "Today (all sessions)",
     "已放大": "zoomed",
+    "在这条带上拖选一段即可放大": "drag across this strip to zoom into a stretch",
+    "图下方的导航条：拖窗口左右移动，拖两端改时长，空白处拖选一段，← → 逐步移动":
+      "the strip under the chart is the navigator: drag the window to move left and right, drag either end to "
+      + "change how long a stretch is on screen, drag empty track to pick a new one, arrow keys to step",
+    "时间轴导航条：拖动窗口左右移动，拖动两端改变时长，左右方向键逐步移动":
+      "time navigator: drag the window to move left and right, drag either end to change the span, arrow keys to step",
+    "拖动窗口左右移动 · 拖两端改变时长 · 空白处拖选一段 · ← → 逐步移动":
+      "drag the window to move · drag an end to change the span · drag empty track to select · arrow keys to step",
     "已放大到一段时间；⟲ 回到整段": "zoomed into part of the range; ⟲ goes back to all of it",
     "纵轴按可见区间缩放，基准线为本金": "the y axis fits the values on screen; the dashed line is the principal",
     "缩放时间轴": "zoom the time axis", "放大时间轴": "zoom in", "缩小时间轴": "zoom out", "回到整段": "back to the whole range",
@@ -2460,6 +2499,9 @@ function cmpZoomReset() {
 }
 
 function cmpInvalidate() {
+  // the strip's window moves NOW, not after the chart has been rebuilt: a drag that lagged a frame behind the
+  // finger holding it is the whole difference between a scrollbar and a thing you are pushing
+  cmpNavWindow();
   const c = $("cmpchart"); if (c) delete c.dataset.sig;
   const l = $("cmplegend"); if (l) delete l.dataset.sig;
   const nt = $("cmpnote"); if (nt) delete nt.dataset.sig;
@@ -2568,6 +2610,7 @@ function renderCompare(s) {
       if (STATE.cmpRange === "today") full.push(tr("今日 = 盘前 04:00 起，含盘前、常规盘、盘后"));
       if (STATE.cmpRange === "session") full.push(tr("已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后"));
       if (STATE.cmpZoom) full.push(tr("已放大到一段时间；⟲ 回到整段"));
+      full.push(tr("图下方的导航条：拖窗口左右移动，拖两端改时长，空白处拖选一段，← → 逐步移动"));
     } else {
       full.push(tr("每日收盘冻结净值"));
     }
@@ -2664,6 +2707,23 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   const pad = Math.max(1, (hi - lo) * 0.14) || 1;
   const yLo = lo - pad, yHi = hi + pad;
 
+  /* The left margin is measured, not guessed. A guessed 48px fitted "$9,978" and clipped "$10,024": on a 306px
+     phone chart the labels started at x = -0.9 and the bold baseline at x = -3.9, with the dollar signs cut off by
+     the edge of the svg. Ask the axis how wide its own widest number is and give it that much. */
+  const probe = mk("text", { x: 0, y: -60 }, base != null ? "baselbl" : null);
+  svg.appendChild(probe);
+  let axisW = 0;
+  for (let i = 0; i <= 4; i++) {
+    probe.textContent = usd(Math.round(yLo + (yHi - yLo) * i / 4), { cents: false });
+    axisW = Math.max(axisW, probe.getComputedTextLength());
+  }
+  if (base != null) {
+    probe.textContent = usd(base, { cents: false });
+    axisW = Math.max(axisW, probe.getComputedTextLength());
+  }
+  svg.removeChild(probe);
+  if (axisW > 0) PL = Math.max(PL, Math.ceil(axisW) + 12);      // 8px of gap to the plot, 4px to the svg's edge
+
   const X = v => PL + (w - PL - PR) * (v - x0) / (x1 - x0);
   const Y = v => PT + (h - PT - PB) * (1 - (v - yLo) / (yHi - yLo));
 
@@ -2720,7 +2780,7 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     const m = String(pt[2]).match(/T(\d{2}):(\d{2})/);                      // an axis tick wants the minute
     return m ? ampm(m[1], m[2]) : hhmm(pt[2]);
   };
-  const tickY = bands.length ? h - 20 : h - 7;
+  const tickY = bands.length ? h - 22 : h - 7;   // measured: at h - 20 the tick row touched the band names below it
   if (zoomed && mode === "intraday") {
     // zoomed in: a boundary tick is no longer enough, so step through New York wall-clock at a sensible interval
     const off = cmpNyOffsetMs(STATE.snap || {});
@@ -2740,19 +2800,35 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
       svg.appendChild(label(px, tickY, ampm(hh, mm2), px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle"));
     }
   } else if (bands.length) {
-    // ticks on the session boundaries - 07:00 / 09:30 / 16:00 / 20:00 says more than three evenly spaced clock
-    // times - formatted from the server's own New York strings, never from a Date the reader's timezone reinterprets
+    /* Ticks on the session boundaries - 07:00 / 09:30 / 16:00 / 20:00 says more than three evenly spaced clock
+       times - formatted from the server's own New York strings, never from a Date the reader's timezone
+       reinterprets. Which of them FIT is measured, not assumed: a fixed 44px gap with the last tick exempted put
+       "4:00 PM" (ending at 212.2) under "8:00 PM" (starting at 211.1) on a phone. Each candidate is placed in the
+       order of what it is worth - the session's own open and close before the ends of the range - and one whose
+       box would hit an already-placed one is dropped. On a wide chart all four still fit. */
     const ny = str => { const q = String(str).match(/T(\d{2}):(\d{2})/); return q ? ampm(q[1], q[2]) : ""; };
-    const marks = [[x0, "start", x0str], [sess.open, "middle", sess.str.open],
-                   [sess.close, "middle", sess.str.close], [x1, "end", x1str]]
-      .filter(([t]) => t >= x0 && t <= x1);
-    let lastX = -1e9;
-    marks.forEach(([t, a, str], i) => {
-      const px = X(t);
-      if (px - lastX < 44 && i !== marks.length - 1) return;      // never two ticks on top of each other
-      lastX = px;
-      svg.appendChild(label(px, tickY, str ? ny(str) : xlabel(stampAt(t)), a));
+    const cand = [{ t: sess.open, a: "middle", str: sess.str.open, rank: 0 },
+                  { t: sess.close, a: "middle", str: sess.str.close, rank: 1 },
+                  { t: x1, a: "end", str: x1str, rank: 2 },
+                  { t: x0, a: "start", str: x0str, rank: 3 }]
+      .filter(c => c.t >= x0 && c.t <= x1);
+    const probe = mk("text", { x: 0, y: -60 });
+    svg.appendChild(probe);
+    const taken = [];
+    [...cand].sort((a, b) => a.rank - b.rank).forEach(c => {
+      c.txt = c.str ? ny(c.str) : xlabel(stampAt(c.t));
+      if (!c.txt) return;
+      probe.textContent = c.txt;
+      const tw = probe.getComputedTextLength(), px = X(c.t);
+      const l = c.a === "end" ? px - tw : c.a === "start" ? px : px - tw / 2;
+      const box = { l: l - 6, r: l + tw + 6 };                    // 6px of air, or they read as one number
+      if (taken.some(q => box.l < q.r && q.l < box.r)) return;
+      taken.push(box);
+      c.ok = true;
     });
+    svg.removeChild(probe);
+    cand.filter(c => c.ok).sort((a, b) => a.t - b.t)
+        .forEach(c => svg.appendChild(label(X(c.t), tickY, c.txt, c.a)));
   } else {
     [[x0, "start"], [(x0 + x1) / 2, "middle"], [x1, "end"]].forEach(([v, a]) => {
       svg.appendChild(label(X(v), tickY, xlabel(stampAt(v)), a));
@@ -2816,6 +2892,212 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
 
   CMP = { shown, X, Y, x0, x1, PL, PR, PT, PB, w, h, mode, base, cross, svg, stamps, xlabel, lines, range, zoomed };
   wireCmpHover(svg);
+  drawCmpNav(shown, groups, sess, range, base, PL, PR);
+}
+
+/* ---------------------------------------------------------------- the navigator strip
+   Zoomed in, "move left" is the next thing a reader wants, and a plain scrollbar would answer only that. This
+   strip answers the whole question: it draws the ENTIRE range - the sessions behind it, every line in its own
+   colour - and puts a window over the slice that is on the chart, dimming the rest. Where you are, what you are
+   missing, and how to get there, in one 36px band.
+
+   One gesture, four grips: drag the window to move, drag either end to change how long a stretch is on screen,
+   drag empty track to pick a new window, arrow keys to step. The window is the same viewport the chart's own pan
+   and pinch write, so the two stay in sync without either knowing about the other. */
+let NAV = null;
+
+function drawCmpNav(shown, groups, sess, range, base, PL, PR) {
+  const svg = $("cmpnav");
+  if (!svg) return;
+  if (!range || !(range.b > range.a) || !shown.length) { NAV = null; svg.style.display = "none"; return; }
+  svg.style.display = "";
+  const NS = "http://www.w3.org/2000/svg";
+  const w = Math.max(240, svg.clientWidth || 600), h = svg.clientHeight || 36;
+  const mk = (tag, attrs, cls) => {
+    const nd = document.createElementNS(NS, tag);
+    if (cls) nd.setAttribute("class", cls);
+    for (const k in (attrs || {})) nd.setAttribute(k, String(attrs[k]));
+    return nd;
+  };
+  const X = t => PL + (w - PL - PR) * (t - range.a) / (range.b - range.a);
+  NAV = { w, h, PL, PR, range, X };
+
+  // the shape is the expensive part and it does NOT change while the window moves, so it gets its own signature
+  const shape = [w, h, PL, PR, range.a, range.b, LANG,
+                 [...groups.values()].map(g => g[0].id + ":" + g[0].pts.length).join(",")].join("|");
+  if (svg.dataset.shape !== shape) {
+    svg.dataset.shape = shape;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.setAttribute("preserveAspectRatio", "none");
+    const PAD = 5, x0 = PL, x1 = w - PR;
+    svg.appendChild(mk("rect", { x: x0, y: 0, width: Math.max(0, x1 - x0), height: h, rx: 6 }, "navtrack"));
+
+    if (sess) {
+      [[sess.extOpen, sess.open], [sess.close, sess.extClose]].forEach(([a, b]) => {
+        const xa = Math.max(x0, X(a)), xb = Math.min(x1, X(b));
+        if (xb > xa) svg.appendChild(mk("rect", { x: xa.toFixed(1), y: 0, width: (xb - xa).toFixed(1), height: h }, "sessband"));
+      });
+      [sess.open, sess.close].forEach(t => {
+        if (t > range.a && t < range.b) {
+          const px = X(t).toFixed(1);
+          svg.appendChild(mk("line", { x1: px, y1: 0, x2: px, y2: h }, "sessrule"));
+        }
+      });
+    }
+
+    // the whole range, not the viewport: this is the part of the picture the chart is currently hiding
+    let lo = Infinity, hi = -Infinity;
+    shown.forEach(s2 => s2.pts.forEach(([, v]) => { if (v < lo) lo = v; if (v > hi) hi = v; }));
+    if (base != null) { lo = Math.min(lo, base); hi = Math.max(hi, base); }
+    if (!(hi > lo)) { lo -= 1; hi += 1; }
+    const Y = v => PAD + (h - PAD * 2) * (1 - (v - lo) / (hi - lo));
+    if (base != null) {
+      svg.appendChild(mk("line", { x1: x0, y1: Y(base).toFixed(1), x2: x1, y2: Y(base).toFixed(1) }, "navbase"));
+    }
+    groups.forEach(g => {
+      const lead = g[0];
+      if (lead.pts.length < 2) return;
+      const d = lead.pts.map(([x, v], i) => `${i ? "L" : "M"}${X(x).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
+      svg.appendChild(mk("path", { d, stroke: lead.color }, "navln"));
+    });
+
+    // the window, built once and only MOVED afterwards - that is what keeps a drag at one frame per move
+    svg.appendChild(mk("rect", { x: x0, y: 0, width: 0, height: h }, "navdim navdimA"));
+    svg.appendChild(mk("rect", { x: x1, y: 0, width: 0, height: h }, "navdim navdimB"));
+    svg.appendChild(mk("rect", { x: x0, y: 0.75, width: 0, height: h - 1.5 }, "navwin"));
+    ["a", "b"].forEach(k => svg.appendChild(mk("rect",
+      { x: x0, y: h / 2 - 8, width: 3, height: 16, rx: 1.5, "data-grip": k }, "navgrip")));
+    const hint = mk("text", { x: ((x0 + x1) / 2).toFixed(1), y: (h / 2 + 3.5).toFixed(1), "text-anchor": "middle" }, "navhint");
+    hint.textContent = tr("在这条带上拖选一段即可放大");
+    svg.appendChild(hint);
+  }
+  cmpNavWindow();
+  wireCmpNav(svg);
+}
+
+/* Moving the window is five attribute writes. Rebuilding the strip is a few hundred. A drag does the first. */
+function cmpNavWindow() {
+  const svg = $("cmpnav");
+  if (!svg || !NAV) return;
+  const { w, PL, PR, X, range } = NAV;
+  const z = STATE.cmpZoom;
+  const a = z ? Math.max(range.a, z.a) : range.a, b = z ? Math.min(range.b, z.b) : range.b;
+  const xa = Math.max(PL, X(a)), xb = Math.min(w - PR, X(b));
+  const put = (sel, attrs) => {
+    const nd = svg.querySelector(sel);
+    if (nd) for (const k in attrs) nd.setAttribute(k, String(attrs[k]));
+  };
+  put(".navdimA", { width: Math.max(0, xa - PL).toFixed(1) });
+  put(".navdimB", { x: xb.toFixed(1), width: Math.max(0, (w - PR) - xb).toFixed(1) });
+  put(".navwin", { x: xa.toFixed(1), width: Math.max(3, xb - xa).toFixed(1) });
+  put('[data-grip="a"]', { x: (xa - 1.5).toFixed(1) });
+  put('[data-grip="b"]', { x: (xb - 1.5).toFixed(1) });
+  const hint = svg.querySelector(".navhint");
+  if (hint) hint.style.display = z ? "none" : "";
+  svg.classList.toggle("zoomed", !!z);
+}
+
+function wireCmpNav(svg) {
+  if (svg.dataset.wired) return;
+  svg.dataset.wired = "1";
+  let drag = null, raf = 0, pending = null;
+  const MIN = 60e3;
+
+  const timeAt = clientX => {
+    if (!NAV) return null;
+    const r = svg.getBoundingClientRect();
+    const px = (clientX - r.left) * (NAV.w / Math.max(1, r.width));
+    return NAV.range.a + (NAV.range.b - NAV.range.a) * (px - NAV.PL) / Math.max(1, NAV.w - NAV.PL - NAV.PR);
+  };
+  // one write per frame however fast the pointer moves, and the window itself moves even before the chart redraws
+  const apply = (a, b) => {
+    pending = [a, b];
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const q = pending; pending = null;
+      if (q) cmpZoomSet(q[0], q[1]);
+    });
+  };
+  const view = () => {
+    const z = STATE.cmpZoom;
+    return z ? { a: z.a, b: z.b } : { a: NAV.range.a, b: NAV.range.b };
+  };
+
+  svg.addEventListener("pointerdown", ev => {
+    if (!NAV) return;
+    const t = timeAt(ev.clientX);
+    if (!isNum(t)) return;
+    const v = view();
+    const grip = ev.target && ev.target.getAttribute ? ev.target.getAttribute("data-grip") : null;
+    const perPx = (NAV.range.b - NAV.range.a) / Math.max(1, NAV.w - NAV.PL - NAV.PR);
+    // 6px of grab either side of an edge - but zoomed deep the window is a few pixels wide and that margin would
+    // swallow all of it, taking the bar's move away exactly where moving it matters most
+    const slack = (v.b - v.a) / perPx > 26 ? perPx * 6 : 0;
+    try { svg.setPointerCapture(ev.pointerId); } catch (e) { }
+    if (grip || (slack && (Math.abs(t - v.a) < slack || Math.abs(t - v.b) < slack))) {
+      const edge = grip || (Math.abs(t - v.a) < Math.abs(t - v.b) ? "a" : "b");
+      drag = { kind: "edge", edge, a: v.a, b: v.b };
+    } else if (STATE.cmpZoom && t > v.a && t < v.b) {
+      drag = { kind: "move", t0: t, a: v.a, b: v.b };                 // the bar itself: left and right, 1:1
+    } else {
+      drag = { kind: "select", t0: t, moved: false };                 // anywhere else: draw the window you want
+    }
+    svg.classList.add("dragging");
+    svg.focus({ preventScroll: true });
+  }, { passive: true });
+
+  svg.addEventListener("pointermove", ev => {
+    if (!drag || !NAV) return;
+    const t = timeAt(ev.clientX);
+    if (!isNum(t)) return;
+    if (drag.kind === "move") {
+      const d = t - drag.t0;
+      apply(drag.a + d, drag.b + d);
+    } else if (drag.kind === "edge") {
+      const a = drag.edge === "a" ? Math.min(t, drag.b - MIN) : drag.a;
+      const b = drag.edge === "b" ? Math.max(t, drag.a + MIN) : drag.b;
+      apply(a, b);
+    } else if (Math.abs(t - drag.t0) > MIN) {
+      drag.moved = true;
+      apply(Math.min(drag.t0, t), Math.max(drag.t0, t));
+    }
+  }, { passive: true });
+
+  // a tap on the empty track is not a one-pixel selection: it re-centres the span that is already on screen
+  const end = () => {
+    if (drag && drag.kind === "select" && !drag.moved && STATE.cmpZoom) {
+      const v = view(), span = v.b - v.a;
+      cmpZoomSet(drag.t0 - span / 2, drag.t0 + span / 2);
+    }
+    drag = null;
+    svg.classList.remove("dragging");
+  };
+  ["pointerup", "pointercancel"].forEach(k => svg.addEventListener(k, end, { passive: true }));
+
+  svg.addEventListener("keydown", ev => {
+    if (!NAV) return;
+    const v = view(), span = v.b - v.a, step = span * 0.25;
+    const k = ev.key;
+    if (k === "ArrowLeft") { cmpZoomSet(v.a - step, v.b - step); }
+    else if (k === "ArrowRight") { cmpZoomSet(v.a + step, v.b + step); }
+    else if (k === "Home") { cmpZoomSet(NAV.range.a, NAV.range.a + span); }
+    else if (k === "End") { cmpZoomSet(NAV.range.b - span, NAV.range.b); }
+    else if (k === "+" || k === "=") { cmpZoomBy(1 / 1.6); }
+    else if (k === "-" || k === "_") { cmpZoomBy(1.6); }
+    else if (k === "Escape") { cmpZoomReset(); }
+    else return;
+    ev.preventDefault();
+  });
+
+  svg.addEventListener("wheel", ev => {
+    if (!NAV || !CMP) return;
+    const t = timeAt(ev.clientX);
+    if (!isNum(t)) return;
+    ev.preventDefault();
+    cmpZoomBy(ev.deltaY > 0 ? 1.25 : 1 / 1.25, t);
+  }, { passive: false });
 }
 
 /* TradingView's one useful habit: the chart answers "what was everyone worth HERE" for whatever the pointer is on.
