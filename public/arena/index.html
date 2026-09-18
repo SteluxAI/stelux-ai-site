@@ -350,6 +350,26 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .blank{padding:38px 12px;text-align:center;color:var(--ink3);font-size:13px}
 .blank .ico{font-size:26px;display:block;margin-bottom:8px;opacity:.5}
 
+/* ============================================================ equity comparison */
+.cmpwrap{position:relative}
+.cmp{display:block;width:100%;height:280px;touch-action:pan-y}
+.cmp text{font-size:11px;fill:var(--ink3);font-variant-numeric:tabular-nums}
+.cmp .grid{stroke:var(--hair2);stroke-width:1}
+.cmp .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.cmp .ln.dim{opacity:.16}
+.cmp .dot{stroke:var(--card-solid);stroke-width:1.5}
+.cmplegend{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 0}
+.cmpchip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;border:0;
+  background:var(--hair2);color:var(--ink2);font-size:var(--fs-meta);font-weight:500;white-space:nowrap;cursor:pointer;
+  transition:background .25s var(--ease),color .25s var(--ease),transform .12s var(--ease)}
+.cmpchip i{width:9px;height:9px;border-radius:3px;flex:none;display:inline-block}
+.cmpchip.off{color:var(--ink3);background:transparent;box-shadow:inset 0 0 0 1px var(--hair)}
+.cmpchip.off i{opacity:.3}
+.cmpchip.dead{opacity:1;color:var(--ink3);background:transparent;box-shadow:inset 0 0 0 1px var(--hair);cursor:default}
+.cmpchip:active{transform:scale(.96)}
+.cmpchip:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media(hover:hover) and (pointer:fine){.cmpchip:hover{background:var(--hair)}}
+
 /* ============================================================ evolution */
 .round{padding:13px 15px;border-radius:var(--r-lg);border:1px solid var(--hair);margin-bottom:9px;background:var(--hair2)}
 .round .rh{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
@@ -485,6 +505,10 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   .tk .px{font-size:17px}
   .tk .ch{font-size:var(--fs-note)}
 
+  .cmp{height:220px}
+  .cmp text{font-size:12px}
+  .cmpchip{height:34px;padding:0 11px}
+
   /* --- the drawer ----------------------------------------------------------------------------------------- */
   .shead{padding:14px 16px 12px}
   .shead::before{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);
@@ -514,6 +538,19 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   .tkhint{backdrop-filter:none}
   .scrim{backdrop-filter:none;background:rgba(0,0,0,.45)}   /* the higher alpha replaces the separation the blur gave */
   body{text-rendering:optimizeSpeed}
+}
+
+/* A phone held sideways has ~375px of HEIGHT, and the two-row header was taking 24% of it. There the bar is wide
+   enough to hold everything on one line, so it does -- nothing is hidden, it is only re-wrapped. */
+@media(max-width:1000px) and (max-height:520px) and (orientation:landscape){
+  .bar{flex-wrap:nowrap;padding:7px var(--gut)}
+  .brand .sub{display:none}
+  /* wrap, never scroll: a rail that scrolls is a rail whose last control nobody knows about. The 860px block
+     above sets flex:none on the children, so without the shrink rule the picker spills over the two icon buttons. */
+  .pills{order:0;flex:1 1 auto;flex-wrap:wrap;overflow-x:visible;padding-bottom:0;row-gap:6px}
+  .pills>select.exp{flex:1 1 150px;min-width:0;max-width:260px}
+  .iconbtn{min-width:38px;height:38px}
+  .hero{margin:12px 0 12px}
 }
 
 /* the page opts into viewport-fit=cover, so in landscape the gutters must clear the sensor housing and the bottom
@@ -607,6 +644,12 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
 
+  <div class="sec"><h2>净值对比</h2><span class="note" id="cmpnote"></span></div>
+  <div class="card pad cmpwrap">
+    <svg class="cmp" id="cmpchart" role="img" aria-label="十个 Agent 的净值对比曲线"></svg>
+    <div class="cmplegend" id="cmplegend" role="group" aria-label="选择要显示的 Agent"></div>
+  </div>
+
   <div class="cols" style="margin-top:34px">
     <div>
       <div class="sec" style="margin-top:0"><h2>交易记录</h2>
@@ -653,7 +696,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":60,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":30,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -931,6 +974,14 @@ const I18N = {
     "当日收益相同，名次由 tie-break 决定": "same daily return; the rank comes from the tie-break",
     "读不到故障记录": "Cannot read the fault log",
     "无法判断": "cannot tell",
+    "净值对比": "Equity compared", "无数据": "no data", "已隐藏": "hidden",
+    "这个资金槽还没有可画的净值点：不画线，也不画成 0": "this slot has no equity points to draw yet: no line, and never a line at zero",
+    "个槽无净值点，未画线": "slots have no equity points and are not drawn",
+    "纵轴按数据缩放，不从 0 开始": "the y axis is scaled to the data and does not start at zero",
+    "最后一点为实时净值（未冻结）": "the last point of each line is live equity (not frozen)",
+    "已隐藏全部 Agent": "every agent is hidden", "还没有可画的净值点": "no equity points to draw yet",
+    "十个 Agent 的净值对比曲线": "equity of the ten agents compared",
+    "选择要显示的 Agent": "choose which agents to show",
     "左右滑动查看全部 Agent": "scroll sideways for every agent",
     "· 十个隔离虚拟子账本（每槽 $10,000，合计 $100,000），不连接任何券商账户、不发出真实委托、不使用任何凭证。本页只读。":
       "· Ten isolated virtual sub-ledgers ($10,000 per slot, $100,000 in total). No brokerage account, no real orders, no credentials. This page is read-only.",
@@ -1083,6 +1134,7 @@ const STATE = { snap: null, exp: null, prices: {}, seenFills: new Set(), first: 
   tradeColor: false,       // opt-in whole-row tint per agent; off until the reader switches it on
   tickerAll: false,        // DEFAULT: only what the agents hold / traded today / traded recently, plus benchmarks.
                            // The full watchlist is one click away; with 40 names it is otherwise all noise.
+  cmpHide: new Set(),                              // which slots the reader has switched off in the comparison chart
   tape: { list: [], note: "", failed: false } };   // the last full result, so filtering needs no refetch
 try { STATE.exp = new URLSearchParams(location.search).get("experiment"); } catch (e) { }
 
@@ -1093,12 +1145,16 @@ try { STATE.exp = new URLSearchParams(location.search).get("experiment"); } catc
 const STATIC = (typeof window !== "undefined" && window.ARENA_STATIC) || null;
 const exq = (sep) => STATE.exp ? sep + "experiment=" + encodeURIComponent(STATE.exp) : "";
 const sexp = () => encodeURIComponent(STATE.exp || (STATIC && STATIC.default) || "");
+/* The static host answers with Cache-Control: max-age=600, so without a changing URL a poll can be served from an
+   edge copy up to ten minutes old. The bucket advances once per poll interval: each poll is a new cache key, and
+   two readers polling in the same window still share one edge fetch. */
+const bust = () => "?t=" + Math.floor(Date.now() / Math.max(15000, API.pollMs));
 const API = STATIC ? {
   live: false,
   pollMs: Math.max(15, STATIC.poll_s || 60) * 1000,
-  snapshot: () => `${STATIC.base}/${sexp()}/snapshot.json`,
-  trades: (day) => `${STATIC.base}/${sexp()}/trades/${encodeURIComponent(day)}.json`,
-  slot: (id) => `${STATIC.base}/${sexp()}/slots/${encodeURIComponent(id)}.json`,
+  snapshot: () => `${STATIC.base}/${sexp()}/snapshot.json${bust()}`,
+  trades: (day) => `${STATIC.base}/${sexp()}/trades/${encodeURIComponent(day)}.json${bust()}`,
+  slot: (id) => `${STATIC.base}/${sexp()}/slots/${encodeURIComponent(id)}.json${bust()}`,
 } : {
   live: true,
   pollMs: 2500,
@@ -1199,6 +1255,7 @@ function connect() {
       section("hero", () => renderHero(s));
       section("ticker", () => renderTicker(s, false));
       section("agents", () => renderAgents(s));
+      section("compare", () => renderCompare(s));
       section("footer", () => renderFooter(s));
       section("sheet", () => refreshSheet());
       renderFailNote();
@@ -1302,6 +1359,7 @@ function render(s, keepPrices) {
   section("hero", () => renderHero(s));
   section("ticker", () => renderTicker(s, keepPrices));
   section("agents", () => renderAgents(s));
+  section("compare", () => renderCompare(s));
   section("trades", () => renderTrades(s));
   section("rounds", () => renderRounds(s));
   section("footer", () => renderFooter(s));
@@ -1428,7 +1486,9 @@ function renderEmptyState(s) {
   $("sysDay").className = "chg num unk";
   $("sysTot").className = "chg num unk";
   $("sUnreal").style.color = "";
-  ["tradenote", "agnote", "tknote"].forEach(i => { const e = $(i); if (e) e.textContent = ""; });
+  ["tradenote", "agnote", "tknote", "cmpnote"].forEach(i => { const e = $(i); if (e) e.textContent = ""; });
+  const cc = $("cmpchart"); if (cc) { cc.innerHTML = ""; delete cc.dataset.sig; }
+  const cl = $("cmplegend"); if (cl) { cl.innerHTML = ""; delete cl.dataset.sig; }
   $("eqtag").textContent = "· " + UNK;
   $("ticker").innerHTML = "";
   STATE.prices = {};
@@ -2013,6 +2073,164 @@ function renderTape() {
   syncSwipeHint();
 }
 
+/* ============================================================ equity comparison
+   Ten slots, one chart: x is time, y is equity in dollars, one line per capital slot in the SAME colour the tape
+   uses for it. The filter is a chip per slot; the choice is a per-viewer convenience, remembered locally. */
+const CMP_KEY = "arena.cmpHide";
+function loadCmpPrefs() {
+  try {
+    const raw = localStorage.getItem(CMP_KEY);
+    if (raw) STATE.cmpHide = new Set(JSON.parse(raw).filter(x => typeof x === "string"));
+  } catch (e) { }
+}
+function saveCmpPrefs() {
+  try { localStorage.setItem(CMP_KEY, JSON.stringify([...STATE.cmpHide])); } catch (e) { }
+}
+
+function cmpSeries(s) {
+  const now = Date.parse(s.ts_ny || "");
+  return (s.slots || []).map(a => {
+    const pts = [];
+    (a.curve || []).forEach(p => {
+      const t = Array.isArray(p) ? Date.parse(p[0]) : NaN;
+      const v = Array.isArray(p) ? p[1] : null;
+      if (isNum(v) && !isNaN(t)) pts.push([t, v, p[0]]);   // the NY-local string is kept: the axis is labelled in ET
+    });
+    // the same last point the cards draw: live (unfrozen) equity, labelled as such in the note
+    if (isNum(a.live_equity_cents) && !isNaN(now) && (!pts.length || now > pts[pts.length - 1][0])) {
+      pts.push([now, a.live_equity_cents, s.ts_ny]);
+    }
+    return { id: a.slot_id, color: slotColor(a.slot_id), pts, rank: a.live_rank };
+  });
+}
+
+function renderCompare(s) {
+  const svg = $("cmpchart"), leg = $("cmplegend");
+  if (!svg || !leg) return;
+  const NS = "http://www.w3.org/2000/svg";
+  const all = cmpSeries(s);
+  const dead = all.filter(x => x.pts.length < 2);
+  const drawable = all.filter(x => x.pts.length >= 2);
+  const shown = drawable.filter(x => !STATE.cmpHide.has(x.id));
+
+  // --- legend first: it must list every slot, including the ones with nothing to draw
+  const lsig = all.map(x => x.id + (x.pts.length >= 2 ? "1" : "0") + (STATE.cmpHide.has(x.id) ? "h" : "s")).join(",") + "|" + LANG;
+  if (leg.dataset.sig !== lsig) {
+    leg.dataset.sig = lsig;
+    leg.innerHTML = "";
+    all.forEach(x => {
+      const has = x.pts.length >= 2;
+      const off = STATE.cmpHide.has(x.id);
+      const b = el("button", "cmpchip" + (!has ? " dead" : off ? " off" : ""));
+      b.type = "button";
+      b.innerHTML = `<i style="background:${has ? x.color : "var(--ink3)"}"></i><span>${esc(x.id)}</span>`;
+      if (!has) {
+        const u = el("span", "muted", tr("无数据"));
+        b.appendChild(u);
+        b.disabled = true;
+        b.title = tr("这个资金槽还没有可画的净值点：不画线，也不画成 0");
+      } else {
+        b.setAttribute("aria-pressed", String(!off));
+        b.addEventListener("click", () => {
+          if (STATE.cmpHide.has(x.id)) STATE.cmpHide.delete(x.id); else STATE.cmpHide.add(x.id);
+          saveCmpPrefs();
+          delete leg.dataset.sig; delete svg.dataset.sig;
+          renderCompare(STATE.snap || s);
+        });
+      }
+      leg.appendChild(b);
+    });
+    translateStatic(leg);
+  }
+
+  // --- the note carries what the chart cannot: what is left out, and what the axis does
+  const bits = [];
+  if (dead.length) bits.push(`${dead.length} ${tr("个槽无净值点，未画线")}`);
+  if (STATE.cmpHide.size) bits.push(`${tr("已隐藏")} ${STATE.cmpHide.size}`);
+  bits.push(tr("纵轴按数据缩放，不从 0 开始"));
+  bits.push(tr("最后一点为实时净值（未冻结）"));
+  $("cmpnote").textContent = bits.join(" · ");
+
+  const w = Math.max(240, svg.clientWidth || 600), h = svg.clientHeight || 280;
+  const PL = 54, PR = 10, PT = 10, PB = 22;                 // room for the $ axis on the left and the clock below
+  const sig = w + "x" + h + "|" + LANG + "|" + shown.map(x => x.id + ":" + x.pts.length + ":" + x.pts[x.pts.length - 1][1]).join(",");
+  if (svg.dataset.sig === sig) return;
+  svg.dataset.sig = sig;
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("preserveAspectRatio", "none");
+
+  if (!shown.length) {
+    const t = document.createElementNS(NS, "text");
+    t.setAttribute("x", String(w / 2)); t.setAttribute("y", String(h / 2)); t.setAttribute("text-anchor", "middle");
+    t.textContent = drawable.length ? tr("已隐藏全部 Agent") : tr("还没有可画的净值点");
+    svg.appendChild(t);
+    return;
+  }
+
+  let t0 = Infinity, t1 = -Infinity, lo = Infinity, hi = -Infinity;
+  shown.forEach(x => x.pts.forEach(([t, v]) => {
+    if (t < t0) t0 = t; if (t > t1) t1 = t; if (v < lo) lo = v; if (v > hi) hi = v;
+  }));
+  if (!(t1 > t0)) t1 = t0 + 1;
+  const pad = Math.max(1, (hi - lo) * 0.12) || 1;
+  const yLo = lo - pad, yHi = hi + pad;
+  const X = t => PL + (w - PL - PR) * (t - t0) / (t1 - t0);
+  const Y = v => PT + (h - PT - PB) * (1 - (v - yLo) / (yHi - yLo));
+
+  const line = (x1, y1, x2, y2) => {
+    const l = document.createElementNS(NS, "line");
+    l.setAttribute("x1", x1.toFixed(1)); l.setAttribute("y1", y1.toFixed(1));
+    l.setAttribute("x2", x2.toFixed(1)); l.setAttribute("y2", y2.toFixed(1));
+    l.setAttribute("class", "grid");
+    return l;
+  };
+  const label = (x, y, txt, anchor) => {
+    const t = document.createElementNS(NS, "text");
+    t.setAttribute("x", x.toFixed(1)); t.setAttribute("y", y.toFixed(1));
+    if (anchor) t.setAttribute("text-anchor", anchor);
+    t.textContent = txt;
+    return t;
+  };
+
+  for (let i = 0; i <= 3; i++) {
+    const v = yLo + (yHi - yLo) * i / 3, y = Y(v);
+    svg.appendChild(line(PL, y, w - PR, y));
+    svg.appendChild(label(PL - 7, y + 3.5, usd(Math.round(v), { cents: false }), "end"));
+  }
+  // the x labels come from the ORIGINAL New York strings, never from a Date round-trip, which would label in UTC
+  const stamps = [];
+  shown.forEach(x => x.pts.forEach(pt => stamps.push(pt)));
+  stamps.sort((a, b) => a[0] - b[0]);
+  const at = t => {
+    let best = stamps[0];
+    for (const pt of stamps) if (Math.abs(pt[0] - t) < Math.abs(best[0] - t)) best = pt;
+    if (!best) return "";
+    const m = String(best[2]).match(/T(\d{2}):(\d{2})/);      // an axis tick wants the minute, not the second
+    return m ? ampm(m[1], m[2]) : hhmm(best[2]);
+  };
+  [[t0, "start"], [(t0 + t1) / 2, "middle"], [t1, "end"]].forEach(([t, a]) => {
+    svg.appendChild(label(X(t), h - 6, at(t), a));
+  });
+
+  shown.forEach(x => {
+    const d = x.pts.map(([t, v], i) => `${i ? "L" : "M"}${X(t).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
+    const path = document.createElementNS(NS, "path");
+    path.setAttribute("d", d);
+    path.setAttribute("class", "ln");
+    path.setAttribute("stroke", x.color);
+    const ttl = document.createElementNS(NS, "title");
+    ttl.textContent = `${x.id} · ${usd(x.pts[x.pts.length - 1][1])}`;
+    path.appendChild(ttl);
+    svg.appendChild(path);
+    const last = x.pts[x.pts.length - 1];
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", X(last[0]).toFixed(1)); c.setAttribute("cy", Y(last[1]).toFixed(1));
+    c.setAttribute("r", "3"); c.setAttribute("fill", x.color); c.setAttribute("class", "dot");
+    svg.appendChild(c);
+  });
+}
+
 function renderRounds(s) {
   const box = $("rounds");
   const rs = s.rounds || [];
@@ -2327,6 +2545,7 @@ window.addEventListener("resize", () => {
   RAF_W = requestAnimationFrame(() => {
     RAF_W = 0;
     document.querySelectorAll(".spark").forEach(sp => { delete sp.dataset.sig; });
+    const cc = $("cmpchart"); if (cc) delete cc.dataset.sig;
     if (STATE.snap) render(STATE.snap, true);
   });
 }, { passive: true });
@@ -2335,6 +2554,7 @@ try { $("ticker").addEventListener("scroll", syncTickerHint, { passive: true });
 try { $("slotfilter").addEventListener("scroll", syncFilterHint, { passive: true }); } catch (e) { }
 
 loadTapePrefs();
+loadCmpPrefs();
 wireLangToggle();
 document.documentElement.lang = LANG === "en" ? "en" : "zh-CN";
 if (LANG === "en") { document.title = "Arena · Ten-Slot Live Arena"; }
