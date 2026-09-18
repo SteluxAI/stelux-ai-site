@@ -515,7 +515,15 @@ function ampm(hh, mm, ss) {
 }
 function hhmm(iso) { if (!iso) return "—"; const m = String(iso).match(/T(\d{2}):(\d{2}):(\d{2})/); return m ? ampm(m[1], m[2], m[3]) : String(iso).slice(0, 16); }
 function mdhm(iso) { if (!iso) return "—"; const m = String(iso).match(/(\d{2})-(\d{2})T(\d{2}):(\d{2})/); return m ? `${m[1]}-${m[2]} ${ampm(m[3], m[4])}` : String(iso).slice(0, 16); }
-function ago(s) { if (!isNum(s)) return UNK; if (s < 60) return Math.round(s) + " 秒前"; if (s < 3600) return Math.round(s / 60) + " 分钟前"; if (s < 86400) return Math.round(s / 3600) + " 小时前"; return Math.round(s / 86400) + " 天前"; }
+const AGO_UNITS = { zh: [" 秒前", " 分钟前", " 小时前", " 天前"], en: ["s ago", "m ago", "h ago", "d ago"] };
+function ago(s) {
+  if (!isNum(s)) return UNK;
+  const u = AGO_UNITS[LANG === "en" ? "en" : "zh"];
+  if (s < 60) return Math.round(s) + u[0];
+  if (s < 3600) return Math.round(s / 60) + u[1];
+  if (s < 86400) return Math.round(s / 3600) + u[2];
+  return Math.round(s / 86400) + u[3];
+}
 
 /* animated number: tween the DOM text between two values */
 const TWEEN = new WeakMap();
@@ -631,6 +639,7 @@ const I18N = {
     "语言": "Language", "切换语言": "Switch language",
     // ---- hero
     "全系统实时净值": "System live equity", "今日": "Today", "累计": "Total", "本金": "Principal",
+    "自建仓起": "Since inception",
     "现金": "Cash", "持仓市值": "Positions", "未实现": "Unrealised", "最大回撤": "Max drawdown",
     "今日成交": "Fills today", "活跃 / 持仓": "Active / holding", "实验": "Experiment",
     "排名口径": "Ranking metric", "规则": "Rules", "版本": "Versions", "轮次": "Rounds",
@@ -750,6 +759,61 @@ const I18N = {
     "记录到": "Recorded", "条故障": "fault(s)", "最近一条": "most recent",
     "这个实验的 runner 运行的是": "This experiment's runner is running",
     "较早版本的代码": "an older build of the code",
+    "已实现累计": "Realized (cumulative)",
+    "当前持仓": "Open positions",
+    "成交记录": "Fills",
+    "每日评分（账本冻结）": "Daily scores (frozen in the ledger)",
+    "最近决策（为什么买 / 不买）": "Recent decisions (why it did or did not buy)",
+    "资金槽任职史（淘汰不删除历史）": "Slot tenure history (a replacement never deletes history)",
+    "成本": "Cost",
+    "实时价": "Live price",
+    "市值": "Value",
+    "止损/目标": "Stop / target",
+    "价格": "Price",
+    "交易日": "Session",
+    "净值": "Equity",
+    "当日": "Day",
+    "可评分": "Scorable",
+    "类型": "Type",
+    "标的": "Symbol",
+    "动作": "Action",
+    "阻断原因": "Blocked by",
+    "激活": "Activated",
+    "退役": "Retired",
+    "起点净值": "Equity at start",
+    "退役净值": "Equity at retirement",
+    "原因": "Reason",
+    "任内日数": "Sessions in tenure",
+    "在任": "in office",
+    "是": "yes",
+    "否": "no",
+    "暂无成交": "No fills yet",
+    "加载中…": "Loading…",
+    "（无差异）": "(no differences)",
+    "读不到成交记录": "Could not read the fills",
+    "这不表示当天没有成交，只表示这次没读到；请重选交易日重试": "That does not mean there were no fills that day, only that this read failed - pick the day again to retry",
+    "还没有成交": "No fills yet",
+    "常规盘 09:45–15:30 才会评估入场；空仓与不交易都是合法状态": "Entries are only evaluated in the regular session, 09:45-15:30; holding cash and not trading are both legal states",
+    "本环境还没有竞技场实验": "This environment has no arena experiment yet",
+    "创建：": "Create: ",
+    "：不再提交新入场；出场、估值与对账继续。": ": no new entry is submitted; exits, valuation and reconciliation continue.",
+    "：每日仍评分，但不替换任何策略。": ": slots are still scored every day, but no strategy is replaced.",
+    "：这是历史回放/合成数据实验，": ": this is a replay / synthetic-data experiment, ",
+    "不是实时 Paper 盈亏": "not live paper P&L",
+    "。要看实时数据请在右上角选择": ". For live data, pick a ",
+    "实验。": " experiment in the top right.",
+    "：arena.sqlite 的 events 表这次没读到，所以": ": the events table in arena.sqlite could not be read this time, so there is ",
+    "有没有故障——这不等于没有故障。": "whether there were faults - which is not the same as there being none.",
+    "，不会写入逐槽故障计数：页面上的「无故障」只代表": ", which writes no per-slot fault counters: \"no faults\" on this page only means ",
+    "，槽级状态显示为未知。": ", and per-slot status reads as unknown.",
+    "：心跳时间戳比本机时钟还新，说明本机时钟刚被调整过。在下一次心跳到达前，无法判断引擎是否还在运行；账本可能已经停止更新。": ": the heartbeat is stamped later than this machine's clock, so the clock was just adjusted. Until the next heartbeat arrives there is no way to tell whether the engine is still running, and the ledger may have stopped.",
+    "读不到这个实验（配置或 arena.sqlite 打不开）": "Could not read this experiment (its config or arena.sqlite would not open)",
+    "读不到这个实验的资金槽名册（arena.sqlite 可能损坏）": "Could not read this experiment's slot registry (arena.sqlite may be damaged)",
+    "读不到这个资金槽的账本文件（缺失或损坏）——这不表示它没有交易过": "Could not read this slot's ledger file (missing or damaged) - that does not mean it never traded",
+    "资金槽编号不合法": "Invalid slot id",
+    "读不到这个实验": "Could not read this experiment",
+    "加载失败": "Load failed",
+    "上次读取": "the last read",
   },
 };
 const I18N_ATTRS = ["title", "aria-label", "placeholder"];
@@ -899,6 +963,7 @@ function connect() {
       section("chips", () => renderChips(STATE.snap));     // runner/feed age must not freeze on a tick
       section("footer", () => renderFooter(STATE.snap));
       renderFailNote();
+      translateStatic();               // banners and chips are re-rendered here, so they need the pass too
     } catch (e) { console.error(e); }
   });
   // only prices moved: the server sends the quotes plus every live_* field instead of the whole board
@@ -927,6 +992,7 @@ function connect() {
       section("footer", () => renderFooter(s));
       section("sheet", () => refreshSheet());
       renderFailNote();
+      translateStatic();               // a quote frame rebuilds the cards, so it needs the pass as much as render()
     } catch (e) { console.error(e); }
   });
   es.addEventListener("error", () => { setConn(false, tr("重连中")); if (Date.now() - STATE.lastOk > 8000) startPolling(); });
@@ -1769,14 +1835,14 @@ async function loadSheet(slotId, silent) {
   if (!silent) {
     const w = $("shStale"); if (w) { w.style.display = "none"; w.textContent = ""; }   // it described the PREVIOUS slot
     $("shTitle").textContent = slotId;
-    $("shSub").textContent = "加载中…";
+    $("shSub").textContent = tr("加载中…");
     delete $("shSub").dataset.at;
     $("shBody").innerHTML = `<div class="box skel" style="height:120px"></div><div class="box skel" style="height:220px"></div>`;
   }
   try {
     const r = await fetch(API.slot(slotId), { cache: "no-store" });
     const d = await r.json();
-    if (!d.ok) throw new Error(REASON_ZH[d.reason] || d.reason || "unavailable");
+    if (!d.ok) throw new Error(tr(REASON_ZH[d.reason] || "") || d.reason || "unavailable");
     if (STATE.openSlot !== slotId || seq !== SHEET_SEQ) return;   // superseded: the user moved on, or a newer reply already painted
     const box = $("sheet"), keep = box.scrollTop;
     renderSheet(d, fetched);
@@ -1784,10 +1850,19 @@ async function loadSheet(slotId, silent) {
     if (silent) box.scrollTop = keep;                        // a background refresh must not jump the reader
   } catch (e) {
     if (seq !== SHEET_SEQ || STATE.openSlot !== slotId) return;
-    if (!silent) { $("shBody").innerHTML = `<div class="box">加载失败：${esc(e.message)}</div>`; return; }
+    if (!silent) {
+      $("shBody").innerHTML = `<div class="box">${tr("加载失败")}：${esc(e.message)}</div>`;
+      return;
+    }
     // a silent refresh that fails must SAY so: otherwise the sheet sits frozen under the heading 实时净值
     const w = $("shStale");
-    if (w) { w.textContent = `⚠️ 刷新失败（${e.message}）：下面的数字停在 ${$("shSub").dataset.at || "上次读取"}，不是当前值`; w.style.display = ""; }
+    if (w) {
+      const at = $("shSub").dataset.at || tr("上次读取");
+      w.textContent = LANG === "en"
+        ? `⚠️ Refresh failed (${e.message}): the numbers below stop at ${at} and are not current`
+        : `⚠️ 刷新失败（${e.message}）：下面的数字停在 ${at}，不是当前值`;
+      w.style.display = "";
+    }
   }
 }
 function openSheet(slotId) {
@@ -1802,7 +1877,10 @@ function markSheetStale(s) {
   if (!STATE.openSlot) return;
   const w = $("shStale");
   if (!w) return;
-  w.textContent = `⚠️ ${REASON_ZH[s.reason] || "读不到这个实验"}：下面的数字停在 ${$("shSub").dataset.at || "上次读取"}，不是当前值`;
+  const why = tr(REASON_ZH[s.reason] || "读不到这个实验"), at = $("shSub").dataset.at || tr("上次读取");
+  w.textContent = LANG === "en"
+    ? `⚠️ ${why}: the numbers below stop at ${at} and are not current`
+    : `⚠️ ${why}：下面的数字停在 ${at}，不是当前值`;
   w.style.display = "";
 }
 
@@ -1828,7 +1906,7 @@ function renderSheet(d, fetched) {
   // the response's own server timestamp, else when this reply landed here -- never the paint-time clock
   const at = (d.ts_ny ? String(d.ts_ny).slice(11, 19) : (fetched instanceof Date ? fetched.toTimeString().slice(0, 8) : null));
   $("shSub").dataset.at = at || "";
-  $("shSub").textContent = `${a.version_id || ""}${at ? " · 数据截至 " + at + " ET" : ""}`;
+  $("shSub").textContent = `${a.version_id || ""}${at ? (LANG === "en" ? " · data as of " : " · 数据截至 ") + at + " ET" : ""}`;
   const w = $("shStale"); if (w) { w.style.display = "none"; w.textContent = ""; }
   const kv = (k, v) => `<dt>${esc(k)}</dt><dd>${v}</dd>`;
   const curve = curveVals(d.curve);
@@ -1861,7 +1939,7 @@ function renderSheet(d, fetched) {
     <div class="box">
       <h3>策略版本</h3>
       <div class="instr">${esc(a.instruction || "—")}</div>
-      ${a.hypothesis ? `<div class="instr" style="margin-top:8px;color:var(--ink3)">假设：${esc(a.hypothesis)}</div>` : ""}
+      ${a.hypothesis ? `<div class="instr" style="margin-top:8px;color:var(--ink3)">${LANG === "en" ? "Hypothesis: " : "假设："}${esc(a.hypothesis)}</div>` : ""}
       <div class="parm">${Object.entries(params).map(([k, v]) => `<span class="${diff && diff[k] ? "diff" : ""}">${esc(k)}=${esc(Array.isArray(v) ? v.join("/") : v)}</span>`).join("")}</div>
       ${Object.keys(diff || {}).length ? `<div class="instr" style="margin-top:9px">相对父代变异：${Object.entries(diff).map(([k, v]) => `<b>${esc(k)}</b> ${esc(v.from)} → ${esc(v.to)}`).join(" · ")}</div>` : ""}
       <dl class="kv" style="margin-top:12px">
@@ -1892,7 +1970,7 @@ function renderSheet(d, fetched) {
       <tbody>${d.daily_scores.slice(0, 14).map(r => `<tr><td class="num">${esc(r.trading_day)}</td><td class="num">${usd(r.equity_cents)}</td>
         <td class="num" style="color:${isNum(r.day_return_bp) ? (r.day_return_bp > 0 ? cssVar("--green") : r.day_return_bp < 0 ? cssVar("--red") : "") : ""}">${bpPct(r.day_return_bp)}</td>
         <td class="num">${bpPct(r.cum_return_bp)}</td><td class="num">${bpPct(r.tenure_return_bp)}</td>
-        <td class="muted">${r.scorable ? "是" : esc(r.unscorable_reason || "否")}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+        <td class="muted">${r.scorable ? tr("是") : esc(r.unscorable_reason || tr("否"))}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 
     ${(d.decisions || []).length ? `<div class="box"><h3>最近决策（为什么买 / 不买）</h3><div class="tw"><table>
       <thead><tr><th>时间</th><th>类型</th><th>标的</th><th>动作</th><th>阻断原因</th></tr></thead>
@@ -1903,11 +1981,12 @@ function renderSheet(d, fetched) {
     ${(d.activations || []).length > 1 ? `<div class="box"><h3>资金槽任职史（淘汰不删除历史）</h3><div class="tw"><table>
       <thead><tr><th>版本</th><th>激活</th><th>退役</th><th>起点净值</th><th>退役净值</th><th>原因</th></tr></thead>
       <tbody>${d.activations.map(x => `<tr><td style="font-family:var(--mono);font-size:11px">${esc(x.version_id)}</td>
-        <td class="num">${esc(mdhm(x.activation_ny))}</td><td class="num">${x.retirement_ny ? esc(mdhm(x.retirement_ny)) : "在任"}</td>
+        <td class="num">${esc(mdhm(x.activation_ny))}</td><td class="num">${x.retirement_ny ? esc(mdhm(x.retirement_ny)) : tr("在任")}</td>
         <td class="num">${usd(x.start_equity_cents)}</td><td class="num">${usd(x.end_equity_cents)}</td>
         <td class="muted" style="white-space:normal;max-width:200px">${esc(x.retirement_reason || "")}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
   `;
   spark($("shSpark"), curve, curve.length > 1 && curve[curve.length - 1] >= curve[0] ? cssVar("--green") : cssVar("--red"));
+  translateStatic($("sheet"));          // the drawer is not part of render(), so it needs its own pass
 }
 
 /* ============================================================ go */
