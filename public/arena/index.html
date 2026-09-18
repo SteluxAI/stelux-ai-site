@@ -2807,11 +2807,18 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
        order of what it is worth - the session's own open and close before the ends of the range - and one whose
        box would hit an already-placed one is dropped. On a wide chart all four still fit. */
     const ny = str => { const q = String(str).match(/T(\d{2}):(\d{2})/); return q ? ampm(q[1], q[2]) : ""; };
-    const cand = [{ t: sess.open, a: "middle", str: sess.str.open, rank: 0 },
-                  { t: sess.close, a: "middle", str: sess.str.close, rank: 1 },
-                  { t: x1, a: "end", str: x1str, rank: 2 },
-                  { t: x0, a: "start", str: x0str, rank: 3 }]
+    const cand = [{ t: sess.open, str: sess.str.open, rank: 0 },
+                  { t: sess.close, str: sess.str.close, rank: 1 },
+                  { t: x1, str: x1str, rank: 2 },
+                  { t: x0, str: x0str, rank: 3 }]
       .filter(c => c.t >= x0 && c.t <= x1);
+    // An anchor belongs to where a tick LANDS, not to what it means. In 当前时段 the axis starts at the open, and
+    // centring 09:30 there pushed it half its width into the price axis: "9:30 AM" ran from x 38.8 while "$9,973"
+    // ended at 50.2. The zoomed ladder already anchored by position; the boundary ticks now do too.
+    cand.forEach(c => {
+      const px = X(c.t);
+      c.a = px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle";
+    });
     const probe = mk("text", { x: 0, y: -60 });
     svg.appendChild(probe);
     const taken = [];
