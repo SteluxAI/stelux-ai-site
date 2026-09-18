@@ -1071,7 +1071,11 @@ const I18N = {
     "选择时间范围": "choose a time range", "起始日": "from", "结束日": "to",
     "最近 7 个交易日": "last 7 sessions", "最近 30 个交易日": "last 30 sessions", "自定义": "custom",
     "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
-    "今日全时段": "Today (all sessions)", "最近 8 小时": "Last 8 hours", "最近 24 小时": "Last 24 hours",
+    "当前时段": "Current session", "今日全时段": "Today (all sessions)",
+    "已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后":
+      "fitted to the session running now (after the close that is the regular session plus its after-hours tail); "
+      + "pick Today (all sessions) to see pre-market through after-hours",
+    "最近 8 小时": "Last 8 hours", "最近 24 小时": "Last 24 hours",
     "今日 = 盘前 04:00 起，含盘前、常规盘、盘后": "today starts at the 04:00 ET pre-market open and covers pre, regular and post",
     "净值曲线": "equity curve", "每": "one point every", "分钟一个点": "minutes",
     "尚无已冻结的日收盘，图上只有今日的实时点": "no daily close has been frozen yet: what is plotted is today's live point",
@@ -1234,7 +1238,8 @@ const STATE = { snap: null, exp: null, prices: {}, seenFills: new Set(), first: 
   tickerAll: false,        // DEFAULT: only what the agents hold / traded today / traded recently, plus benchmarks.
                            // The full watchlist is one click away; with 40 names it is otherwise all noise.
   cmpHide: new Set(),                              // which slots the reader has switched off in the comparison chart
-  cmpRange: "today", cmpFrom: null, cmpTo: null,   // the chart's time range (今日 / 7d / 30d / all / custom)
+  // fitted to the session running right now by default; 今日全时段 and the rest are one pick away
+  cmpRange: "session", cmpFrom: null, cmpTo: null,
   tape: { list: [], note: "", failed: false } };   // the last full result, so filtering needs no refetch
 try { STATE.exp = new URLSearchParams(location.search).get("experiment"); } catch (e) { }
 
@@ -2225,10 +2230,23 @@ function saveCmpPrefs() {
 
 /* Ranges. 今日 draws the intraday curve (a point a minute); everything longer draws the FROZEN daily closes, which
    is a different statement about the same slot, so the note says which one is on screen. */
-const CMP_RANGES = ["today", "8h", "24h", "7d", "30d", "all", "custom"];
-const CMP_RANGE_ZH = { today: "今日全时段", "8h": "最近 8 小时", "24h": "最近 24 小时",
+const CMP_RANGES = ["session", "today", "8h", "24h", "7d", "30d", "all", "custom"];
+const CMP_RANGE_ZH = { session: "当前时段", today: "今日全时段", "8h": "最近 8 小时", "24h": "最近 24 小时",
                        "7d": "最近 7 个交易日", "30d": "最近 30 个交易日", all: "全部交易日", custom: "自定义" };
-const CMP_INTRADAY = { today: 1, "8h": 1, "24h": 1 };     // drawn from the minute series, not the frozen closes
+const CMP_INTRADAY = { session: 1, today: 1, "8h": 1, "24h": 1 };   // the minute series, not the frozen closes
+
+/* The session the market is in right now, as a window to fit the chart to. Outside trading hours there is nothing
+   to fit, so it falls back to the last session that can hold data today - an empty chart is worse than a wide one. */
+function cmpActiveWindow(s, sess) {
+  if (!sess) return null;
+  const nowMs = Date.parse((s.market && s.market.clock_ny) || s.ts_ny || "");
+  const t = isNaN(nowMs) ? sess.extClose : nowMs;
+  if (t < sess.open) return { a: sess.extOpen, b: sess.open, aStr: sess.str.extOpen, bStr: sess.str.open };
+  if (t <= sess.close) return { a: sess.open, b: sess.close, aStr: sess.str.open, bStr: sess.str.close };
+  // After the close, "the current session" on its own is a few minutes of after-hours and an almost empty chart.
+  // What a reader wants at 16:07 is the session that just ended plus its tail, so the window is regular + post.
+  return { a: sess.open, b: sess.extClose, aStr: sess.str.open, bStr: sess.str.extClose };
+}
 
 function cmpDayList(s) {
   const days = new Set();
@@ -2282,6 +2300,7 @@ function cmpSeries(s, mode, axis) {
   // 今日 is the whole trading DAY - pre, regular and post - and the hour windows are counted back from the
   // newest point the data has, not from the reader's own clock, which may not be in New York at all
   const sess = cmpSessions(s);
+  const win2 = STATE.cmpRange === "session" ? cmpActiveWindow(s, sess) : null;
   const hours = STATE.cmpRange === "8h" ? 8 : STATE.cmpRange === "24h" ? 24 : 0;
   let newest = 0;
   if (hours) {
@@ -2300,7 +2319,11 @@ function cmpSeries(s, mode, axis) {
         const v = Array.isArray(p) ? p[1] : null;
         if (!isNum(v) || isNaN(t)) return;
         if (hours) { if (t < from) return; }
-        else if (today) {
+        else if (win2) {
+          // the session running right now: its own boundaries, so the part of the day where things happen fills
+          // the chart instead of sitting squeezed between two empty wings
+          if (t < win2.a || t > win2.b) return;
+        } else if (today) {
           // 今日 = the three sessions a reader means by it: pre, regular, post. What comes before the venue's own
           // pre-market open is the overnight hold, where nothing can execute - hours of flat line on the left.
           if (String(p[0]).slice(0, 10) !== today) return;
@@ -2474,6 +2497,7 @@ function renderCompare(s) {
       // a line drawn at one point every few minutes must not imply it has every minute
       full.push(step > 1 ? `${tr("净值曲线")} · ${tr("每")} ${step} ${tr("分钟一个点")}` : tr("今日分钟级净值"));
       if (STATE.cmpRange === "today") full.push(tr("今日 = 盘前 04:00 起，含盘前、常规盘、盘后"));
+      if (STATE.cmpRange === "session") full.push(tr("已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后"));
     } else {
       full.push(tr("每日收盘冻结净值"));
     }
@@ -2524,10 +2548,13 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     if (x < x0) x0 = x; if (x > x1) x1 = x; if (v < lo) lo = v; if (v > hi) hi = v;
   }));
   if (!(x1 > x0)) { x0 -= 0.5; x1 += 0.5; }
-  // 今日 spans the whole day the venue trades, not just the part that has happened: a line that grows across a
-  // fixed day is readable, one whose axis re-scales every minute is not
+  // A fixed window beats one that re-scales every minute, so both of these come from the calendar, not the data:
+  // 今日 is the whole day the venue trades, 当前时段 is just the session running right now.
   const wholeDay = sess && STATE.cmpRange === "today";
-  if (wholeDay) { x0 = sess.extOpen; x1 = sess.extClose; }
+  const active = STATE.cmpRange === "session" ? cmpActiveWindow(STATE.snap || {}, sess) : null;
+  let x0str = null, x1str = null;
+  if (wholeDay) { x0 = sess.extOpen; x1 = sess.extClose; x0str = sess.str.extOpen; x1str = sess.str.extClose; }
+  else if (active) { x0 = active.a; x1 = active.b; x0str = active.aStr; x1str = active.bStr; }
 
   // the baseline: the principal every slot started from. The domain is symmetric around it, so the same money is
   // the same distance up or down and a loss cannot be made to look smaller than an equal gain.
@@ -2603,8 +2630,8 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     // ticks on the session boundaries - 07:00 / 09:30 / 16:00 / 20:00 says more than three evenly spaced clock
     // times - formatted from the server's own New York strings, never from a Date the reader's timezone reinterprets
     const ny = str => { const q = String(str).match(/T(\d{2}):(\d{2})/); return q ? ampm(q[1], q[2]) : ""; };
-    const marks = [[x0, "start", wholeDay ? sess.str.extOpen : null], [sess.open, "middle", sess.str.open],
-                   [sess.close, "middle", sess.str.close], [x1, "end", wholeDay ? sess.str.extClose : null]]
+    const marks = [[x0, "start", x0str], [sess.open, "middle", sess.str.open],
+                   [sess.close, "middle", sess.str.close], [x1, "end", x1str]]
       .filter(([t]) => t >= x0 && t <= x1);
     let lastX = -1e9;
     marks.forEach(([t, a, str], i) => {
