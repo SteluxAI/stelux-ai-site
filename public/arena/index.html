@@ -389,6 +389,10 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmptip .tipb{min-width:52px;text-align:right}
 .cmptip .up{color:var(--green-ink)} .cmptip .dn{color:var(--red-ink)} .cmptip .flat{color:var(--ink3)}
 .cmpwhy{width:26px;height:26px;border-radius:999px;font-size:13px;color:var(--ink3)}
+.cmpzoom{display:inline-flex;gap:4px}
+.cmpzoom .grpbtn{width:28px;height:26px;padding:0;font-size:14px;line-height:1;display:grid;place-items:center}
+.cmpzoom .grpbtn[disabled]{opacity:.4;cursor:default}
+.cmp.panning{cursor:grabbing}
 .cmplegend{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 0}
 .cmpchip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;border:0;
   background:var(--hair2);color:var(--ink2);font-size:var(--fs-meta);font-weight:500;white-space:nowrap;cursor:pointer;
@@ -709,6 +713,11 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
       <input type="date" id="cmpfrom" aria-label="起始日"><span class="muted">→</span><input type="date" id="cmpto" aria-label="结束日">
     </span>
     <span class="note" id="cmpnote"></span>
+    <span class="cmpzoom" id="cmpzoom" role="group" aria-label="缩放时间轴">
+      <button class="grpbtn" id="cmpzout" type="button" title="缩小时间轴" aria-label="缩小时间轴">−</button>
+      <button class="grpbtn" id="cmpzin" type="button" title="放大时间轴" aria-label="放大时间轴">+</button>
+      <button class="grpbtn" id="cmpzreset" type="button" title="回到整段" aria-label="回到整段">⟲</button>
+    </span>
     <button class="iconbtn cmpwhy" id="cmpwhy" type="button" aria-expanded="false" title="口径说明" aria-label="口径说明">ⓘ</button>
     <div class="hint" id="cmpnotefull" style="display:none;flex:1 0 100%;margin-top:2px"></div>
   </div>
@@ -1072,6 +1081,11 @@ const I18N = {
     "最近 7 个交易日": "last 7 sessions", "最近 30 个交易日": "last 30 sessions", "自定义": "custom",
     "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
     "当前时段": "Current session", "今日全时段": "Today (all sessions)",
+    "已放大 · 纵轴按可见区间": "zoomed · y axis fits what is visible",
+    "缩放时间轴": "zoom the time axis", "放大时间轴": "zoom in", "缩小时间轴": "zoom out", "回到整段": "back to the whole range",
+    "已放大：纵轴改为按可见区间缩放（本金基准线可能不在图内）；⟲ 回到整段":
+      "zoomed in, so the y axis fits the visible values instead of centring on the principal, which can leave the "
+      + "baseline off the chart; ⟲ goes back to the whole range",
     "已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后":
       "fitted to the session running now (after the close that is the regular session plus its after-hours tail); "
       + "pick Today (all sessions) to see pre-market through after-hours",
@@ -1240,6 +1254,7 @@ const STATE = { snap: null, exp: null, prices: {}, seenFills: new Set(), first: 
   cmpHide: new Set(),                              // which slots the reader has switched off in the comparison chart
   // fitted to the session running right now by default; 今日全时段 and the rest are one pick away
   cmpRange: "session", cmpFrom: null, cmpTo: null,
+  cmpZoom: null,        // {a,b} in ms: a VIEWPORT over the range, not a change to the data. Transient by design.
   tape: { list: [], note: "", failed: false } };   // the last full result, so filtering needs no refetch
 try { STATE.exp = new URLSearchParams(location.search).get("experiment"); } catch (e) { }
 
@@ -2364,6 +2379,7 @@ function wireCmpControls() {
       sel.dataset.wired = "1";
       sel.addEventListener("change", () => {
         STATE.cmpRange = CMP_RANGES.includes(sel.value) ? sel.value : "today";
+        STATE.cmpZoom = null;              // a viewport measured on another range means nothing on this one
         saveCmpPrefs();
         cmpInvalidate();
         renderCompare(STATE.snap);
@@ -2382,6 +2398,15 @@ function wireCmpControls() {
       renderCompare(STATE.snap);
     });
   });
+  const zin = $("cmpzin"), zout = $("cmpzout"), zres = $("cmpzreset");
+  if (zin && !zin.dataset.wired) {
+    zin.dataset.wired = "1";
+    zin.addEventListener("click", () => cmpZoomBy(1 / 1.6));
+    zout.addEventListener("click", () => cmpZoomBy(1.6));
+    zres.addEventListener("click", cmpZoomReset);
+  }
+  const zr = $("cmpzreset");
+  if (zr) zr.disabled = !STATE.cmpZoom;
   const why = $("cmpwhy");
   if (why && !why.dataset.wired) {
     why.dataset.wired = "1";
@@ -2393,9 +2418,51 @@ function wireCmpControls() {
     });
   }
 }
+/* New York wall-clock offset, taken from the day's own timestamps: a tick aligned in the reader's timezone would
+   be aligned to the wrong hour, and a Date round-trip would relabel a New York chart wherever the reader is. */
+function cmpNyOffsetMs(s) {
+  const src = (s.market && s.market.clock_ny) || s.ts_ny || "";
+  const m = String(src).match(/([+-])(\d{2}):(\d{2})$/);
+  if (!m) return 0;
+  const sign = m[1] === "-" ? -1 : 1;
+  return sign * (parseInt(m[2], 10) * 3600e3 + parseInt(m[3], 10) * 60e3);
+}
+
+const CMP_TICK_MIN = [1, 2, 5, 10, 15, 30, 60, 120, 240];
+
+function cmpZoomSet(a, b) {
+  if (!CMP || !(b > a)) return;
+  const full = CMP.range, span = b - a, MIN = 60e3;            // a minute is as far in as the data can justify
+  if (span < MIN) return;
+  let lo = a, hi = b;
+  if (hi - lo >= full.b - full.a) { STATE.cmpZoom = null; }    // zoomed all the way out IS "no viewport"
+  else {
+    if (lo < full.a) { hi += full.a - lo; lo = full.a; }
+    if (hi > full.b) { lo -= hi - full.b; hi = full.b; }
+    STATE.cmpZoom = { a: Math.max(full.a, lo), b: Math.min(full.b, hi) };
+  }
+  cmpInvalidate();
+  renderCompare(STATE.snap);
+}
+
+function cmpZoomBy(factor, centreMs) {
+  if (!CMP) return;
+  const a = CMP.x0, b = CMP.x1, c = isNum(centreMs) ? centreMs : (a + b) / 2;
+  const span = (b - a) * factor;
+  const k = (c - a) / Math.max(1, b - a);
+  cmpZoomSet(c - span * k, c + span * (1 - k));
+}
+
+function cmpZoomReset() {
+  STATE.cmpZoom = null;
+  cmpInvalidate();
+  renderCompare(STATE.snap);
+}
+
 function cmpInvalidate() {
   const c = $("cmpchart"); if (c) delete c.dataset.sig;
   const l = $("cmplegend"); if (l) delete l.dataset.sig;
+  const nt = $("cmpnote"); if (nt) delete nt.dataset.sig;
 }
 
 function renderCompare(s) {
@@ -2488,7 +2555,9 @@ function renderCompare(s) {
   }
 
   // --- the note: one short line always on screen, the rest one tap away under ⓘ
-  const noteSig = [sig, dead.length, win.unreadable, win.absent, win.nFrozen, coincident.length].join("|");
+  // the zoom belongs in here too, or the note keeps claiming the whole range while the chart shows a slice of it
+  const noteSig = [sig, dead.length, win.unreadable, win.absent, win.nFrozen, coincident.length,
+                   STATE.cmpZoom ? STATE.cmpZoom.a + "-" + STATE.cmpZoom.b : "-"].join("|");
   if ($("cmpnote").dataset.sig !== noteSig) {
     $("cmpnote").dataset.sig = noteSig;
     const full = [];
@@ -2498,6 +2567,7 @@ function renderCompare(s) {
       full.push(step > 1 ? `${tr("净值曲线")} · ${tr("每")} ${step} ${tr("分钟一个点")}` : tr("今日分钟级净值"));
       if (STATE.cmpRange === "today") full.push(tr("今日 = 盘前 04:00 起，含盘前、常规盘、盘后"));
       if (STATE.cmpRange === "session") full.push(tr("已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后"));
+      if (STATE.cmpZoom) full.push(tr("已放大：纵轴改为按可见区间缩放（本金基准线可能不在图内）；⟲ 回到整段"));
     } else {
       full.push(tr("每日收盘冻结净值"));
     }
@@ -2511,7 +2581,9 @@ function renderCompare(s) {
     full.push(tr("最后一点为实时净值（未冻结）"));
     // the short line keeps the two things a reader could otherwise MISREAD: what the baseline is, and that some
     // lines are drawn apart despite being equal
-    const short = [tr(CMP_RANGE_ZH[STATE.cmpRange] || "今日全时段"), tr("基准线 = 本金")];
+    // zoomed, the axis no longer centres on the principal, so the short line must not keep promising that it does
+    const short = [tr(CMP_RANGE_ZH[STATE.cmpRange] || "今日全时段"),
+                   STATE.cmpZoom ? tr("已放大 · 纵轴按可见区间") : tr("基准线 = 本金")];
     if (coincident.length) short.push(`${coincident.reduce((a, g) => a + g.length, 0)} ${tr("个槽净值相同，已合并")}`);
     if (dead.length) short.push(`${dead.length} ${tr("无数据")}`);
     $("cmpnote").textContent = short.join(" · ");
@@ -2543,10 +2615,8 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     return;
   }
 
-  let x0 = Infinity, x1 = -Infinity, lo = Infinity, hi = -Infinity;
-  shown.forEach(s2 => s2.pts.forEach(([x, v]) => {
-    if (x < x0) x0 = x; if (x > x1) x1 = x; if (v < lo) lo = v; if (v > hi) hi = v;
-  }));
+  let x0 = Infinity, x1 = -Infinity;
+  shown.forEach(s2 => s2.pts.forEach(([x]) => { if (x < x0) x0 = x; if (x > x1) x1 = x; }));
   if (!(x1 > x0)) { x0 -= 0.5; x1 += 0.5; }
   // A fixed window beats one that re-scales every minute, so both of these come from the calendar, not the data:
   // 今日 is the whole day the venue trades, 当前时段 is just the session running right now.
@@ -2556,16 +2626,35 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   if (wholeDay) { x0 = sess.extOpen; x1 = sess.extClose; x0str = sess.str.extOpen; x1str = sess.str.extClose; }
   else if (active) { x0 = active.a; x1 = active.b; x0str = active.aStr; x1str = active.bStr; }
 
+  // the range is what the chart COULD show; the viewport is what it does. Zooming never touches the series.
+  const range = { a: x0, b: x1 };
+  const zoomed = !!(STATE.cmpZoom && STATE.cmpZoom.b > STATE.cmpZoom.a);
+  if (zoomed) {
+    x0 = Math.max(range.a, STATE.cmpZoom.a); x1 = Math.min(range.b, STATE.cmpZoom.b);
+    x0str = null; x1str = null;
+    if (!(x1 > x0)) { x0 = range.a; x1 = range.b; }
+  }
+
+  // the y domain follows the VIEWPORT, so zooming into a quiet stretch actually gains resolution - and it stays
+  // symmetric around the principal, so "above the line is profit" survives the zoom
+  let lo = Infinity, hi = -Infinity;
+  shown.forEach(s2 => s2.pts.forEach(([x, v]) => { if (x >= x0 && x <= x1) { if (v < lo) lo = v; if (v > hi) hi = v; } }));
+  if (!(hi >= lo)) { shown.forEach(s2 => s2.pts.forEach(([, v]) => { if (v < lo) lo = v; if (v > hi) hi = v; })); }
+
   // the baseline: the principal every slot started from. The domain is symmetric around it, so the same money is
   // the same distance up or down and a loss cannot be made to look smaller than an equal gain.
   const principals = [...new Set(shown.map(s2 => s2.principal).filter(isNum))];
   const base = principals.length === 1 ? principals[0] : null;
   let yLo, yHi;
-  if (base != null) {
+  if (base != null && !zoomed) {
+    // the overview's job is "who is above the line": symmetric around the principal, so the same money is the same
+    // distance up or down and a loss cannot be drawn smaller than an equal gain
     const half = Math.max(Math.abs(hi - base), Math.abs(lo - base)) * 1.2 || Math.max(1, base * 0.0005);
     yLo = base - half; yHi = base + half;
   } else {
-    const pad = Math.max(1, (hi - lo) * 0.12);
+    // zoomed in, the job is the SHAPE of the move: fit the visible values so the trend fills the chart. That can
+    // push the principal off the top or bottom, which the note says out loud.
+    const pad = Math.max(1, (hi - lo) * 0.14);
     yLo = lo - pad; yHi = hi + pad;
   }
 
@@ -2581,7 +2670,7 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     if (baseY != null && Math.abs(y - baseY) < 9) continue;
     svg.appendChild(label(PL - 8, y + 3.5, usd(Math.round(v), { cents: false }), "end"));
   }
-  if (base != null) {
+  if (base != null && base >= yLo && base <= yHi) {          // a baseline off the chart is not drawn at its edge
     svg.appendChild(mk("line", { x1: PL, y1: baseY.toFixed(1), x2: w - PR, y2: baseY.toFixed(1) }, "base"));
     svg.appendChild(label(PL - 8, baseY + 3.5, usd(base, { cents: false }), "end", "baselbl"));
   }
@@ -2626,7 +2715,25 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     return m ? ampm(m[1], m[2]) : hhmm(pt[2]);
   };
   const tickY = bands.length ? h - 20 : h - 7;
-  if (bands.length) {
+  if (zoomed && mode === "intraday") {
+    // zoomed in: a boundary tick is no longer enough, so step through New York wall-clock at a sensible interval
+    const off = cmpNyOffsetMs(STATE.snap || {});
+    const plot = Math.max(1, w - PL - PR);
+    const want = Math.max(3, Math.min(8, Math.round(plot / 120)));
+    const rough = (x1 - x0) / want / 60e3;
+    const stepMin = CMP_TICK_MIN.find(m2 => m2 >= rough) || CMP_TICK_MIN[CMP_TICK_MIN.length - 1];
+    const step = stepMin * 60e3;
+    const first = Math.ceil((x0 + off) / step) * step - off;
+    let lastX = -1e9;
+    for (let t = first; t <= x1; t += step) {
+      const px = X(t);
+      if (px - lastX < 44) continue;
+      lastX = px;
+      const d = new Date(t + off);                      // +off then UTC getters == New York wall clock, no guessing
+      const hh = String(d.getUTCHours()).padStart(2, "0"), mm2 = String(d.getUTCMinutes()).padStart(2, "0");
+      svg.appendChild(label(px, tickY, ampm(hh, mm2), px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle"));
+    }
+  } else if (bands.length) {
     // ticks on the session boundaries - 07:00 / 09:30 / 16:00 / 20:00 says more than three evenly spaced clock
     // times - formatted from the server's own New York strings, never from a Date the reader's timezone reinterprets
     const ny = str => { const q = String(str).match(/T(\d{2}):(\d{2})/); return q ? ampm(q[1], q[2]) : ""; };
@@ -2689,7 +2796,7 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   lines.forEach(l => cross.appendChild(mk("circle", { r: 3.4, fill: l.color, "data-slots": l.ids.join(" ") }, "cd")));
   svg.appendChild(cross);
 
-  CMP = { shown, X, Y, x0, x1, PL, PR, PT, PB, w, h, mode, base, cross, svg, stamps, xlabel, lines };
+  CMP = { shown, X, Y, x0, x1, PL, PR, PT, PB, w, h, mode, base, cross, svg, stamps, xlabel, lines, range, zoomed };
   wireCmpHover(svg);
 }
 
@@ -2793,6 +2900,21 @@ function cmpHoverOff() {
   if (tip) tip.style.display = "none";
 }
 
+/* pixels -> milliseconds in the current viewport: every gesture below is expressed in time, not in pixels, so
+   they all behave the same at any zoom level and any chart width */
+function cmpMsPerPx(svg) {
+  if (!CMP) return 0;
+  const r = svg.getBoundingClientRect();
+  const plotPx = Math.max(1, (CMP.w - CMP.PL - CMP.PR) * (r.width / Math.max(1, CMP.w)));
+  return (CMP.x1 - CMP.x0) / plotPx;
+}
+function cmpTimeAtClientX(svg, clientX) {
+  if (!CMP) return null;
+  const r = svg.getBoundingClientRect();
+  const px = (clientX - r.left) * (CMP.w / Math.max(1, r.width));
+  return CMP.x0 + (CMP.x1 - CMP.x0) * (px - CMP.PL) / Math.max(1, CMP.w - CMP.PL - CMP.PR);
+}
+
 function wireCmpHover(svg) {
   if (svg.dataset.hover) return;
   svg.dataset.hover = "1";
@@ -2802,10 +2924,67 @@ function wireCmpHover(svg) {
     if (raf) return;
     raf = requestAnimationFrame(() => { raf = 0; cmpHoverAt(lastX, lastY); });
   };
-  svg.addEventListener("pointermove", move, { passive: true });
-  svg.addEventListener("pointerdown", move, { passive: true });
-  svg.addEventListener("pointerleave", cmpHoverOff, { passive: true });
-  svg.addEventListener("pointercancel", cmpHoverOff, { passive: true });
+
+  // --- mouse: hover reads, drag pans
+  const pts = new Map();                      // live pointers, for the two-finger case
+  let panFrom = null, pinchFrom = null;
+  svg.addEventListener("pointerdown", ev => {
+    pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if (pts.size === 2) {                     // two fingers: pinch + pan, and the crosshair stands down
+      const [a, b] = [...pts.values()];
+      pinchFrom = { dist: Math.abs(a.x - b.x) || 1, mid: (a.x + b.x) / 2, x0: CMP && CMP.x0, x1: CMP && CMP.x1 };
+      cmpHoverOff();
+      return;
+    }
+    if (ev.pointerType === "mouse" && ev.button === 0) {
+      panFrom = { x: ev.clientX, x0: CMP && CMP.x0, x1: CMP && CMP.x1, moved: false };
+      try { svg.setPointerCapture(ev.pointerId); } catch (e) { }
+      return;
+    }
+    move(ev);                                 // one finger: the crosshair, as before
+  }, { passive: true });
+
+  svg.addEventListener("pointermove", ev => {
+    if (pts.has(ev.pointerId)) pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if (pinchFrom && pts.size === 2) {
+      const [a, b] = [...pts.values()];
+      const dist = Math.abs(a.x - b.x) || 1;
+      const span = (pinchFrom.x1 - pinchFrom.x0) * (pinchFrom.dist / dist);
+      const centre = cmpTimeAtClientX(svg, (a.x + b.x) / 2);
+      if (isNum(centre)) cmpZoomSet(centre - span / 2, centre + span / 2);
+      return;
+    }
+    if (panFrom && CMP) {
+      const dms = (ev.clientX - panFrom.x) * cmpMsPerPx(svg);
+      if (Math.abs(ev.clientX - panFrom.x) > 2) {
+        panFrom.moved = true;
+        svg.classList.add("panning");
+        cmpHoverOff();
+        cmpZoomSet(panFrom.x0 - dms, panFrom.x1 - dms);
+      }
+      return;
+    }
+    move(ev);
+  }, { passive: true });
+
+  const release = ev => {
+    pts.delete(ev.pointerId);
+    if (pts.size < 2) pinchFrom = null;
+    if (panFrom) { svg.classList.remove("panning"); panFrom = null; }
+  };
+  svg.addEventListener("pointerup", release, { passive: true });
+  svg.addEventListener("pointercancel", ev => { release(ev); cmpHoverOff(); }, { passive: true });
+  svg.addEventListener("pointerleave", ev => { release(ev); cmpHoverOff(); }, { passive: true });
+
+  // --- wheel zooms around the pointer. Not passive: it has to stop the page scrolling under the cursor, and it
+  //     only does so when it actually zoomed something.
+  svg.addEventListener("wheel", ev => {
+    if (!CMP) return;
+    const centre = cmpTimeAtClientX(svg, ev.clientX);
+    if (!isNum(centre)) return;
+    ev.preventDefault();
+    cmpZoomBy(ev.deltaY > 0 ? 1.25 : 1 / 1.25, centre);
+  }, { passive: false });
 }
 
 function renderRounds(s) {
