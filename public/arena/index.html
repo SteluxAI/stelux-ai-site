@@ -352,17 +352,44 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 
 /* ============================================================ equity comparison */
 .cmpwrap{position:relative}
-.cmp{display:block;width:100%;height:280px;touch-action:pan-y}
+.cmp{display:block;width:100%;height:300px;touch-action:pan-y;cursor:crosshair}
 .cmp text{font-size:11px;fill:var(--ink3);font-variant-numeric:tabular-nums}
-.cmp .grid{stroke:var(--hair2);stroke-width:1}
-.cmp .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
-.cmp .ln.dim{opacity:.16}
-.cmp .dot{stroke:var(--card-solid);stroke-width:1.5}
+.cmp .grid{stroke:var(--hair2);stroke-width:1;opacity:.7}
+.cmp .base{stroke:var(--ink3);stroke-width:1;stroke-dasharray:4 4;opacity:.8}
+.cmp .baselbl{fill:var(--ink2);font-weight:650}
+.cmp .ln{fill:none;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.cmp .dot{stroke:var(--card-solid);stroke-width:1.4}
+.cmp .xtag{font-size:10px;font-weight:700;opacity:.9}
+.cmp .ln{transition:opacity .18s var(--ease),stroke-width .18s var(--ease)}
+.cmp .ln.dim{opacity:.18}
+.cmp .ln.hot{stroke-width:2.6}
+.cmp .cross .cx{stroke:var(--ink3);stroke-width:1;stroke-dasharray:3 3;opacity:.8}
+.cmp .cross .cd{stroke:var(--card-solid);stroke-width:1.6}
+.cmpdates{display:inline-flex;align-items:center;gap:6px}
+.cmpdates input{height:28px;border-radius:999px;border:0;background:var(--hair2);color:var(--ink);
+  padding:0 10px;font:inherit;font-size:var(--fs-meta)}
+/* the readout: what every visible agent was worth at the crosshair, ranked */
+.cmptip{position:absolute;top:14px;z-index:3;pointer-events:none;min-width:168px;
+  background:var(--elev);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1px solid var(--hair);border-radius:var(--r-md);box-shadow:var(--shadow);padding:8px 10px}
+.cmptip .tiphead{font-size:var(--fs-note);color:var(--ink3);font-weight:600;margin-bottom:5px;
+  font-variant-numeric:tabular-nums}
+.cmptip .tiprow{display:flex;align-items:center;gap:6px;font-size:var(--fs-meta);line-height:1.65}
+.cmptip .tipn{width:13px;text-align:right;color:var(--ink3);font-size:var(--fs-chip);font-variant-numeric:tabular-nums}
+.cmptip .tiprow i{width:8px;height:8px;border-radius:2px;flex:none}
+.cmptip .tips{font-weight:650;letter-spacing:-.01em}
+.cmptip .tipv{margin-left:auto;font-weight:600}
+.cmptip .tipb{min-width:52px;text-align:right}
+.cmptip .up{color:var(--green-ink)} .cmptip .dn{color:var(--red-ink)} .cmptip .flat{color:var(--ink3)}
+.cmpwhy{width:26px;height:26px;border-radius:999px;font-size:13px;color:var(--ink3)}
 .cmplegend{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 0}
 .cmpchip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;border:0;
   background:var(--hair2);color:var(--ink2);font-size:var(--fs-meta);font-weight:500;white-space:nowrap;cursor:pointer;
   transition:background .25s var(--ease),color .25s var(--ease),transform .12s var(--ease)}
 .cmpchip i{width:9px;height:9px;border-radius:3px;flex:none;display:inline-block}
+.cmpchip b{font-weight:600;font-size:var(--fs-chip);letter-spacing:-.01em}
+.cmpchip b.up{color:var(--green-ink)} .cmpchip b.dn{color:var(--red-ink)} .cmpchip b.flat{color:var(--ink3)}
+.cmpchip.off b{color:var(--ink3)}
 .cmpchip.off{color:var(--ink3);background:transparent;box-shadow:inset 0 0 0 1px var(--hair)}
 .cmpchip.off i{opacity:.3}
 .cmpchip.dead{opacity:1;color:var(--ink3);background:transparent;box-shadow:inset 0 0 0 1px var(--hair);cursor:default}
@@ -509,9 +536,16 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   .tk .px{font-size:17px}
   .tk .ch{font-size:var(--fs-note)}
 
-  .cmp{height:220px}
+  .cmp{height:230px}
   .cmp text{font-size:12px}
   .cmpchip{height:34px;padding:0 11px}
+  /* ten rows at desktop metrics are taller than the chart itself on a phone: tighten them so the readout still
+     fits inside the plot instead of covering it and the legend */
+  .cmptip{min-width:0;padding:6px 8px;backdrop-filter:none;background:var(--card-solid)}
+  .cmptip .tiphead{margin-bottom:3px;font-size:11.5px}
+  .cmptip .tiprow{font-size:12px;line-height:1.42;gap:5px}
+  .cmptip .tipn{display:none}
+  .cmptip .tipb{min-width:44px}
 
   /* --- the drawer ----------------------------------------------------------------------------------------- */
   .shead{padding:14px 16px 12px}
@@ -648,9 +682,18 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
 
-  <div class="sec"><h2>净值对比</h2><span class="note" id="cmpnote"></span></div>
+  <div class="sec"><h2>净值对比</h2>
+    <select class="exp" id="cmprange" title="选择时间范围"></select>
+    <span class="cmpdates" id="cmpdates" style="display:none">
+      <input type="date" id="cmpfrom" aria-label="起始日"><span class="muted">→</span><input type="date" id="cmpto" aria-label="结束日">
+    </span>
+    <span class="note" id="cmpnote"></span>
+    <button class="iconbtn cmpwhy" id="cmpwhy" type="button" aria-expanded="false" title="口径说明" aria-label="口径说明">ⓘ</button>
+    <div class="hint" id="cmpnotefull" style="display:none;flex:1 0 100%;margin-top:2px"></div>
+  </div>
   <div class="card pad cmpwrap">
     <svg class="cmp" id="cmpchart" role="img" aria-label="十个 Agent 的净值对比曲线"></svg>
+    <div class="cmptip" id="cmptip" style="display:none"></div>
     <div class="cmplegend" id="cmplegend" role="group" aria-label="选择要显示的 Agent"></div>
   </div>
 
@@ -979,13 +1022,24 @@ const I18N = {
     "读不到故障记录": "Cannot read the fault log",
     "无法判断": "cannot tell",
     "净值对比": "Equity compared", "无数据": "no data", "已隐藏": "hidden",
-    "这个资金槽还没有可画的净值点：不画线，也不画成 0": "this slot has no equity points to draw yet: no line, and never a line at zero",
-    "个槽无净值点，未画线": "slots have no equity points and are not drawn",
-    "纵轴按数据缩放，不从 0 开始": "the y axis is scaled to the data and does not start at zero",
+    "这个资金槽在所选范围内没有可画的净值点：不画线，也不画成 0":
+      "this slot has no equity points in the chosen range: no line, and never a line at zero",
+    "个槽在此范围无净值点，未画线": "slots have no equity point in this range and are not drawn",
+    "基准线为本金，上方盈利、下方亏损": "the dashed baseline is the principal: above it is profit, below it is loss",
     "最后一点为实时净值（未冻结）": "the last point of each line is live equity (not frozen)",
-    "已隐藏全部 Agent": "every agent is hidden", "还没有可画的净值点": "no equity points to draw yet",
+    "所选范围内没有可画的净值点": "no equity points to draw in the chosen range",
     "十个 Agent 的净值对比曲线": "equity of the ten agents compared",
     "选择要显示的 Agent": "choose which agents to show",
+    "选择时间范围": "choose a time range", "起始日": "from", "结束日": "to",
+    "最近 7 个交易日": "last 7 sessions", "最近 30 个交易日": "last 30 sessions", "自定义": "custom",
+    "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
+    "尚无已冻结的日收盘，图上只有今日的实时点": "no daily close has been frozen yet: what is plotted is today's live point",
+    "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
+    "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
+    "日收盘": "daily closes", "基准线 = 本金": "baseline = principal",
+    "个槽净值相同，已合并": "slots share one equity (merged into one line)", "口径说明": "how to read this",
+    "净值完全相同，合并为一条线": "have identical equity and are drawn as one line (hover a chip to light it up)",
+
     "左右滑动查看全部 Agent": "scroll sideways for every agent",
     "· 十个隔离虚拟子账本（每槽 $10,000，合计 $100,000），不连接任何券商账户、不发出真实委托、不使用任何凭证。本页只读。":
       "· Ten isolated virtual sub-ledgers ($10,000 per slot, $100,000 in total). No brokerage account, no real orders, no credentials. This page is read-only.",
@@ -1139,6 +1193,7 @@ const STATE = { snap: null, exp: null, prices: {}, seenFills: new Set(), first: 
   tickerAll: false,        // DEFAULT: only what the agents hold / traded today / traded recently, plus benchmarks.
                            // The full watchlist is one click away; with 40 names it is otherwise all noise.
   cmpHide: new Set(),                              // which slots the reader has switched off in the comparison chart
+  cmpRange: "today", cmpFrom: null, cmpTo: null,   // the chart's time range (今日 / 7d / 30d / all / custom)
   tape: { list: [], note: "", failed: false } };   // the last full result, so filtering needs no refetch
 try { STATE.exp = new URLSearchParams(location.search).get("experiment"); } catch (e) { }
 
@@ -2084,61 +2139,198 @@ const CMP_KEY = "arena.cmpHide";
 function loadCmpPrefs() {
   try {
     const raw = localStorage.getItem(CMP_KEY);
-    if (raw) STATE.cmpHide = new Set(JSON.parse(raw).filter(x => typeof x === "string"));
+    if (!raw) return;
+    const v = JSON.parse(raw);
+    const hide = Array.isArray(v) ? v : (v.hide || []);          // v1 stored a bare array of slot ids
+    STATE.cmpHide = new Set(hide.filter(x => typeof x === "string"));
+    if (!Array.isArray(v)) {
+      if (CMP_RANGES.includes(v.range)) STATE.cmpRange = v.range;
+      if (typeof v.from === "string") STATE.cmpFrom = v.from;
+      if (typeof v.to === "string") STATE.cmpTo = v.to;
+    }
   } catch (e) { }
 }
 function saveCmpPrefs() {
-  try { localStorage.setItem(CMP_KEY, JSON.stringify([...STATE.cmpHide])); } catch (e) { }
+  try {
+    localStorage.setItem(CMP_KEY, JSON.stringify(
+      { hide: [...STATE.cmpHide], range: STATE.cmpRange, from: STATE.cmpFrom, to: STATE.cmpTo }));
+  } catch (e) { }
 }
 
-function cmpSeries(s) {
+/* Ranges. 今日 draws the intraday curve (a point a minute); everything longer draws the FROZEN daily closes, which
+   is a different statement about the same slot, so the note says which one is on screen. */
+const CMP_RANGES = ["today", "7d", "30d", "all", "custom"];
+const CMP_RANGE_ZH = { today: "今日", "7d": "最近 7 个交易日", "30d": "最近 30 个交易日", all: "全部交易日", custom: "自定义" };
+
+function cmpDayList(s) {
+  const days = new Set();
+  let unreadable = false, absent = false;
+  (s.slots || []).forEach(a => {
+    // three different statements, and they must not collapse into one: the field is missing because this dashboard
+    // build predates it (absent), the read failed (null), or there are simply no frozen days yet ([]).
+    if (a.curve_days === undefined) { absent = true; return; }
+    if (a.curve_days === null) { unreadable = true; return; }
+    a.curve_days.forEach(d => { if (Array.isArray(d) && d[0]) days.add(d[0]); });
+  });
+  return { days: [...days].sort(), unreadable, absent };
+}
+
+function cmpWindow(s) {
+  const { days, unreadable, absent } = cmpDayList(s);
+  const today = (s.market && s.market.trading_day) || null;
+  const axis = days.slice();
+  if (today && !axis.includes(today)) axis.push(today);      // today has no frozen close until the 20:10 ET round
+  axis.sort();
+  const r = STATE.cmpRange;
+  if (r === "custom") {
+    const a = STATE.cmpFrom || axis[0], b = STATE.cmpTo || axis[axis.length - 1];
+    return { axis: axis.filter(d => d >= a && d <= b), unreadable, absent, nFrozen: days.length };
+  }
+  const nDays = r === "7d" ? 7 : r === "30d" ? 30 : 0;
+  return { axis: nDays ? axis.slice(-nDays) : axis, unreadable, absent, nFrozen: days.length };
+}
+
+/* One series per slot, in the shape the chosen range needs:
+     intraday -> [msSinceEpoch, cents, nyString]
+     daily    -> [indexOnTheDayAxis, cents, dayString]
+   A day whose valuation is unknown is DROPPED, so the line has a gap there. It is never carried forward and never
+   drawn as zero. */
+function cmpSeries(s, mode, axis) {
   const now = Date.parse(s.ts_ny || "");
+  const today = (s.market && s.market.trading_day) || null;
+  const idx = {};
+  (axis || []).forEach((d, i) => { idx[d] = i; });
   return (s.slots || []).map(a => {
     const pts = [];
-    (a.curve || []).forEach(p => {
-      const t = Array.isArray(p) ? Date.parse(p[0]) : NaN;
-      const v = Array.isArray(p) ? p[1] : null;
-      if (isNum(v) && !isNaN(t)) pts.push([t, v, p[0]]);   // the NY-local string is kept: the axis is labelled in ET
-    });
-    // the same last point the cards draw: live (unfrozen) equity, labelled as such in the note
-    if (isNum(a.live_equity_cents) && !isNaN(now) && (!pts.length || now > pts[pts.length - 1][0])) {
-      pts.push([now, a.live_equity_cents, s.ts_ny]);
+    if (mode === "intraday") {
+      (a.curve || []).forEach(p => {
+        const t = Array.isArray(p) ? Date.parse(p[0]) : NaN;
+        const v = Array.isArray(p) ? p[1] : null;
+        if (isNum(v) && !isNaN(t)) pts.push([t, v, p[0]]);
+      });
+      if (isNum(a.live_equity_cents) && !isNaN(now) && (!pts.length || now > pts[pts.length - 1][0])) {
+        pts.push([now, a.live_equity_cents, s.ts_ny]);
+      }
+    } else {
+      (a.curve_days || []).forEach(d => {
+        if (!Array.isArray(d) || !(d[0] in idx) || !isNum(d[1])) return;    // unknown valuation => a gap, not a 0
+        pts.push([idx[d[0]], d[1], d[0]]);
+      });
+      // today is on the axis but has no frozen close yet: the live figure, labelled as such in the note
+      if (today && today in idx && isNum(a.live_equity_cents) && !pts.some(pt => pt[2] === today)) {
+        pts.push([idx[today], a.live_equity_cents, today]);
+      }
+      pts.sort((x, y) => x[0] - y[0]);
     }
-    return { id: a.slot_id, color: slotColor(a.slot_id), pts, rank: a.live_rank };
+    return { id: a.slot_id, color: slotColor(a.slot_id), principal: a.principal_cents, pts };
   });
+}
+
+function wireCmpControls() {
+  const sel = $("cmprange");
+  if (sel && sel.dataset.lang !== LANG) {
+    sel.dataset.lang = LANG;
+    sel.innerHTML = "";
+    CMP_RANGES.forEach(r => {
+      const o = el("option", null, tr(CMP_RANGE_ZH[r]));
+      o.value = r;
+      sel.appendChild(o);
+    });
+    sel.value = STATE.cmpRange;
+    if (!sel.dataset.wired) {
+      sel.dataset.wired = "1";
+      sel.addEventListener("change", () => {
+        STATE.cmpRange = CMP_RANGES.includes(sel.value) ? sel.value : "today";
+        saveCmpPrefs();
+        cmpInvalidate();
+        renderCompare(STATE.snap);
+      });
+    }
+  }
+  ["cmpfrom", "cmpto"].forEach(id => {
+    const inp = $(id);
+    if (!inp || inp.dataset.wired) return;
+    inp.dataset.wired = "1";
+    inp.addEventListener("change", () => {
+      STATE.cmpFrom = $("cmpfrom").value || null;
+      STATE.cmpTo = $("cmpto").value || null;
+      saveCmpPrefs();
+      cmpInvalidate();
+      renderCompare(STATE.snap);
+    });
+  });
+  const why = $("cmpwhy");
+  if (why && !why.dataset.wired) {
+    why.dataset.wired = "1";
+    why.addEventListener("click", () => {
+      const box = $("cmpnotefull");
+      const open = box.style.display === "none";
+      box.style.display = open ? "" : "none";
+      why.setAttribute("aria-expanded", String(open));
+    });
+  }
+}
+function cmpInvalidate() {
+  const c = $("cmpchart"); if (c) delete c.dataset.sig;
+  const l = $("cmplegend"); if (l) delete l.dataset.sig;
 }
 
 function renderCompare(s) {
   const svg = $("cmpchart"), leg = $("cmplegend");
-  if (!svg || !leg) return;
-  const NS = "http://www.w3.org/2000/svg";
-  const all = cmpSeries(s);
-  const dead = all.filter(x => x.pts.length < 2);
-  const drawable = all.filter(x => x.pts.length >= 2);
+  if (!svg || !leg || !s) return;
+  wireCmpControls();
+
+  const mode = STATE.cmpRange === "today" ? "intraday" : "daily";
+  const win = mode === "daily" ? cmpWindow(s) : { axis: [], unreadable: false, absent: false, nFrozen: 0 };
+  const all = cmpSeries(s, mode, win.axis);
+  const dates = $("cmpdates");
+  if (dates) {
+    dates.style.display = STATE.cmpRange === "custom" ? "" : "none";
+    if (STATE.cmpRange === "custom") {
+      const { days } = cmpDayList(s);
+      const lo = days[0] || (s.market && s.market.trading_day) || "";
+      const hi = (s.market && s.market.trading_day) || days[days.length - 1] || "";
+      ["cmpfrom", "cmpto"].forEach(id => { const i = $(id); if (i) { i.min = lo; i.max = hi; } });
+      if ($("cmpfrom") && !$("cmpfrom").value) $("cmpfrom").value = STATE.cmpFrom || lo;
+      if ($("cmpto") && !$("cmpto").value) $("cmpto").value = STATE.cmpTo || hi;
+    }
+  }
+
+  const dead = all.filter(x => x.pts.length < 1);
+  const drawable = all.filter(x => x.pts.length >= 1);
   const shown = drawable.filter(x => !STATE.cmpHide.has(x.id));
 
-  // --- legend first: it must list every slot, including the ones with nothing to draw
-  const lsig = all.map(x => x.id + (x.pts.length >= 2 ? "1" : "0") + (STATE.cmpHide.has(x.id) ? "h" : "s")).join(",") + "|" + LANG;
+  // --- the legend is also the scoreboard: colour, slot, and where that slot stands right now
+  const lsig = all.map(x => x.id + x.pts.length + (STATE.cmpHide.has(x.id) ? "h" : "s")
+    + (x.pts.length ? x.pts[x.pts.length - 1][1] : "")).join(",") + "|" + LANG + "|" + STATE.cmpRange;
   if (leg.dataset.sig !== lsig) {
     leg.dataset.sig = lsig;
     leg.innerHTML = "";
     all.forEach(x => {
-      const has = x.pts.length >= 2;
+      const has = x.pts.length >= 1;
       const off = STATE.cmpHide.has(x.id);
       const b = el("button", "cmpchip" + (!has ? " dead" : off ? " off" : ""));
       b.type = "button";
-      b.innerHTML = `<i style="background:${has ? x.color : "var(--ink3)"}"></i><span>${esc(x.id)}</span>`;
+      const last = has ? x.pts[x.pts.length - 1][1] : null;
+      const bp = (has && isNum(x.principal) && x.principal) ? Math.round((last - x.principal) / x.principal * 10000) : null;
+      b.innerHTML = `<i style="background:${has ? x.color : "var(--ink3)"}"></i><span>${esc(x.id)}</span>`
+        + (isNum(bp) ? `<b class="num ${bp > 0 ? "up" : bp < 0 ? "dn" : "flat"}">${esc(bpPct(bp, 2))}</b>` : "");
       if (!has) {
-        const u = el("span", "muted", tr("无数据"));
-        b.appendChild(u);
+        b.appendChild(el("span", "muted", tr("无数据")));
         b.disabled = true;
-        b.title = tr("这个资金槽还没有可画的净值点：不画线，也不画成 0");
+        b.title = tr("这个资金槽在所选范围内没有可画的净值点：不画线，也不画成 0");
       } else {
         b.setAttribute("aria-pressed", String(!off));
+        b.title = `${x.id} · ${usd(last)}`;
+        // "where is S05" is one hover: its line lights up in ITS colour even when six other slots share the path
+        b.addEventListener("pointerenter", () => cmpHighlight(x.id, x.color));
+        b.addEventListener("pointerleave", () => cmpHighlight(null));
+        b.addEventListener("focus", () => cmpHighlight(x.id, x.color));
+        b.addEventListener("blur", () => cmpHighlight(null));
         b.addEventListener("click", () => {
           if (STATE.cmpHide.has(x.id)) STATE.cmpHide.delete(x.id); else STATE.cmpHide.add(x.id);
           saveCmpPrefs();
-          delete leg.dataset.sig; delete svg.dataset.sig;
+          cmpInvalidate();
           renderCompare(STATE.snap || s);
         });
       }
@@ -2147,92 +2339,248 @@ function renderCompare(s) {
     translateStatic(leg);
   }
 
-  // --- the note carries what the chart cannot: what is left out, and what the axis does
-  const bits = [];
-  if (dead.length) bits.push(`${dead.length} ${tr("个槽无净值点，未画线")}`);
-  if (STATE.cmpHide.size) bits.push(`${tr("已隐藏")} ${STATE.cmpHide.size}`);
-  bits.push(tr("纵轴按数据缩放，不从 0 开始"));
-  bits.push(tr("最后一点为实时净值（未冻结）"));
-  $("cmpnote").textContent = bits.join(" · ");
-
   const w = Math.max(240, svg.clientWidth || 600), h = svg.clientHeight || 280;
-  const PL = 54, PR = 10, PT = 10, PB = 22;                 // room for the $ axis on the left and the clock below
-  const sig = w + "x" + h + "|" + LANG + "|" + shown.map(x => x.id + ":" + x.pts.length + ":" + x.pts[x.pts.length - 1][1]).join(",");
-  if (svg.dataset.sig === sig) return;
-  svg.dataset.sig = sig;
-  while (svg.firstChild) svg.removeChild(svg.firstChild);
-  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-  svg.setAttribute("preserveAspectRatio", "none");
+  const PL = 8, PR = 62, PT = 14, PB = 24;          // the price axis is on the RIGHT, where a trading chart puts it
+  // identical series are one line; they are grouped so each can be drawn a couple of pixels off the shared path
+  const groups = new Map();
+  shown.forEach(x => {
+    const k = x.pts.map(pt => pt[0] + ":" + pt[1]).join(",");
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(x);
+  });
+  const coincident = [...groups.values()].filter(g => g.length > 1);
 
-  if (!shown.length) {
-    const t = document.createElementNS(NS, "text");
-    t.setAttribute("x", String(w / 2)); t.setAttribute("y", String(h / 2)); t.setAttribute("text-anchor", "middle");
-    t.textContent = drawable.length ? tr("已隐藏全部 Agent") : tr("还没有可画的净值点");
-    svg.appendChild(t);
-    return;
+  const sig = [w, h, LANG, STATE.cmpRange, STATE.cmpFrom, STATE.cmpTo, win.axis.length,
+               shown.map(x => x.id + ":" + x.pts.length + ":" + (x.pts.length ? x.pts[x.pts.length - 1][1] : "-")).join(",")].join("|");
+  if (svg.dataset.sig !== sig) {
+    svg.dataset.sig = sig;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.setAttribute("preserveAspectRatio", "none");
+    drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, win.axis);
   }
 
-  let t0 = Infinity, t1 = -Infinity, lo = Infinity, hi = -Infinity;
-  shown.forEach(x => x.pts.forEach(([t, v]) => {
-    if (t < t0) t0 = t; if (t > t1) t1 = t; if (v < lo) lo = v; if (v > hi) hi = v;
-  }));
-  if (!(t1 > t0)) t1 = t0 + 1;
-  const pad = Math.max(1, (hi - lo) * 0.12) || 1;
-  const yLo = lo - pad, yHi = hi + pad;
-  const X = t => PL + (w - PL - PR) * (t - t0) / (t1 - t0);
-  const Y = v => PT + (h - PT - PB) * (1 - (v - yLo) / (yHi - yLo));
+  // --- the note: one short line always on screen, the rest one tap away under ⓘ
+  const noteSig = [sig, dead.length, win.unreadable, win.absent, win.nFrozen, coincident.length].join("|");
+  if ($("cmpnote").dataset.sig !== noteSig) {
+    $("cmpnote").dataset.sig = noteSig;
+    const full = [];
+    full.push(mode === "intraday" ? tr("今日分钟级净值") : tr("每日收盘冻结净值"));
+    if (mode === "daily" && !win.nFrozen) full.push(tr("尚无已冻结的日收盘，图上只有今日的实时点"));
+    if (win.absent) full.push(tr("这个看板进程还是旧代码，不提供每日记录"));
+    if (win.unreadable) full.push(tr("有资金槽的每日记录这次没读到"));
+    if (dead.length) full.push(`${dead.length} ${tr("个槽在此范围无净值点，未画线")}`);
+    if (STATE.cmpHide.size) full.push(`${tr("已隐藏")} ${STATE.cmpHide.size}`);
+    coincident.forEach(g => full.push(`${g.map(x => x.id).join(" ")} ${tr("净值完全相同，合并为一条线")}`));
+    full.push(tr("基准线为本金，上方盈利、下方亏损"));
+    full.push(tr("最后一点为实时净值（未冻结）"));
+    // the short line keeps the two things a reader could otherwise MISREAD: what the baseline is, and that some
+    // lines are drawn apart despite being equal
+    const short = [mode === "intraday" ? tr("今日") : tr("日收盘"), tr("基准线 = 本金")];
+    if (coincident.length) short.push(`${coincident.reduce((a, g) => a + g.length, 0)} ${tr("个槽净值相同，已合并")}`);
+    if (dead.length) short.push(`${dead.length} ${tr("无数据")}`);
+    $("cmpnote").textContent = short.join(" · ");
+    $("cmpnotefull").textContent = full.join(" · ");
+  }
+}
 
-  const line = (x1, y1, x2, y2) => {
-    const l = document.createElementNS(NS, "line");
-    l.setAttribute("x1", x1.toFixed(1)); l.setAttribute("y1", y1.toFixed(1));
-    l.setAttribute("x2", x2.toFixed(1)); l.setAttribute("y2", y2.toFixed(1));
-    l.setAttribute("class", "grid");
-    return l;
+/* Everything the pointer handler needs to answer "what was each agent worth here?" without re-deriving it. */
+let CMP = null;
+
+function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis) {
+  const NS = "http://www.w3.org/2000/svg";
+  const mk = (tag, attrs, cls) => {
+    const n = document.createElementNS(NS, tag);
+    if (cls) n.setAttribute("class", cls);
+    for (const k in (attrs || {})) n.setAttribute(k, String(attrs[k]));
+    return n;
   };
-  const label = (x, y, txt, anchor) => {
-    const t = document.createElementNS(NS, "text");
-    t.setAttribute("x", x.toFixed(1)); t.setAttribute("y", y.toFixed(1));
+  const label = (x, y, txt, anchor, cls) => {
+    const t = mk("text", { x: x.toFixed(1), y: y.toFixed(1) }, cls);
     if (anchor) t.setAttribute("text-anchor", anchor);
     t.textContent = txt;
     return t;
   };
 
-  for (let i = 0; i <= 3; i++) {
-    const v = yLo + (yHi - yLo) * i / 3, y = Y(v);
-    svg.appendChild(line(PL, y, w - PR, y));
-    svg.appendChild(label(PL - 7, y + 3.5, usd(Math.round(v), { cents: false }), "end"));
+  CMP = null;
+  if (!shown.length) {
+    svg.appendChild(label(w / 2, h / 2, tr("所选范围内没有可画的净值点"), "middle"));
+    return;
   }
-  // the x labels come from the ORIGINAL New York strings, never from a Date round-trip, which would label in UTC
+
+  let x0 = Infinity, x1 = -Infinity, lo = Infinity, hi = -Infinity;
+  shown.forEach(s2 => s2.pts.forEach(([x, v]) => {
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (v < lo) lo = v; if (v > hi) hi = v;
+  }));
+  if (!(x1 > x0)) { x0 -= 0.5; x1 += 0.5; }
+
+  // the baseline: the principal every slot started from. The domain is symmetric around it, so the same money is
+  // the same distance up or down and a loss cannot be made to look smaller than an equal gain.
+  const principals = [...new Set(shown.map(s2 => s2.principal).filter(isNum))];
+  const base = principals.length === 1 ? principals[0] : null;
+  let yLo, yHi;
+  if (base != null) {
+    const half = Math.max(Math.abs(hi - base), Math.abs(lo - base)) * 1.2 || Math.max(1, base * 0.0005);
+    yLo = base - half; yHi = base + half;
+  } else {
+    const pad = Math.max(1, (hi - lo) * 0.12);
+    yLo = lo - pad; yHi = hi + pad;
+  }
+
+  const X = v => PL + (w - PL - PR) * (v - x0) / (x1 - x0);
+  const Y = v => PT + (h - PT - PB) * (1 - (v - yLo) / (yHi - yLo));
+
+  // --- grid + price axis on the right
+  for (let i = 0; i <= 4; i++) {
+    const v = yLo + (yHi - yLo) * i / 4, y = Y(v);
+    svg.appendChild(mk("line", { x1: PL, y1: y.toFixed(1), x2: w - PR, y2: y.toFixed(1) }, "grid"));
+    svg.appendChild(label(w - PR + 7, y + 3.5, usd(Math.round(v), { cents: false }), "start"));
+  }
+  if (base != null) {
+    svg.appendChild(mk("line", { x1: PL, y1: Y(base).toFixed(1), x2: w - PR, y2: Y(base).toFixed(1) }, "base"));
+    svg.appendChild(label(w - PR + 7, Y(base) + 3.5, usd(base, { cents: false }), "start", "baselbl"));
+  }
+
+  // --- x axis
   const stamps = [];
-  shown.forEach(x => x.pts.forEach(pt => stamps.push(pt)));
+  shown.forEach(s2 => s2.pts.forEach(pt => stamps.push(pt)));
   stamps.sort((a, b) => a[0] - b[0]);
-  const at = t => {
+  const stampAt = v => {
     let best = stamps[0];
-    for (const pt of stamps) if (Math.abs(pt[0] - t) < Math.abs(best[0] - t)) best = pt;
-    if (!best) return "";
-    const m = String(best[2]).match(/T(\d{2}):(\d{2})/);      // an axis tick wants the minute, not the second
-    return m ? ampm(m[1], m[2]) : hhmm(best[2]);
+    for (const pt of stamps) if (Math.abs(pt[0] - v) < Math.abs(best[0] - v)) best = pt;
+    return best;
   };
-  [[t0, "start"], [(t0 + t1) / 2, "middle"], [t1, "end"]].forEach(([t, a]) => {
-    svg.appendChild(label(X(t), h - 6, at(t), a));
+  const xlabel = pt => {
+    if (!pt) return "";
+    if (mode === "daily") return String(pt[2]).slice(5);                    // MM-DD
+    const m = String(pt[2]).match(/T(\d{2}):(\d{2})/);                      // an axis tick wants the minute
+    return m ? ampm(m[1], m[2]) : hhmm(pt[2]);
+  };
+  [[x0, "start"], [(x0 + x1) / 2, "middle"], [x1, "end"]].forEach(([v, a]) => {
+    svg.appendChild(label(X(v), h - 7, xlabel(stampAt(v)), a));
   });
 
-  shown.forEach(x => {
-    const d = x.pts.map(([t, v], i) => `${i ? "L" : "M"}${X(t).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
-    const path = document.createElementNS(NS, "path");
-    path.setAttribute("d", d);
-    path.setAttribute("class", "ln");
-    path.setAttribute("stroke", x.color);
-    const ttl = document.createElementNS(NS, "title");
-    ttl.textContent = `${x.id} · ${usd(x.pts[x.pts.length - 1][1])}`;
+  // --- the lines. Slots whose equity is identical to the cent are ONE line: drawing seven of them two pixels
+  //     apart made a caterpillar, and drawing them on top of each other made six of them invisible. The line is
+  //     marked with how many slots it carries; who they are is in the note, the legend and the crosshair readout.
+  const lines = [];
+  groups.forEach(g => {
+    const lead = g[0];
+    const d = lead.pts.map(([x, v], i) => `${i ? "L" : "M"}${X(x).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
+    const ids = g.map(o => o.id);
+    const path = mk("path", { d, stroke: lead.color, "data-slots": ids.join(" ") }, "ln");
+    const ttl = mk("title");
+    ttl.textContent = `${ids.join(" ")} · ${usd(lead.pts[lead.pts.length - 1][1])}`;
     path.appendChild(ttl);
     svg.appendChild(path);
-    const last = x.pts[x.pts.length - 1];
-    const c = document.createElementNS(NS, "circle");
-    c.setAttribute("cx", X(last[0]).toFixed(1)); c.setAttribute("cy", Y(last[1]).toFixed(1));
-    c.setAttribute("r", "3"); c.setAttribute("fill", x.color); c.setAttribute("class", "dot");
-    svg.appendChild(c);
+    const last = lead.pts[lead.pts.length - 1];
+    const cx = X(last[0]), cy = Y(last[1]);
+    svg.appendChild(mk("circle", { cx: cx.toFixed(1), cy: cy.toFixed(1), r: 2.8, fill: lead.color }, "dot"));
+    if (g.length > 1) {
+      const tag = label(Math.min(cx + 7, w - PR - 2), cy + 3.5, "x" + g.length, "start", "xtag");
+      tag.setAttribute("fill", lead.color);
+      svg.appendChild(tag);
+    }
+    lines.push({ path, ids, color: lead.color, series: g });
   });
+
+  // --- the crosshair, built once and only moved afterwards: one dot per LINE, one readout row per agent
+  const cross = mk("g", { style: "display:none" }, "cross");
+  cross.appendChild(mk("line", { x1: 0, y1: PT, x2: 0, y2: h - PB }, "cx"));
+  lines.forEach(l => cross.appendChild(mk("circle", { r: 3.4, fill: l.color, "data-slots": l.ids.join(" ") }, "cd")));
+  svg.appendChild(cross);
+
+  CMP = { shown, X, Y, x0, x1, PL, PR, PT, PB, w, h, mode, base, cross, svg, stamps, xlabel, lines };
+  wireCmpHover(svg);
+}
+
+/* TradingView's one useful habit: the chart answers "what was everyone worth HERE" for whatever the pointer is on.
+   The readout is built from the series' own points, so it reports the TRUE value even for a line that was drawn a
+   couple of pixels off its twin. */
+function cmpValueAt(s2, x) {
+  const pts = s2.pts;
+  if (!pts.length) return null;
+  let best = pts[0];
+  for (const pt of pts) if (Math.abs(pt[0] - x) < Math.abs(best[0] - x)) best = pt;
+  return best;
+}
+
+function cmpHoverAt(clientX) {
+  if (!CMP) return;
+  const r = CMP.svg.getBoundingClientRect();
+  const px = (clientX - r.left) * (CMP.w / Math.max(1, r.width));
+  if (px < CMP.PL || px > CMP.w - CMP.PR) return cmpHoverOff();
+  const xv = CMP.x0 + (CMP.x1 - CMP.x0) * (px - CMP.PL) / Math.max(1, CMP.w - CMP.PL - CMP.PR);
+  const anchor = cmpValueAt(CMP.shown[0], xv) || null;
+  const snapX = anchor ? anchor[0] : xv;
+  const sx = CMP.X(snapX);
+
+  CMP.cross.style.display = "";
+  const line = CMP.cross.querySelector("line.cx");
+  line.setAttribute("x1", sx.toFixed(1)); line.setAttribute("x2", sx.toFixed(1));
+
+  const rows = [];
+  CMP.cross.querySelectorAll("circle.cd").forEach((c, i) => {
+    const line = CMP.lines[i];
+    const pt = line ? cmpValueAt(line.series[0], snapX) : null;
+    if (!pt) { c.style.display = "none"; return; }
+    c.style.display = "";
+    c.setAttribute("cx", CMP.X(pt[0]).toFixed(1));
+    c.setAttribute("cy", CMP.Y(pt[1]).toFixed(1));
+    // one dot on the chart, but one ROW PER AGENT: the line is shared, the agents on it are not
+    line.series.forEach(s2 => {
+      const own = cmpValueAt(s2, snapX) || pt;
+      rows.push({ id: s2.id, color: s2.color, v: own[1],
+                  bp: (isNum(s2.principal) && s2.principal) ? Math.round((own[1] - s2.principal) / s2.principal * 10000) : null });
+    });
+  });
+  rows.sort((a, b) => b.v - a.v || a.id.localeCompare(b.id));
+
+  const tip = $("cmptip");
+  if (!tip) return;
+  const head = anchor ? CMP.xlabel(anchor) : "";
+  tip.innerHTML = `<div class="tiphead">${esc(head)}</div>`
+    + rows.map((x, i) => `<div class="tiprow"><span class="tipn">${i + 1}</span><i style="background:${x.color}"></i>`
+      + `<span class="tips">${esc(x.id)}</span><span class="num tipv">${esc(usd(x.v))}</span>`
+      + `<span class="num ${x.bp > 0 ? "up" : x.bp < 0 ? "dn" : "flat"} tipb">${isNum(x.bp) ? esc(bpPct(x.bp, 2)) : ""}</span></div>`).join("");
+  tip.style.display = "";
+  const wrapW = tip.parentElement.clientWidth;
+  const tw = tip.offsetWidth || 190;
+  const left = sx / CMP.w * wrapW;
+  tip.style.left = Math.max(6, Math.min(wrapW - tw - 6, left + (left + tw + 18 > wrapW ? -tw - 14 : 14))) + "px";
+}
+
+/* Light one slot's line in that slot's own colour and dim the rest. Restores the line's real colour on the way
+   out, so the chart's resting state always matches the legend. */
+function cmpHighlight(slotId, color) {
+  if (!CMP || !CMP.lines) return;
+  CMP.lines.forEach(l => {
+    const on = slotId && l.ids.includes(slotId);
+    l.path.setAttribute("stroke", on ? color : l.color);
+    l.path.classList.toggle("hot", !!on);
+    l.path.classList.toggle("dim", !!slotId && !on);
+  });
+}
+
+function cmpHoverOff() {
+  if (CMP && CMP.cross) CMP.cross.style.display = "none";
+  const tip = $("cmptip");
+  if (tip) tip.style.display = "none";
+}
+
+function wireCmpHover(svg) {
+  if (svg.dataset.hover) return;
+  svg.dataset.hover = "1";
+  let raf = 0, lastX = 0;
+  const move = ev => {
+    lastX = ev.clientX;
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; cmpHoverAt(lastX); });
+  };
+  svg.addEventListener("pointermove", move, { passive: true });
+  svg.addEventListener("pointerdown", move, { passive: true });
+  svg.addEventListener("pointerleave", cmpHoverOff, { passive: true });
+  svg.addEventListener("pointercancel", cmpHoverOff, { passive: true });
 }
 
 function renderRounds(s) {
