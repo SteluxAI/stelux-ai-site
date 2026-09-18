@@ -1081,11 +1081,11 @@ const I18N = {
     "最近 7 个交易日": "last 7 sessions", "最近 30 个交易日": "last 30 sessions", "自定义": "custom",
     "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
     "当前时段": "Current session", "今日全时段": "Today (all sessions)",
-    "已放大 · 纵轴按可见区间": "zoomed · y axis fits what is visible",
+    "已放大": "zoomed",
+    "已放大到一段时间；⟲ 回到整段": "zoomed into part of the range; ⟲ goes back to all of it",
+    "纵轴按可见区间缩放，基准线为本金": "the y axis fits the values on screen; the dashed line is the principal",
     "缩放时间轴": "zoom the time axis", "放大时间轴": "zoom in", "缩小时间轴": "zoom out", "回到整段": "back to the whole range",
-    "已放大：纵轴改为按可见区间缩放（本金基准线可能不在图内）；⟲ 回到整段":
-      "zoomed in, so the y axis fits the visible values instead of centring on the principal, which can leave the "
-      + "baseline off the chart; ⟲ goes back to the whole range",
+
     "已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后":
       "fitted to the session running now (after the close that is the regular session plus its after-hours tail); "
       + "pick Today (all sessions) to see pre-market through after-hours",
@@ -2567,7 +2567,7 @@ function renderCompare(s) {
       full.push(step > 1 ? `${tr("净值曲线")} · ${tr("每")} ${step} ${tr("分钟一个点")}` : tr("今日分钟级净值"));
       if (STATE.cmpRange === "today") full.push(tr("今日 = 盘前 04:00 起，含盘前、常规盘、盘后"));
       if (STATE.cmpRange === "session") full.push(tr("已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后"));
-      if (STATE.cmpZoom) full.push(tr("已放大：纵轴改为按可见区间缩放（本金基准线可能不在图内）；⟲ 回到整段"));
+      if (STATE.cmpZoom) full.push(tr("已放大到一段时间；⟲ 回到整段"));
     } else {
       full.push(tr("每日收盘冻结净值"));
     }
@@ -2578,12 +2578,13 @@ function renderCompare(s) {
     if (STATE.cmpHide.size) full.push(`${tr("已隐藏")} ${STATE.cmpHide.size}`);
     coincident.forEach(g => full.push(`${g.map(x => x.id).join(" ")} ${tr("净值完全相同，合并为一条线")}`));
     full.push(tr("基准线为本金，上方盈利、下方亏损"));
+    full.push(tr("纵轴按可见区间缩放，基准线为本金"));
     full.push(tr("最后一点为实时净值（未冻结）"));
     // the short line keeps the two things a reader could otherwise MISREAD: what the baseline is, and that some
     // lines are drawn apart despite being equal
     // zoomed, the axis no longer centres on the principal, so the short line must not keep promising that it does
-    const short = [tr(CMP_RANGE_ZH[STATE.cmpRange] || "今日全时段"),
-                   STATE.cmpZoom ? tr("已放大 · 纵轴按可见区间") : tr("基准线 = 本金")];
+    const short = [tr(CMP_RANGE_ZH[STATE.cmpRange] || "今日全时段"), tr("基准线 = 本金")];
+    if (STATE.cmpZoom) short.push(tr("已放大"));
     if (coincident.length) short.push(`${coincident.reduce((a, g) => a + g.length, 0)} ${tr("个槽净值相同，已合并")}`);
     if (dead.length) short.push(`${dead.length} ${tr("无数据")}`);
     $("cmpnote").textContent = short.join(" · ");
@@ -2624,7 +2625,17 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   const active = STATE.cmpRange === "session" ? cmpActiveWindow(STATE.snap || {}, sess) : null;
   let x0str = null, x1str = null;
   if (wholeDay) { x0 = sess.extOpen; x1 = sess.extClose; x0str = sess.str.extOpen; x1str = sess.str.extClose; }
-  else if (active) { x0 = active.a; x1 = active.b; x0str = active.aStr; x1str = active.bStr; }
+  else if (active) {
+    x0 = active.a; x1 = active.b; x0str = active.aStr; x1str = active.bStr;
+    // ...but do not pad out to a close that has not happened: an hour of empty chart on the right squeezes the part
+    // that has data. The band still names the session it belongs to.
+    let lastPt = -Infinity;
+    shown.forEach(s2 => { const q = s2.pts[s2.pts.length - 1]; if (q && q[0] > lastPt) lastPt = q[0]; });
+    if (lastPt > x0 && lastPt < x1) {
+      const end = Math.min(x1, lastPt + Math.max(60e3, (lastPt - x0) * 0.04));
+      if (end > x0 + 60e3) { x1 = end; x1str = null; }
+    }
+  }
 
   // the range is what the chart COULD show; the viewport is what it does. Zooming never touches the series.
   const range = { a: x0, b: x1 };
@@ -2645,18 +2656,13 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   // the same distance up or down and a loss cannot be made to look smaller than an equal gain.
   const principals = [...new Set(shown.map(s2 => s2.principal).filter(isNum))];
   const base = principals.length === 1 ? principals[0] : null;
-  let yLo, yHi;
-  if (base != null && !zoomed) {
-    // the overview's job is "who is above the line": symmetric around the principal, so the same money is the same
-    // distance up or down and a loss cannot be drawn smaller than an equal gain
-    const half = Math.max(Math.abs(hi - base), Math.abs(lo - base)) * 1.2 || Math.max(1, base * 0.0005);
-    yLo = base - half; yHi = base + half;
-  } else {
-    // zoomed in, the job is the SHAPE of the move: fit the visible values so the trend fills the chart. That can
-    // push the principal off the top or bottom, which the note says out loud.
-    const pad = Math.max(1, (hi - lo) * 0.14);
-    yLo = lo - pad; yHi = hi + pad;
-  }
+  // One rule, zoomed or not: fit the values that are visible, so the trend fills the chart - and pull the principal
+  // into the domain so $10,000 stays on screen and "above the line is profit" still reads. A symmetric domain was
+  // the earlier rule; it made the height depend on the distance from $10,000 rather than on the move itself, which
+  // is why four zoom steps used to leave the axis identical.
+  if (base != null) { lo = Math.min(lo, base); hi = Math.max(hi, base); }
+  const pad = Math.max(1, (hi - lo) * 0.14) || 1;
+  const yLo = lo - pad, yHi = hi + pad;
 
   const X = v => PL + (w - PL - PR) * (v - x0) / (x1 - x0);
   const Y = v => PT + (h - PT - PB) * (1 - (v - yLo) / (yHi - yLo));
@@ -2756,6 +2762,18 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   // --- the lines. Slots whose equity is identical to the cent are ONE line: drawing seven of them two pixels
   //     apart made a caterpillar, and drawing them on top of each other made six of them invisible. The line is
   //     marked with how many slots it carries; who they are is in the note, the legend and the crosshair readout.
+  /* Everything that is DATA is clipped to the plot rectangle. Zoomed in, the series still carry the whole range,
+     so without this the path runs out across the price axis - measured at x = -976 - and draws a line through the
+     labels. The axis, the bands and the right-hand names stay outside the clip, where they belong. */
+  const clipId = "cmpclip";
+  const defs = mk("defs");
+  const cp = mk("clipPath", { id: clipId });
+  cp.appendChild(mk("rect", { x: PL, y: PT, width: Math.max(0, w - PL - PR), height: Math.max(0, h - PT - PB) }));
+  defs.appendChild(cp);
+  svg.appendChild(defs);
+  const plot = mk("g", { "clip-path": "url(#" + clipId + ")" });
+  svg.appendChild(plot);
+
   const lines = [];
   groups.forEach(g => {
     const lead = g[0];
@@ -2765,10 +2783,10 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     const ttl = mk("title");
     ttl.textContent = `${ids.join(" ")} · ${usd(lead.pts[lead.pts.length - 1][1])}`;
     path.appendChild(ttl);
-    svg.appendChild(path);
+    plot.appendChild(path);
     const last = lead.pts[lead.pts.length - 1];
     const cx = X(last[0]), cy = Y(last[1]);
-    svg.appendChild(mk("circle", { cx: cx.toFixed(1), cy: cy.toFixed(1), r: 2.8, fill: lead.color }, "dot"));
+    plot.appendChild(mk("circle", { cx: cx.toFixed(1), cy: cy.toFixed(1), r: 2.8, fill: lead.color }, "dot"));
     lines.push({ path, ids, color: lead.color, series: g, y: cy });
   });
 
@@ -2794,7 +2812,7 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   const cross = mk("g", { style: "display:none" }, "cross");
   cross.appendChild(mk("line", { x1: 0, y1: PT, x2: 0, y2: h - PB }, "cx"));
   lines.forEach(l => cross.appendChild(mk("circle", { r: 3.4, fill: l.color, "data-slots": l.ids.join(" ") }, "cd")));
-  svg.appendChild(cross);
+  plot.appendChild(cross);
 
   CMP = { shown, X, Y, x0, x1, PL, PR, PT, PB, w, h, mode, base, cross, svg, stamps, xlabel, lines, range, zoomed };
   wireCmpHover(svg);
