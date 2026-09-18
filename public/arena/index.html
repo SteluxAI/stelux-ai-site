@@ -372,7 +372,7 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmpdates input{height:28px;border-radius:999px;border:0;background:var(--hair2);color:var(--ink);
   padding:0 10px;font:inherit;font-size:var(--fs-meta)}
 /* the readout: what every visible agent was worth at the crosshair, ranked */
-.cmptip{position:absolute;top:14px;z-index:3;pointer-events:none;min-width:168px;
+.cmptip{position:absolute;top:14px;z-index:3;pointer-events:none;min-width:150px;
   background:var(--elev);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   border:1px solid var(--hair);border-radius:var(--r-md);box-shadow:var(--shadow);padding:8px 10px}
 .cmptip .tiphead{font-size:var(--fs-note);color:var(--ink3);font-weight:600;margin-bottom:5px;
@@ -1067,6 +1067,9 @@ const I18N = {
     "选择时间范围": "choose a time range", "起始日": "from", "结束日": "to",
     "最近 7 个交易日": "last 7 sessions", "最近 30 个交易日": "last 30 sessions", "自定义": "custom",
     "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
+    "今日全时段": "Today (all sessions)", "最近 8 小时": "Last 8 hours", "最近 24 小时": "Last 24 hours",
+    "今日 = 盘前 04:00 起，含盘前、常规盘、盘后": "today starts at the 04:00 ET pre-market open and covers pre, regular and post",
+    "净值曲线": "equity curve", "每": "one point every", "分钟一个点": "minutes",
     "尚无已冻结的日收盘，图上只有今日的实时点": "no daily close has been frozen yet: what is plotted is today's live point",
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
     "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
@@ -2218,8 +2221,10 @@ function saveCmpPrefs() {
 
 /* Ranges. 今日 draws the intraday curve (a point a minute); everything longer draws the FROZEN daily closes, which
    is a different statement about the same slot, so the note says which one is on screen. */
-const CMP_RANGES = ["today", "7d", "30d", "all", "custom"];
-const CMP_RANGE_ZH = { today: "今日", "7d": "最近 7 个交易日", "30d": "最近 30 个交易日", all: "全部交易日", custom: "自定义" };
+const CMP_RANGES = ["today", "8h", "24h", "7d", "30d", "all", "custom"];
+const CMP_RANGE_ZH = { today: "今日全时段", "8h": "最近 8 小时", "24h": "最近 24 小时",
+                       "7d": "最近 7 个交易日", "30d": "最近 30 个交易日", all: "全部交易日", custom: "自定义" };
+const CMP_INTRADAY = { today: 1, "8h": 1, "24h": 1 };     // drawn from the minute series, not the frozen closes
 
 function cmpDayList(s) {
   const days = new Set();
@@ -2259,13 +2264,33 @@ function cmpSeries(s, mode, axis) {
   const today = (s.market && s.market.trading_day) || null;
   const idx = {};
   (axis || []).forEach((d, i) => { idx[d] = i; });
+  // 今日 is the whole trading DAY - pre, regular and post - and the hour windows are counted back from the
+  // newest point the data has, not from the reader's own clock, which may not be in New York at all
+  const hours = STATE.cmpRange === "8h" ? 8 : STATE.cmpRange === "24h" ? 24 : 0;
+  let newest = 0;
+  if (hours) {
+    (s.slots || []).forEach(a => (a.curve || []).forEach(p => {
+      const t = Array.isArray(p) ? Date.parse(p[0]) : NaN;
+      if (!isNaN(t) && t > newest) newest = t;
+    }));
+    if (!newest && !isNaN(now)) newest = now;
+  }
+  const from = hours ? newest - hours * 3600e3 : 0;
   return (s.slots || []).map(a => {
     const pts = [];
     if (mode === "intraday") {
       (a.curve || []).forEach(p => {
         const t = Array.isArray(p) ? Date.parse(p[0]) : NaN;
         const v = Array.isArray(p) ? p[1] : null;
-        if (isNum(v) && !isNaN(t)) pts.push([t, v, p[0]]);
+        if (!isNum(v) || isNaN(t)) return;
+        if (hours) { if (t < from) return; }
+        else if (today) {
+          // 今日 = the three sessions a reader means by it: pre (04:00 ET), regular, post. The hours before that
+          // are the overnight hold, where nothing can execute; they are four hours of flat line on the left.
+          if (String(p[0]).slice(0, 10) !== today) return;
+          if (String(p[0]).slice(11, 16) < "04:00") return;
+        }
+        pts.push([t, v, p[0]]);
       });
       if (isNum(a.live_equity_cents) && !isNaN(now) && (!pts.length || now > pts[pts.length - 1][0])) {
         pts.push([now, a.live_equity_cents, s.ts_ny]);
@@ -2339,7 +2364,7 @@ function renderCompare(s) {
   if (!svg || !leg || !s) return;
   wireCmpControls();
 
-  const mode = STATE.cmpRange === "today" ? "intraday" : "daily";
+  const mode = CMP_INTRADAY[STATE.cmpRange] ? "intraday" : "daily";
   const win = mode === "daily" ? cmpWindow(s) : { axis: [], unreadable: false, absent: false, nFrozen: 0 };
   const all = cmpSeries(s, mode, win.axis);
   const dates = $("cmpdates");
@@ -2425,7 +2450,14 @@ function renderCompare(s) {
   if ($("cmpnote").dataset.sig !== noteSig) {
     $("cmpnote").dataset.sig = noteSig;
     const full = [];
-    full.push(mode === "intraday" ? tr("今日分钟级净值") : tr("每日收盘冻结净值"));
+    if (mode === "intraday") {
+      const step = Math.max(...(s.slots || []).map(a => (isNum(a.curve_step) ? a.curve_step : 1)), 1);
+      // a line drawn at one point every few minutes must not imply it has every minute
+      full.push(step > 1 ? `${tr("净值曲线")} · ${tr("每")} ${step} ${tr("分钟一个点")}` : tr("今日分钟级净值"));
+      if (STATE.cmpRange === "today") full.push(tr("今日 = 盘前 04:00 起，含盘前、常规盘、盘后"));
+    } else {
+      full.push(tr("每日收盘冻结净值"));
+    }
     if (mode === "daily" && !win.nFrozen) full.push(tr("尚无已冻结的日收盘，图上只有今日的实时点"));
     if (win.absent) full.push(tr("这个看板进程还是旧代码，不提供每日记录"));
     if (win.unreadable) full.push(tr("有资金槽的每日记录这次没读到"));
@@ -2436,7 +2468,7 @@ function renderCompare(s) {
     full.push(tr("最后一点为实时净值（未冻结）"));
     // the short line keeps the two things a reader could otherwise MISREAD: what the baseline is, and that some
     // lines are drawn apart despite being equal
-    const short = [mode === "intraday" ? tr("今日") : tr("日收盘"), tr("基准线 = 本金")];
+    const short = [tr(CMP_RANGE_ZH[STATE.cmpRange] || "今日全时段"), tr("基准线 = 本金")];
     if (coincident.length) short.push(`${coincident.reduce((a, g) => a + g.length, 0)} ${tr("个槽净值相同，已合并")}`);
     if (dead.length) short.push(`${dead.length} ${tr("无数据")}`);
     $("cmpnote").textContent = short.join(" · ");
@@ -2581,49 +2613,69 @@ function cmpValueAt(s2, x) {
   return best;
 }
 
-function cmpHoverAt(clientX) {
+function cmpHoverAt(clientX, clientY) {
   if (!CMP) return;
   const r = CMP.svg.getBoundingClientRect();
-  const px = (clientX - r.left) * (CMP.w / Math.max(1, r.width));
+  const sx2 = CMP.w / Math.max(1, r.width), sy2 = CMP.h / Math.max(1, r.height);
+  const px = (clientX - r.left) * sx2;
+  const py = (clientY - r.top) * sy2;
   if (px < CMP.PL || px > CMP.w - CMP.PR) return cmpHoverOff();
   const xv = CMP.x0 + (CMP.x1 - CMP.x0) * (px - CMP.PL) / Math.max(1, CMP.w - CMP.PL - CMP.PR);
   const anchor = cmpValueAt(CMP.shown[0], xv) || null;
   const snapX = anchor ? anchor[0] : xv;
   const sx = CMP.X(snapX);
 
-  CMP.cross.style.display = "";
-  const line = CMP.cross.querySelector("line.cx");
-  line.setAttribute("x1", sx.toFixed(1)); line.setAttribute("x2", sx.toFixed(1));
-
-  const rows = [];
-  CMP.cross.querySelectorAll("circle.cd").forEach((c, i) => {
-    const line = CMP.lines[i];
-    const pt = line ? cmpValueAt(line.series[0], snapX) : null;
-    if (!pt) { c.style.display = "none"; return; }
-    c.style.display = "";
-    c.setAttribute("cx", CMP.X(pt[0]).toFixed(1));
-    c.setAttribute("cy", CMP.Y(pt[1]).toFixed(1));
-    // one dot on the chart, but one ROW PER AGENT: the line is shared, the agents on it are not
-    line.series.forEach(s2 => {
-      const own = cmpValueAt(s2, snapX) || pt;
-      rows.push({ id: s2.id, color: s2.color, v: own[1],
-                  bp: (isNum(s2.principal) && s2.principal) ? Math.round((own[1] - s2.principal) / s2.principal * 10000) : null });
-    });
+  // which line is the pointer actually on? Every line's value at the snapped x, nearest wins.
+  let best = null;
+  CMP.lines.forEach(l => {
+    const pt = cmpValueAt(l.series[0], snapX);
+    if (!pt) return;
+    const d = Math.abs(CMP.Y(pt[1]) - py);
+    if (!best || d < best.d) best = { line: l, pt, d };
   });
-  rows.sort((a, b) => b.v - a.v || a.id.localeCompare(b.id));
+  if (!best) return cmpHoverOff();
+
+  CMP.cross.style.display = "";
+  const cx = CMP.cross.querySelector("line.cx");
+  cx.setAttribute("x1", sx.toFixed(1)); cx.setAttribute("x2", sx.toFixed(1));
+  // one dot, on the line being read - not one on every line
+  CMP.cross.querySelectorAll("circle.cd").forEach((c, i) => {
+    const on = CMP.lines[i] === best.line;
+    c.style.display = on ? "" : "none";
+    if (on) { c.setAttribute("cx", CMP.X(best.pt[0]).toFixed(1)); c.setAttribute("cy", CMP.Y(best.pt[1]).toFixed(1)); }
+  });
+  cmpEmphasise(best.line);
+
+  // the agents ON that line, at that point. A merged line carries several, so it lists several.
+  const rows = best.line.series.map(s2 => {
+    const own = cmpValueAt(s2, snapX) || best.pt;
+    return { id: s2.id, color: s2.color, v: own[1],
+             bp: (isNum(s2.principal) && s2.principal) ? Math.round((own[1] - s2.principal) / s2.principal * 10000) : null };
+  }).sort((a, b) => b.v - a.v || a.id.localeCompare(b.id));
 
   const tip = $("cmptip");
   if (!tip) return;
-  const head = anchor ? CMP.xlabel(anchor) : "";
-  tip.innerHTML = `<div class="tiphead">${esc(head)}</div>`
-    + rows.map((x, i) => `<div class="tiprow"><span class="tipn">${i + 1}</span><i style="background:${x.color}"></i>`
+  tip.innerHTML = `<div class="tiphead">${esc(anchor ? CMP.xlabel(anchor) : "")}</div>`
+    + rows.map(x => `<div class="tiprow"><i style="background:${x.color}"></i>`
       + `<span class="tips">${esc(x.id)}</span><span class="num tipv">${esc(usd(x.v))}</span>`
       + `<span class="num ${x.bp > 0 ? "up" : x.bp < 0 ? "dn" : "flat"} tipb">${isNum(x.bp) ? esc(bpPct(x.bp, 2)) : ""}</span></div>`).join("");
   tip.style.display = "";
-  const wrapW = tip.parentElement.clientWidth;
-  const tw = tip.offsetWidth || 190;
-  const left = sx / CMP.w * wrapW;
+  // sit next to the point it describes, inside the card, on whichever side has room
+  const wrap = tip.parentElement, wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
+  const tw = tip.offsetWidth || 170, th = tip.offsetHeight || 60;
+  const left = sx / CMP.w * wrapW, top = CMP.Y(best.pt[1]) / CMP.h * wrapH;
   tip.style.left = Math.max(6, Math.min(wrapW - tw - 6, left + (left + tw + 18 > wrapW ? -tw - 14 : 14))) + "px";
+  tip.style.top = Math.max(6, Math.min(wrapH - th - 6, top - th / 2)) + "px";
+}
+
+/* Emphasise the line being READ: thicker, others dimmed, nobody recoloured. Separate from cmpHighlight, which
+   answers a different question (where is THIS slot) and does recolour. */
+function cmpEmphasise(line) {
+  if (!CMP || !CMP.lines) return;
+  CMP.lines.forEach(l => {
+    l.path.classList.toggle("hot", l === line);
+    l.path.classList.toggle("dim", !!line && l !== line);
+  });
 }
 
 /* Light one slot's line in that slot's own colour and dim the rest. Restores the line's real colour on the way
@@ -2640,6 +2692,7 @@ function cmpHighlight(slotId, color) {
 
 function cmpHoverOff() {
   if (CMP && CMP.cross) CMP.cross.style.display = "none";
+  cmpEmphasise(null);
   const tip = $("cmptip");
   if (tip) tip.style.display = "none";
 }
@@ -2647,11 +2700,11 @@ function cmpHoverOff() {
 function wireCmpHover(svg) {
   if (svg.dataset.hover) return;
   svg.dataset.hover = "1";
-  let raf = 0, lastX = 0;
+  let raf = 0, lastX = 0, lastY = 0;
   const move = ev => {
-    lastX = ev.clientX;
+    lastX = ev.clientX; lastY = ev.clientY;
     if (raf) return;
-    raf = requestAnimationFrame(() => { raf = 0; cmpHoverAt(lastX); });
+    raf = requestAnimationFrame(() => { raf = 0; cmpHoverAt(lastX, lastY); });
   };
   svg.addEventListener("pointermove", move, { passive: true });
   svg.addEventListener("pointerdown", move, { passive: true });
