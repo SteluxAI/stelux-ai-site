@@ -433,7 +433,11 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   /* --- the header: every control on screen, nothing behind a sideways swipe --------------------------------- */
   .bar{padding:9px var(--gut);gap:8px;row-gap:8px}
   .brand .sub{display:none}            /* restated by the PAPER ONLY pill, the footer, and (if not live) a banner */
-  .pills{flex-wrap:wrap;overflow-x:visible;row-gap:7px;padding-bottom:0}
+  /* The connection chip's text changes length on every poll (快照 -> 快照 · 59 秒前 -> 数据已停滞 120s), which
+     tipped the rail between one row and two and moved the whole page under the reader. Reserve both rows: the
+     header is then a constant height whatever the status says, and the status is never abbreviated to fit. */
+  .pills{flex-wrap:wrap;overflow-x:visible;row-gap:7px;padding-bottom:0;
+    align-content:flex-start;min-height:calc(28px * 2 + 7px)}
   .pills>*{max-width:100%}
   .pills>select.exp{flex:1 1 170px;min-width:0;max-width:none;height:44px;font-size:16px;
     padding:0 34px 0 14px;background-position:right 13px center}   /* 16px is the exact iOS no-zoom threshold */
