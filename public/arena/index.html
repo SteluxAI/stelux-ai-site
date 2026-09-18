@@ -446,6 +446,8 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .banner{margin:18px 0 0;padding:13px 17px;border-radius:var(--r-lg);font-size:13px;display:flex;gap:9px;align-items:flex-start;
   background:color-mix(in srgb,var(--orange) 11%,transparent);border:1px solid color-mix(in srgb,var(--orange) 26%,transparent);color:var(--ink)}
 .banner.err{background:color-mix(in srgb,var(--red) 11%,transparent);border-color:color-mix(in srgb,var(--red) 28%,transparent)}
+.offbanner{align-items:center}
+.offbanner .grpbtn{margin-left:10px;vertical-align:middle}
 footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-size:var(--fs-note);color:var(--ink3);line-height:1.65}
 .skel{background:linear-gradient(100deg,var(--hair2) 30%,var(--hair) 50%,var(--hair2) 70%);background-size:220% 100%;
   animation:sh 1.4s linear infinite;border-radius:var(--r-sm);color:transparent!important}
@@ -638,6 +640,12 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
 
 <div class="wrap">
   <div id="renderfail" class="banner err" style="display:none"></div>
+  <!-- transport, not data: #banners is rebuilt from the snapshot, and a page with no snapshot would never show it -->
+  <div class="banner err offbanner" id="offbanner" style="display:none">
+    <span>⚠️</span>
+    <span><b id="offwhat">连接已断开</b><span id="offwhen"></span>：<span>下面显示的是最后一次读到的数据，不会自动变新。</span>
+      <button class="grpbtn" id="offreload" type="button">刷新重连</button></span>
+  </div>
   <div id="banners"></div>
 
   <section class="hero">
@@ -948,6 +956,9 @@ const I18N = {
     "实时 Paper · 真实行情 · 模拟成交": "Live paper trading · real quotes · simulated fills",
     "模拟盘：不连接任何券商账户，不发出真实委托": "Paper only: no brokerage account, no real orders",
     "外观：跟随系统": "Appearance: follow the system", "外观：深色": "Appearance: dark", "外观：浅色": "Appearance: light",
+    "连接已断开": "The connection dropped", "最后一次数据": "last data",
+    "下面显示的是最后一次读到的数据，不会自动变新。": "what you see below is the last data that arrived; it will not update by itself.",
+    "刷新重连": "Reload to reconnect",
     "加载中": "Loading", "连接中": "Connecting", "重连中": "Reconnecting", "已暂停": "Paused",
     "数据已停滞": "no new data for",
     "离线": "Offline", "实时": "Live", "轮询": "Polling", "快照": "Snapshot",
@@ -1273,12 +1284,37 @@ function applyPublishLag(s) {
   return s;
 }
 
+/* How long a bad connection has to last before the page says so in the body. A single failed poll is ordinary and
+   must not throw a banner at anyone; a minute of silence on a board full of money is not. */
+const LONG_OFF_MS = 45000;
+let OFF_SINCE = 0, OFF_TIMER = 0;
+function paintOffBanner(txt) {
+  const b = $("offbanner");
+  if (!b) return;
+  const off = !!OFF_SINCE && Date.now() - OFF_SINCE >= LONG_OFF_MS;
+  b.style.display = off ? "" : "none";
+  if (!off) return;
+  $("offwhat").textContent = txt || tr("连接已断开");
+  // say how old what they are looking at actually is, rather than only that something is wrong
+  const age = STATE.lastOk ? Math.round((Date.now() - STATE.lastOk) / 1000) : null;
+  $("offwhen").textContent = isNum(age) ? `（${tr("最后一次数据")} ${ago(age)}）` : "";
+}
 function setConn(ok, txt) {
   const p = $("connpill"), t = $("conntxt");
   p.className = "pill " + (ok ? "live" : "warn");
   t.textContent = txt;
   const dot = p.querySelector(".dot");          // a pulsing dot over the word 离线 says the opposite of the word
   if (dot) dot.classList.toggle("beat", !!ok);
+  if (ok) {
+    OFF_SINCE = 0;
+    if (OFF_TIMER) { clearTimeout(OFF_TIMER); OFF_TIMER = 0; }
+    const b = $("offbanner"); if (b) b.style.display = "none";
+    return;
+  }
+  if (document.hidden) return;                  // a hidden tab closes its own stream on purpose: that is 已暂停
+  if (!OFF_SINCE) OFF_SINCE = Date.now();
+  paintOffBanner(txt);
+  if (!OFF_TIMER) OFF_TIMER = setTimeout(() => { OFF_TIMER = 0; paintOffBanner(txt); }, LONG_OFF_MS + 500);
 }
 
 function connect() {
@@ -2928,6 +2964,7 @@ try { $("tradebody").closest(".tw").addEventListener("scroll", syncSwipeHint, { 
 try { $("ticker").addEventListener("scroll", syncTickerHint, { passive: true }); } catch (e) { }
 try { $("slotfilter").addEventListener("scroll", syncFilterHint, { passive: true }); } catch (e) { }
 
+try { $("offreload").addEventListener("click", () => location.reload()); } catch (e) { }
 loadTapePrefs();
 loadCmpPrefs();
 wireLangToggle();
