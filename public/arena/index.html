@@ -368,6 +368,10 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmp .ln.hot{stroke-width:2.6}
 .cmp .cross .cx{stroke:var(--ink3);stroke-width:1;stroke-dasharray:3 3;opacity:.8}
 .cmp .cross .cd{stroke:var(--card-solid);stroke-width:1.6}
+/* the extended sessions are tinted, the regular one is left clean: that is where entries happen */
+.cmp .sessband{fill:var(--ink3);opacity:.055}
+.cmp .sessrule{stroke:var(--hair);stroke-width:1}
+.cmp .sesslbl{font-size:10.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;fill:var(--ink3)}
 .cmpdates{display:inline-flex;align-items:center;gap:6px}
 .cmpdates input{height:28px;border-radius:999px;border:0;background:var(--hair2);color:var(--ink);
   padding:0 10px;font:inherit;font-size:var(--fs-meta)}
@@ -2259,6 +2263,17 @@ function cmpWindow(s) {
      daily    -> [indexOnTheDayAxis, cents, dayString]
    A day whose valuation is unknown is DROPPED, so the line has a gap there. It is never carried forward and never
    drawn as zero. */
+/* The day's real session boundaries, from the server: the venue's, not a convention I assumed. Absent on a day
+   the calendar could not be read, in which case the chart simply falls back to the data's own extent. */
+function cmpSessions(s) {
+  const m = s.market || {};
+  // NOT named `t`: the page binds a bare `t` in a dozen scopes, and a bare call on it has to mean the translator
+  const ms = k => { const v = Date.parse(m[k] || ""); return isNaN(v) ? null : v; };
+  const o = { extOpen: ms("extended_opens_at"), open: ms("opens_at"), close: ms("closes_at"), extClose: ms("extended_closes_at") };
+  o.str = { extOpen: m.extended_opens_at, open: m.opens_at, close: m.closes_at, extClose: m.extended_closes_at };
+  return (o.extOpen && o.open && o.close && o.extClose && o.extOpen < o.open && o.open < o.close && o.close < o.extClose) ? o : null;
+}
+
 function cmpSeries(s, mode, axis) {
   const now = Date.parse(s.ts_ny || "");
   const today = (s.market && s.market.trading_day) || null;
@@ -2266,6 +2281,7 @@ function cmpSeries(s, mode, axis) {
   (axis || []).forEach((d, i) => { idx[d] = i; });
   // 今日 is the whole trading DAY - pre, regular and post - and the hour windows are counted back from the
   // newest point the data has, not from the reader's own clock, which may not be in New York at all
+  const sess = cmpSessions(s);
   const hours = STATE.cmpRange === "8h" ? 8 : STATE.cmpRange === "24h" ? 24 : 0;
   let newest = 0;
   if (hours) {
@@ -2285,10 +2301,10 @@ function cmpSeries(s, mode, axis) {
         if (!isNum(v) || isNaN(t)) return;
         if (hours) { if (t < from) return; }
         else if (today) {
-          // 今日 = the three sessions a reader means by it: pre (04:00 ET), regular, post. The hours before that
-          // are the overnight hold, where nothing can execute; they are four hours of flat line on the left.
+          // 今日 = the three sessions a reader means by it: pre, regular, post. What comes before the venue's own
+          // pre-market open is the overnight hold, where nothing can execute - hours of flat line on the left.
           if (String(p[0]).slice(0, 10) !== today) return;
-          if (String(p[0]).slice(11, 16) < "04:00") return;
+          if (sess && t < sess.extOpen) return;
         }
         pts.push([t, v, p[0]]);
       });
@@ -2425,7 +2441,9 @@ function renderCompare(s) {
 
   const w = Math.max(240, svg.clientWidth || 600), h = svg.clientHeight || 280;
   // money on the left, one label per line on the right; both margins tighten on a narrow chart
-  const PL = w < 430 ? 48 : 58, PR = w < 430 ? 54 : 74, PT = 14, PB = 24;
+  const PL = w < 430 ? 48 : 58, PR = w < 430 ? 54 : 74, PT = 14;
+  // two rows under the plot when the session bands are drawn: the boundary times, then the band names
+  const PB = (mode === "intraday" && cmpSessions(s)) ? 36 : 24;
   // identical series are one line; they are grouped so each can be drawn a couple of pixels off the shared path
   const groups = new Map();
   shown.forEach(x => {
@@ -2442,7 +2460,8 @@ function renderCompare(s) {
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
     svg.setAttribute("preserveAspectRatio", "none");
-    drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, win.axis);
+    drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, win.axis,
+                mode === "intraday" ? cmpSessions(s) : null);
   }
 
   // --- the note: one short line always on screen, the rest one tap away under ⓘ
@@ -2479,7 +2498,7 @@ function renderCompare(s) {
 /* Everything the pointer handler needs to answer "what was each agent worth here?" without re-deriving it. */
 let CMP = null;
 
-function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis) {
+function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess) {
   const NS = "http://www.w3.org/2000/svg";
   const mk = (tag, attrs, cls) => {
     const n = document.createElementNS(NS, tag);
@@ -2505,6 +2524,10 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis) {
     if (x < x0) x0 = x; if (x > x1) x1 = x; if (v < lo) lo = v; if (v > hi) hi = v;
   }));
   if (!(x1 > x0)) { x0 -= 0.5; x1 += 0.5; }
+  // 今日 spans the whole day the venue trades, not just the part that has happened: a line that grows across a
+  // fixed day is readable, one whose axis re-scales every minute is not
+  const wholeDay = sess && STATE.cmpRange === "today";
+  if (wholeDay) { x0 = sess.extOpen; x1 = sess.extClose; }
 
   // the baseline: the principal every slot started from. The domain is symmetric around it, so the same money is
   // the same distance up or down and a loss cannot be made to look smaller than an equal gain.
@@ -2536,6 +2559,30 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis) {
     svg.appendChild(label(PL - 8, baseY + 3.5, usd(base, { cents: false }), "end", "baselbl"));
   }
 
+  // --- the sessions, when the range is one day's worth of them
+  const bands = [];
+  if (sess) {
+    const inside = t => t > x0 && t < x1;
+    if (x0 < sess.open && x1 > sess.extOpen) bands.push({ a: Math.max(x0, sess.extOpen), b: Math.min(x1, sess.open), k: "盘前", tint: 1 });
+    if (x0 < sess.close && x1 > sess.open) bands.push({ a: Math.max(x0, sess.open), b: Math.min(x1, sess.close), k: "常规盘", tint: 0 });
+    if (x0 < sess.extClose && x1 > sess.close) bands.push({ a: Math.max(x0, sess.close), b: Math.min(x1, sess.extClose), k: "盘后", tint: 1 });
+    bands.forEach(bd => {
+      if (bd.tint) {
+        svg.appendChild(mk("rect", { x: X(bd.a).toFixed(1), y: PT, width: Math.max(0, X(bd.b) - X(bd.a)).toFixed(1),
+                                     height: (h - PT - PB).toFixed(1) }, "sessband"));
+      }
+    });
+    [sess.open, sess.close].forEach(t => {
+      if (inside(t)) svg.appendChild(mk("line", { x1: X(t).toFixed(1), y1: PT, x2: X(t).toFixed(1), y2: (h - PB).toFixed(1) }, "sessrule"));
+    });
+    // the name of each band, centred in it, but only where there is room for the word
+    bands.forEach(bd => {
+      const wpx = X(bd.b) - X(bd.a);
+      if (wpx < 46) return;
+      svg.appendChild(label((X(bd.a) + X(bd.b)) / 2, h - 6, tr(bd.k), "middle", "sesslbl"));
+    });
+  }
+
   // --- x axis
   const stamps = [];
   shown.forEach(s2 => s2.pts.forEach(pt => stamps.push(pt)));
@@ -2551,9 +2598,26 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis) {
     const m = String(pt[2]).match(/T(\d{2}):(\d{2})/);                      // an axis tick wants the minute
     return m ? ampm(m[1], m[2]) : hhmm(pt[2]);
   };
-  [[x0, "start"], [(x0 + x1) / 2, "middle"], [x1, "end"]].forEach(([v, a]) => {
-    svg.appendChild(label(X(v), h - 7, xlabel(stampAt(v)), a));
-  });
+  const tickY = bands.length ? h - 20 : h - 7;
+  if (bands.length) {
+    // ticks on the session boundaries - 07:00 / 09:30 / 16:00 / 20:00 says more than three evenly spaced clock
+    // times - formatted from the server's own New York strings, never from a Date the reader's timezone reinterprets
+    const ny = str => { const q = String(str).match(/T(\d{2}):(\d{2})/); return q ? ampm(q[1], q[2]) : ""; };
+    const marks = [[x0, "start", wholeDay ? sess.str.extOpen : null], [sess.open, "middle", sess.str.open],
+                   [sess.close, "middle", sess.str.close], [x1, "end", wholeDay ? sess.str.extClose : null]]
+      .filter(([t]) => t >= x0 && t <= x1);
+    let lastX = -1e9;
+    marks.forEach(([t, a, str], i) => {
+      const px = X(t);
+      if (px - lastX < 44 && i !== marks.length - 1) return;      // never two ticks on top of each other
+      lastX = px;
+      svg.appendChild(label(px, tickY, str ? ny(str) : xlabel(stampAt(t)), a));
+    });
+  } else {
+    [[x0, "start"], [(x0 + x1) / 2, "middle"], [x1, "end"]].forEach(([v, a]) => {
+      svg.appendChild(label(X(v), tickY, xlabel(stampAt(v)), a));
+    });
+  }
 
   // --- the lines. Slots whose equity is identical to the cent are ONE line: drawing seven of them two pixels
   //     apart made a caterpillar, and drawing them on top of each other made six of them invisible. The line is
@@ -2660,12 +2724,17 @@ function cmpHoverAt(clientX, clientY) {
       + `<span class="tips">${esc(x.id)}</span><span class="num tipv">${esc(usd(x.v))}</span>`
       + `<span class="num ${x.bp > 0 ? "up" : x.bp < 0 ? "dn" : "flat"} tipb">${isNum(x.bp) ? esc(bpPct(x.bp, 2)) : ""}</span></div>`).join("");
   tip.style.display = "";
-  // sit next to the point it describes, inside the card, on whichever side has room
+  /* Park it, do not let it follow the cursor into the data. A panel that chases the pointer is itself the thing
+     blocking the view, and it lands on the right-hand side exactly where the newest points are. So: top right by
+     default, and only swapped to the left when the crosshair would end up underneath it. */
   const wrap = tip.parentElement, wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
   const tw = tip.offsetWidth || 170, th = tip.offsetHeight || 60;
-  const left = sx / CMP.w * wrapW, top = CMP.Y(best.pt[1]) / CMP.h * wrapH;
-  tip.style.left = Math.max(6, Math.min(wrapW - tw - 6, left + (left + tw + 18 > wrapW ? -tw - 14 : 14))) + "px";
-  tip.style.top = Math.max(6, Math.min(wrapH - th - 6, top - th / 2)) + "px";
+  const PAD = 8;
+  const crossX = sx / CMP.w * wrapW;
+  let tipL = wrapW - tw - PAD;
+  if (crossX > tipL - 16) tipL = PAD;                 // the point being read must never sit under the readout
+  tip.style.left = Math.max(PAD, Math.min(wrapW - tw - PAD, tipL)) + "px";
+  tip.style.top = Math.max(PAD, Math.min(wrapH - th - PAD, PAD + 2)) + "px";
 }
 
 /* Emphasise the line being READ: thicker, others dimmed, nobody recoloured. Separate from cmpHighlight, which
