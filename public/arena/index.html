@@ -362,7 +362,7 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmp .baselbl{fill:var(--ink2);font-weight:650}
 .cmp .ln{fill:none;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
 .cmp .dot{stroke:var(--card-solid);stroke-width:1.4}
-.cmp .xtag{font-size:10px;font-weight:700;opacity:.9}
+.cmp .slotlbl{font-size:11px;font-weight:700;letter-spacing:.01em}
 .cmp .ln{transition:opacity .18s var(--ease),stroke-width .18s var(--ease)}
 .cmp .ln.dim{opacity:.18}
 .cmp .ln.hot{stroke-width:2.6}
@@ -2399,7 +2399,8 @@ function renderCompare(s) {
   }
 
   const w = Math.max(240, svg.clientWidth || 600), h = svg.clientHeight || 280;
-  const PL = 8, PR = 62, PT = 14, PB = 24;          // the price axis is on the RIGHT, where a trading chart puts it
+  // money on the left, one label per line on the right; both margins tighten on a narrow chart
+  const PL = w < 430 ? 48 : 58, PR = w < 430 ? 54 : 74, PT = 14, PB = 24;
   // identical series are one line; they are grouped so each can be drawn a couple of pixels off the shared path
   const groups = new Map();
   shown.forEach(x => {
@@ -2489,15 +2490,18 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis) {
   const X = v => PL + (w - PL - PR) * (v - x0) / (x1 - x0);
   const Y = v => PT + (h - PT - PB) * (1 - (v - yLo) / (yHi - yLo));
 
-  // --- grid + price axis on the right
+  // --- grid + the price axis, on the left
+  const baseY = base == null ? null : Y(base);
   for (let i = 0; i <= 4; i++) {
     const v = yLo + (yHi - yLo) * i / 4, y = Y(v);
     svg.appendChild(mk("line", { x1: PL, y1: y.toFixed(1), x2: w - PR, y2: y.toFixed(1) }, "grid"));
-    svg.appendChild(label(w - PR + 7, y + 3.5, usd(Math.round(v), { cents: false }), "start"));
+    // with a symmetric domain the middle gridline IS the baseline: one label there, not two on top of each other
+    if (baseY != null && Math.abs(y - baseY) < 9) continue;
+    svg.appendChild(label(PL - 8, y + 3.5, usd(Math.round(v), { cents: false }), "end"));
   }
   if (base != null) {
-    svg.appendChild(mk("line", { x1: PL, y1: Y(base).toFixed(1), x2: w - PR, y2: Y(base).toFixed(1) }, "base"));
-    svg.appendChild(label(w - PR + 7, Y(base) + 3.5, usd(base, { cents: false }), "start", "baselbl"));
+    svg.appendChild(mk("line", { x1: PL, y1: baseY.toFixed(1), x2: w - PR, y2: baseY.toFixed(1) }, "base"));
+    svg.appendChild(label(PL - 8, baseY + 3.5, usd(base, { cents: false }), "end", "baselbl"));
   }
 
   // --- x axis
@@ -2535,12 +2539,25 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis) {
     const last = lead.pts[lead.pts.length - 1];
     const cx = X(last[0]), cy = Y(last[1]);
     svg.appendChild(mk("circle", { cx: cx.toFixed(1), cy: cy.toFixed(1), r: 2.8, fill: lead.color }, "dot"));
-    if (g.length > 1) {
-      const tag = label(Math.min(cx + 7, w - PR - 2), cy + 3.5, "x" + g.length, "start", "xtag");
-      tag.setAttribute("fill", lead.color);
-      svg.appendChild(tag);
-    }
-    lines.push({ path, ids, color: lead.color, series: g });
+    lines.push({ path, ids, color: lead.color, series: g, y: cy });
+  });
+
+  /* One label per line at the height it ends on, in its own colour: at a glance, which line is whose. A merged line
+     shows its lead slot and how many share it; the full list is in the note, the legend and the crosshair readout.
+     When two lines end close together the LABELS are pushed apart - never the lines. */
+  const tags = lines.map(l => ({ y: l.y, text: l.ids[0] + (l.ids.length > 1 ? "  x" + l.ids.length : ""), color: l.color }));
+  tags.sort((a, b) => a.y - b.y);
+  const GAP = 16, TOP = PT + 4, BOT = h - PB - 4;   // >= the 11-12px label's own line box, or they still touch
+  for (let i = 1; i < tags.length; i++) if (tags[i].y - tags[i - 1].y < GAP) tags[i].y = tags[i - 1].y + GAP;
+  if (tags.length && tags[tags.length - 1].y > BOT) {
+    tags[tags.length - 1].y = BOT;
+    for (let i = tags.length - 2; i >= 0; i--) if (tags[i + 1].y - tags[i].y < GAP) tags[i].y = tags[i + 1].y - GAP;
+  }
+  tags.forEach(t => {
+    const y = Math.max(TOP, Math.min(BOT, t.y));
+    const el2 = label(w - PR + 8, y + 3.5, t.text, "start", "slotlbl");
+    el2.setAttribute("fill", t.color);
+    svg.appendChild(el2);
   });
 
   // --- the crosshair, built once and only moved afterwards: one dot per LINE, one readout row per agent
