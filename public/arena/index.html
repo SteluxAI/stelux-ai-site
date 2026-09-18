@@ -5,26 +5,38 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-title" content="Arena">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23007AFF'/%3E%3Ctext x='16' y='22' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='700' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
 <title>Arena · 十槽实时竞技场</title>
 <style>
 /* ============================================================ design tokens (Apple system palette) */
 :root{
   --blue:#007AFF; --green:#34C759; --red:#FF3B30; --orange:#FF9500; --purple:#AF52DE; --teal:#5AC8FA; --yellow:#FFCC00;
   --bg:#F5F5F7; --bg2:#EBEBF0; --card:rgba(255,255,255,.72); --card-solid:#FFFFFF; --elev:rgba(255,255,255,.86);
-  --ink:#1D1D1F; --ink2:#6E6E73; --ink3:#8E8E93; --hair:rgba(0,0,0,.08); --hair2:rgba(0,0,0,.05);
+  --ink:#1D1D1F; --ink2:#5A5A5F; --ink3:#6E6E73; --hair:rgba(0,0,0,.08); --hair2:rgba(0,0,0,.05);
   --shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
   --shadow-lg:0 2px 6px rgba(0,0,0,.06), 0 24px 60px rgba(0,0,0,.14);
   --blur:saturate(180%) blur(20px);
   --r-xl:24px; --r-lg:18px; --r-md:12px; --r-sm:8px;
   --ease:cubic-bezier(.32,.72,0,1); --ease-out:cubic-bezier(.16,1,.3,1);
   --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Cascadia Mono",monospace;
+  /* every size the phone block has to move is a token, so the override is one block and not thirty selectors */
+  --fs-chip:10.5px; --fs-micro:11px; --fs-note:11.5px; --fs-meta:12.5px; --lh-chip:1.2; --lh-cjk:1.6;
+  --gut:24px; --padb:72px;
+  /* P&L TEXT on its own 12% tint measured 1.9:1 in light mode. The tint hue is unchanged; only the ink darkens,
+     and in dark mode these alias straight back to the saturated colours. */
+  --green-ink:#16702F; --red-ink:#B3261E; --orange-ink:#A65A00;
+  color-scheme:light dark;
 }
+:root[data-theme=light]{color-scheme:light}
 :root[data-theme=dark]{
   --blue:#0A84FF; --green:#30D158; --red:#FF453A; --orange:#FF9F0A; --purple:#BF5AF2; --teal:#64D2FF; --yellow:#FFD60A;
   --bg:#000000; --bg2:#0A0A0C; --card:rgba(28,28,30,.72); --card-solid:#1C1C1E; --elev:rgba(44,44,46,.82);
   --ink:#F5F5F7; --ink2:#AEAEB2; --ink3:#8E8E93; --hair:rgba(255,255,255,.10); --hair2:rgba(255,255,255,.06);
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
   --shadow-lg:0 2px 6px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.7);
+  --green-ink:var(--green); --red-ink:var(--red); --orange-ink:var(--orange);
+  color-scheme:dark;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme=light]){
@@ -33,10 +45,13 @@
     --ink:#F5F5F7; --ink2:#AEAEB2; --ink3:#8E8E93; --hair:rgba(255,255,255,.10); --hair2:rgba(255,255,255,.06);
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
     --shadow-lg:0 2px 6px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.7);
+    --green-ink:var(--green); --red-ink:var(--red); --orange-ink:var(--orange);
+    color-scheme:dark;
   }
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* 100%, never none: the reader keeps their own text scaling */
 body{
   background:var(--bg); color:var(--ink); min-height:100vh;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI Variable Display","Segoe UI","Helvetica Neue",Helvetica,"PingFang SC","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
@@ -44,8 +59,12 @@ body{
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
   text-rendering:optimizeLegibility;
 }
-.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"ss01" 1}
+.num{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum" 1}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+/* a tap must not wait 300 ms for a second tap on things that are unambiguously buttons -- but NOT on the cards and
+   the tape, where a reader may well want to pinch a price */
+button,select,.sf,.seg button,.grpbtn,.iconbtn,.slotpill,.canchip,.agent,tr.grp{touch-action:manipulation}
+code{font-family:var(--mono);font-size:.94em;overflow-wrap:anywhere;word-break:break-word}
 a{color:var(--blue);text-decoration:none}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:var(--hair);border-radius:10px;border:3px solid transparent;background-clip:content-box}
@@ -53,35 +72,34 @@ a{color:var(--blue);text-decoration:none}
 ::-webkit-scrollbar-track{background:transparent}
 
 /* ============================================================ layout */
-.wrap{max-width:1560px;margin:0 auto;padding:0 24px 72px}
-@media(max-width:700px){.wrap{padding:0 16px 56px}}
+.wrap{max-width:1560px;margin:0 auto;padding:0 var(--gut) var(--padb)}
 
 /* ============================================================ top bar */
 header{
   position:sticky;top:0;z-index:60;backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   background:color-mix(in srgb,var(--bg) 72%,transparent); border-bottom:1px solid var(--hair);
 }
-.bar{max-width:1560px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:14px}
+.bar{max-width:1560px;margin:0 auto;padding:11px var(--gut);display:flex;align-items:center;gap:14px}
 .pills{display:flex;align-items:center;gap:10px;min-width:0}
 /* narrow screens: brand + theme on row 1, a horizontally scrollable pill rail on row 2 (nothing ever overlaps) */
 @media(max-width:860px){
-  .bar{flex-wrap:wrap;row-gap:9px;padding:10px 16px;gap:10px}
+  .bar{flex-wrap:wrap;row-gap:9px;gap:10px}
   .brand{flex:1 1 auto}
   .bar > .spacer{display:none}
   .pills{order:10;flex:1 0 100%;overflow-x:auto;scrollbar-width:none;padding-bottom:1px}
   .pills::-webkit-scrollbar{display:none}
   .pills>*{flex:none}
-  select.exp{max-width:180px}
+  :root{--gut:16px}
 }
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .mark{width:28px;height:28px;border-radius:9px;background:linear-gradient(145deg,var(--blue),var(--purple));
   display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;letter-spacing:-.03em;flex:none;
   box-shadow:0 2px 8px color-mix(in srgb,var(--blue) 40%,transparent)}
 .brand h1{margin:0;font-size:16px;font-weight:600;letter-spacing:-.022em;white-space:nowrap}
-.brand .sub{font-size:11px;color:var(--ink3);letter-spacing:0;white-space:nowrap}
+.brand .sub{font-size:11px;color:var(--ink3);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .spacer{flex:1}
 .pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:999px;
-  background:var(--hair2);font-size:12.5px;font-weight:500;color:var(--ink2);white-space:nowrap;
+  background:var(--hair2);font-size:var(--fs-meta);font-weight:500;color:var(--ink2);white-space:nowrap;
   transition:background .3s var(--ease),color .3s var(--ease)}
 .pill.paper{background:color-mix(in srgb,var(--orange) 15%,transparent);color:var(--orange);font-weight:600;letter-spacing:.02em}
 .pill.live{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green);font-weight:600}
@@ -92,13 +110,13 @@ header{
 @keyframes beat{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.82)}}
 .iconbtn{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:var(--ink2);
   transition:background .25s var(--ease),color .25s var(--ease),transform .25s var(--ease)}
-.iconbtn:hover{background:var(--hair2);color:var(--ink)}
+@media(hover:hover) and (pointer:fine){.iconbtn:hover{background:var(--hair2);color:var(--ink)}}
 .iconbtn:active{transform:scale(.92)}
 select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--ink2);padding:0 26px 0 11px;font-size:12.5px;
   border:0;appearance:none;cursor:pointer;max-width:230px;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238E8E93' stroke-width='1.6' stroke-linecap='round'/></svg>");
   background-repeat:no-repeat;background-position:right 10px center}
-select.exp:hover{background-color:var(--hair)}
+@media(hover:hover) and (pointer:fine){select.exp:hover{background-color:var(--hair)}}
 
 /* ============================================================ hero */
 .hero{margin:26px 0 20px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px}
@@ -115,18 +133,21 @@ select.exp:hover{background-color:var(--hair)}
 .delta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:9px;row-gap:8px}
 .dpair{display:inline-flex;align-items:baseline;gap:7px;white-space:nowrap}
 .chg{display:inline-flex;align-items:center;gap:5px;font-size:17px;font-weight:600;letter-spacing:-.02em;padding:3px 10px;border-radius:999px}
-.up{color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent)}
-.dn{color:var(--red);background:color-mix(in srgb,var(--red) 12%,transparent)}
+.up{color:var(--green-ink);background:color-mix(in srgb,var(--green) 12%,transparent)}
+.dn{color:var(--red-ink);background:color-mix(in srgb,var(--red) 12%,transparent)}
 .flat{color:var(--ink3);background:var(--hair2)}
 .unk{color:var(--ink3);background:var(--hair2);font-weight:500}
-.muted{color:var(--ink3);font-size:12.5px}
-.hint{color:var(--ink3);font-size:11.5px;line-height:1.5;margin-top:12px}
+.muted{color:var(--ink3);font-size:var(--fs-meta)}
+.hint{color:var(--ink3);font-size:var(--fs-note);line-height:1.5;margin-top:12px}
 .statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(116px,100%),1fr));gap:15px 12px;margin-top:20px;
   border-top:1px solid var(--hair2);padding-top:16px}
 .stat{min-width:0}
-.stat .k{font-size:11.5px;color:var(--ink3);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .k{font-size:var(--fs-note);color:var(--ink3);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat .v{font-size:17px;font-weight:600;letter-spacing:-.02em;line-height:1.28;overflow-wrap:anywhere}
 .stat .v.s{font-size:14.5px}
+.statgrid.tight{grid-template-columns:repeat(auto-fit,minmax(min(92px,100%),1fr))}
+.vid{font-family:var(--mono);font-size:var(--fs-micro);overflow-wrap:anywhere}
+.wrapcell{white-space:normal;max-width:260px}
 
 /* ============================================================ ticker */
 /* Every symbol the agents may trade is on screen at once: a wrapping grid, not a one-row scroller that hid most of a
@@ -134,31 +155,45 @@ select.exp:hover{background-color:var(--hair)}
    overflow fade / 左右滑动 hint switch themselves off because there is no longer anything to scroll. */
 .ticker{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;padding:2px 0 10px}
 .ticker::-webkit-scrollbar{display:none}
-.tk{min-width:0;padding:10px 12px;border-radius:var(--r-lg);background:var(--card);border:1px solid var(--hair);
-  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);scroll-snap-align:start;
+/* #ticker[data-session] .tk paints an OPAQUE background on every frame anyway (renderTicker always sets it), so the
+   blur under these 12-42 cards was compositing work with no possible visual result */
+.tk{min-width:0;padding:10px 12px;border-radius:var(--r-lg);background:var(--card-solid);border:1px solid var(--hair);
+  scroll-snap-align:start;
   transition:transform .4s var(--ease),box-shadow .4s var(--ease),border-color .35s var(--ease)}
-.tk:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+@media(hover:hover) and (pointer:fine){.tk:hover{transform:translateY(-2px);box-shadow:var(--shadow)}}
+.tk:active{transform:scale(.98)}
 .tk .sym{font-size:12.5px;font-weight:600;color:var(--ink2);letter-spacing:.02em;display:flex;align-items:center;gap:5px}
 .tk .px{font-size:21px;font-weight:650;letter-spacing:-.025em;margin:3px 0 1px;transition:color .5s var(--ease)}
-.tk .ch{font-size:12.5px;font-weight:550}
+.tk .ch{font-size:var(--fs-meta);font-weight:550}
+.qrole,.qmark{font-size:var(--fs-chip);font-weight:600}
+.qmark{color:var(--ink3)}
+.qhalt{color:var(--red);font-size:var(--fs-chip);font-weight:600}
+/* staleness is carried by the word 陈旧 / 未知; the dimming is only a second marker, so it must not erase the price */
+.tk .px.q-stale{opacity:.72}
+.tk .px.q-unk{opacity:.5}
 .tk.flash-up{animation:fu .85s var(--ease-out)}
 .tk.flash-dn{animation:fd .85s var(--ease-out)}
 @keyframes fu{0%{background:color-mix(in srgb,var(--green) 24%,var(--card));border-color:var(--green)}100%{}}
 @keyframes fd{0%{background:color-mix(in srgb,var(--red) 24%,var(--card));border-color:var(--red)}100%{}}
-.bench{opacity:.72}
+@keyframes fub{0%{border-color:var(--green)}100%{}}
+@keyframes fdb{0%{border-color:var(--red)}100%{}}
+/* a wholesale fade also dimmed the benchmark's own 陈旧 / 未知 markers; grey the label, keep the marker legible */
+.bench .sym,.bench .ch{color:var(--ink3)}
+.bench .px{opacity:.88}
 
 /* ============================================================ section heads */
 .sec{display:flex;align-items:baseline;gap:12px;margin:34px 0 14px;flex-wrap:wrap}
 .sec h2{margin:0;font-size:22px;font-weight:650;letter-spacing:-.026em}
-.sec .note{font-size:12.5px;color:var(--ink3)}
+.sec .note{font-size:var(--fs-meta);color:var(--ink3)}
 
 /* ============================================================ agents */
 .agents{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(296px,100%),1fr));gap:14px}
 .agent{position:relative;padding:17px 18px 15px;cursor:pointer;overflow:hidden;
   animation:rise .55s var(--ease-out) backwards}
 @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
-.agent:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--hair)}
+@media(hover:hover) and (pointer:fine){.agent:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--hair)}}
 .agent:active{transform:translateY(-1px) scale(.995)}
+.agent:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 .agent.retired{opacity:.62}
 .agent::after{content:"";position:absolute;inset:0;border-radius:var(--r-xl);pointer-events:none;
   box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .5s var(--ease)}
@@ -172,13 +207,13 @@ select.exp:hover{background-color:var(--hair)}
 .rank.r2{background:linear-gradient(145deg,#E3E3E8,#B0B0B8);color:#2a2a2e}
 .rank.r3{background:linear-gradient(145deg,#E0A579,#C1763F);color:#3a1f08}
 .slotid{font-size:15.5px;font-weight:650;letter-spacing:-.02em}
-.gen{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--hair2);color:var(--ink3);white-space:nowrap}
+.gen{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:600;padding:2px 7px;border-radius:6px;background:var(--hair2);color:var(--ink3);white-space:nowrap}
 .gen.child{background:color-mix(in srgb,var(--blue) 12%,transparent);color:var(--blue)}
 .gen.night{background:color-mix(in srgb,var(--purple) 12%,transparent);color:var(--purple)}
 .aglegend{font-size:12px;color:var(--ink3);margin:-6px 0 14px;line-height:1.6}
-.vchip{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--hair2);color:var(--ink2);
+.vchip{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:600;padding:2px 7px;border-radius:6px;background:var(--hair2);color:var(--ink2);
   font-family:var(--mono);letter-spacing:0}
-.tag{font-size:10px;font-weight:650;padding:2px 7px;border-radius:6px;letter-spacing:.03em}
+.tag{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:650;padding:2px 7px;border-radius:6px;letter-spacing:.03em}
 .tag.new{background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue)}
 .tag.kept{background:var(--hair2);color:var(--ink3)}
 .tag.init{background:color-mix(in srgb,var(--purple) 15%,transparent);color:var(--purple)}
@@ -189,31 +224,35 @@ select.exp:hover{background-color:var(--hair)}
 .pos{margin-top:11px;padding-top:10px;border-top:1px solid var(--hair2);display:grid;gap:6px}
 .posrow{display:flex;align-items:center;gap:8px;font-size:12.5px}
 .posrow .s{font-weight:650;min-width:46px}
-.posrow .q{color:var(--ink3);font-size:11.5px}
+.posrow .q{color:var(--ink3);font-size:var(--fs-note)}
 .posrow .u{margin-left:auto;font-weight:600}
 .empty{font-size:12px;color:var(--ink3);margin-top:11px;padding-top:10px;border-top:1px solid var(--hair2)}
-.warnrow{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:11.5px;color:var(--red);font-weight:550}
+.warnrow{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:var(--fs-note);color:var(--red);font-weight:550}
 
 /* ============================================================ tables / tape */
-.cols{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+.cols{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start;margin-top:34px}
 @media(max-width:1100px){.cols{grid-template-columns:minmax(0,1fr)}}
 .tw{overflow-x:auto;position:relative}
-.swipe{display:none;font-size:11.5px;color:var(--ink3);padding:7px 16px 11px;align-items:center;gap:6px}
+/* three nested side-scrollers with no containment: a flick that reaches the left edge chained to the document and
+   fired iOS's interactive back-swipe, popping the reader off the dashboard */
+.tw,.sfrow,.pills{overscroll-behavior-x:contain}
+.swipe{display:none;font-size:var(--fs-note);color:var(--ink3);padding:7px 16px 11px;align-items:center;gap:6px}
 .swipe.on{display:flex}
 @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
 .swipe span:first-child{animation:nudge 1.6s var(--ease) infinite}
 @media(prefers-reduced-motion:reduce){.swipe span:first-child{animation:none}}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);
-  padding:0 12px 9px;white-space:nowrap;position:sticky;top:0;background:transparent}
+th{text-align:left;font-size:var(--fs-micro);font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);
+  padding:0 12px 9px;white-space:nowrap}
 td{padding:10px 12px;border-top:1px solid var(--hair2);white-space:nowrap}
 tbody tr{transition:background .3s var(--ease)}
-tbody tr:hover{background:var(--hair2)}
+@media(hover:hover) and (pointer:fine){tbody tr:hover{background:var(--hair2)}}
+tbody tr:active td,tr.grp:active td{background:var(--hair2)}
 tr.tape-in{animation:slidein .6s var(--ease-out)}
 @keyframes slidein{from{opacity:0;transform:translateX(-10px);background:color-mix(in srgb,var(--blue) 12%,transparent)}to{opacity:1;transform:none}}
-.side{font-weight:700;font-size:11px;padding:2.5px 8px;border-radius:6px;letter-spacing:.04em}
-.side.BUY{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green)}
-.side.SELL{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.side{font-weight:700;font-size:var(--fs-micro);padding:2.5px 8px;border-radius:6px;letter-spacing:.04em}
+.side.BUY{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green-ink)}
+.side.SELL{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red-ink)}
 /* per-agent filter for the tape: a scrollable chip row, one chip per capital slot, always showing
    all ten so a slot that traded nothing is visible as a fact rather than as an absence */
 /* ticker: it always scrolled, but nothing said so and the last card was clipped mid-price.
@@ -223,7 +262,7 @@ tr.tape-in{animation:slidein .6s var(--ease-out)}
   background:linear-gradient(90deg,transparent,var(--bg));opacity:0;transition:opacity .25s var(--ease)}
 .tkwrap.more::after{opacity:1}
 .tkhint{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:2;pointer-events:none;
-  display:none;align-items:center;gap:4px;font-size:11px;color:var(--ink3);
+  display:none;align-items:center;gap:4px;font-size:var(--fs-micro);color:var(--ink3);
   background:color-mix(in srgb,var(--bg) 82%,transparent);border-radius:999px;padding:3px 8px;backdrop-filter:blur(8px)}
 .tkwrap.more .tkhint{display:flex}
 @keyframes nudgex{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
@@ -246,7 +285,7 @@ tr.tape-in{animation:slidein .6s var(--ease-out)}
   border-color:color-mix(in srgb,var(--blue) 28%,transparent)}
 #ticker[data-session="closed"] .tk{background:color-mix(in srgb,var(--ink3) 9%,var(--card-solid));
   border-color:var(--hair)}
-.seslegend{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink3);margin-left:2px}
+.seslegend{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-note);color:var(--ink3);margin-left:2px}
 .seslegend i{width:8px;height:8px;border-radius:3px;display:inline-block}
 .sesdot.pre{background:var(--orange)} .sesdot.regular{background:var(--green)}
 .sesdot.post{background:var(--purple)} .sesdot.overnight{background:var(--blue)} .sesdot.closed{background:var(--ink3)}
@@ -256,8 +295,8 @@ tr.tape-in{animation:slidein .6s var(--ease-out)}
    reader to infer it from an empty tape. */
 .canchip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;
   font-size:12px;font-weight:550;white-space:nowrap}
-.canchip.go{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green)}
-.canchip.exit{background:color-mix(in srgb,var(--orange) 15%,transparent);color:var(--orange)}
+.canchip.go{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green-ink)}
+.canchip.exit{background:color-mix(in srgb,var(--orange) 15%,transparent);color:var(--orange-ink)}
 .canchip.stop{background:var(--hair2);color:var(--ink3)}
 
 /* Attribution without decoration. Ten hues turned the tape into a rainbow that carried no meaning;
@@ -267,36 +306,42 @@ td.slotcell{white-space:nowrap}
 .slotpill{display:inline-flex;align-items:center;height:21px;padding:0 8px;border-radius:6px;
   background:var(--hair2);color:var(--ink);font-weight:650;font-size:11.5px;letter-spacing:.01em;
   cursor:pointer;transition:background .2s var(--ease),color .2s var(--ease)}
-.slotpill:hover{background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue)}
+@media(hover:hover) and (pointer:fine){.slotpill:hover{background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue)}}
+.slotpill:active{background:color-mix(in srgb,var(--blue) 22%,transparent);color:var(--blue)}
 /* view switch: one pill with two halves, Apple's segmented control in spirit */
 .seg{display:inline-flex;height:28px;border-radius:999px;background:var(--hair2);padding:2px;gap:2px}
-.seg button{border:0;background:transparent;color:var(--ink2);font-size:12.5px;padding:0 11px;border-radius:999px;
+.seg button{border:0;background:transparent;color:var(--ink2);font-size:var(--fs-meta);padding:0 11px;border-radius:999px;
   cursor:pointer;transition:background .2s var(--ease),color .2s var(--ease)}
 .seg button.on{background:var(--card-solid);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .seg button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 /* the agent tint is OPT-IN: a whole-row wash at low alpha, never a bar, and off until asked for */
 tbody.tinted tr[data-slot]{background:color-mix(in srgb,var(--slotc) 9%,transparent)}
 tbody.tinted tr.grp[data-slot] td{background:color-mix(in srgb,var(--slotc) 16%,transparent)}
-tbody.tinted tr[data-slot]:hover{background:color-mix(in srgb,var(--slotc) 15%,transparent)}
+@media(hover:hover) and (pointer:fine){tbody.tinted tr[data-slot]:hover{background:color-mix(in srgb,var(--slotc) 15%,transparent)}}
 
 .sfwrap{position:relative}
 .sfwrap::after{content:"";position:absolute;top:0;right:0;width:40px;height:100%;pointer-events:none;
   background:linear-gradient(90deg,transparent,var(--bg));opacity:0;transition:opacity .25s var(--ease)}
 .sfwrap.more::after{opacity:1}
-.sfrow{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px;margin:-4px 0 0;scrollbar-width:none}
+.sfrow{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px;margin:-4px 0 0;scrollbar-width:none;
+  scroll-snap-type:x proximity}
+.sf{scroll-snap-align:start}
 .sfrow::-webkit-scrollbar{display:none}
 .sf{flex:none;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:999px;
-  background:var(--hair2);color:var(--ink2);font-size:12.5px;font-weight:500;white-space:nowrap;border:0;
+  background:var(--hair2);color:var(--ink2);font-size:var(--fs-meta);font-weight:500;white-space:nowrap;border:0;
   cursor:pointer;transition:background .25s var(--ease),color .25s var(--ease),transform .12s var(--ease)}
-.sf:hover{background:var(--hair)}
+@media(hover:hover) and (pointer:fine){.sf:hover{background:var(--hair)}}
 .sf:active{transform:scale(.96)}
 .sf.on{background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue);font-weight:650}
-.sf.none{opacity:.45}
-.sf .c{font-size:11px;font-variant-numeric:tabular-nums;opacity:.75}
+/* the chip row exists so that "this agent traded nothing" is visible AS A FACT; at 45% it was ~1.4:1, i.e. absent */
+.sf.none:not(.on){opacity:1;background:transparent;box-shadow:inset 0 0 0 1px var(--hair);color:var(--ink3)}
+.sf.none .c{opacity:1}
+.sf .c{font-size:var(--fs-micro);font-variant-numeric:tabular-nums;opacity:.75}
 .sf:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .grpbtn{height:28px;padding:0 11px;border-radius:999px;border:0;background:var(--hair2);color:var(--ink2);
-  font-size:12.5px;cursor:pointer;transition:background .25s var(--ease),color .25s var(--ease)}
-.grpbtn:hover{background:var(--hair)}
+  font-size:var(--fs-meta);cursor:pointer;transition:background .25s var(--ease),color .25s var(--ease)}
+@media(hover:hover) and (pointer:fine){.grpbtn:hover{background:var(--hair)}}
+.grpbtn:active,.seg button:active,.canchip:active{transform:scale(.96)}
 .grpbtn.on{background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue);font-weight:650}
 .grpbtn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 tr.grp td{background:var(--hair2);font-weight:650;font-size:12.5px;padding-top:9px;padding-bottom:9px;
@@ -309,27 +354,30 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .round{padding:13px 15px;border-radius:var(--r-lg);border:1px solid var(--hair);margin-bottom:9px;background:var(--hair2)}
 .round .rh{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .round .day{font-weight:650;font-size:13.5px}
-.oc{font-size:10.5px;font-weight:650;padding:2px 8px;border-radius:6px;letter-spacing:.03em}
+.oc{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:650;padding:2px 8px;border-radius:6px;letter-spacing:.03em}
 .oc.completed{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green)}
 .oc.skipped{background:var(--hair);color:var(--ink3)}
 .oc.partial{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
-.reason{font-size:11.5px;color:var(--ink3);margin-top:6px;line-height:1.5;word-break:break-word}
+.reason{font-size:var(--fs-note);color:var(--ink3);margin-top:6px;line-height:1.5;word-break:break-word}
 .round .disc{margin-top:6px;font-size:12px;color:var(--ink2);line-height:1.5}
 .round .disc div+div{margin-top:2px}
-.mut{font-size:11.5px;margin-top:7px;font-family:var(--mono);color:var(--ink2);line-height:1.6}
+.mut{font-size:var(--fs-note);margin-top:7px;font-family:var(--mono);color:var(--ink2);line-height:1.6}
 .mut b{color:var(--ink);font-weight:600}
 .arrow{color:var(--ink3);margin:0 4px}
 
 /* ============================================================ sheet */
 .scrim{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.28);backdrop-filter:blur(3px);opacity:0;pointer-events:none;
-  transition:opacity .4s var(--ease)}
+  transition:opacity .4s var(--ease);touch-action:none}
 .scrim.on{opacity:1;pointer-events:auto}
-.sheet{position:fixed;z-index:100;top:0;right:0;height:100dvh;width:min(680px,100vw);background:var(--bg2);
-  border-left:1px solid var(--hair);box-shadow:var(--shadow-lg);transform:translateX(100%);
-  transition:transform .52s var(--ease);overflow-y:auto;overscroll-behavior:contain}
-.sheet.on{transform:none}
-@media(max-width:700px){.sheet{width:100vw;border-left:0;border-radius:var(--r-xl) var(--r-xl) 0 0;top:auto;bottom:0;height:92dvh;
-  transform:translateY(100%)}.sheet.on{transform:none}}
+/* vh first, dvh second: iOS 15.0-15.3 drops dvh entirely and the bottom sheet would collapse to content height.
+   visibility takes the CLOSED drawer out of the touch and accessibility tree -- transform alone left an aria-modal
+   dialog sitting off-screen, tabbable and tappable. */
+.sheet{position:fixed;z-index:100;top:0;right:0;height:100vh;height:100dvh;width:min(680px,100vw);background:var(--bg2);
+  border-left:1px solid var(--hair);box-shadow:var(--shadow-lg);transform:translateX(100%);visibility:hidden;
+  transition:transform .52s var(--ease),visibility 0s linear .52s;overflow-y:auto;overscroll-behavior:contain}
+.sheet.on{transform:none;visibility:visible;transition:transform .52s var(--ease)}
+@media(max-width:700px){.sheet{width:100vw;border-left:0;border-radius:var(--r-xl) var(--r-xl) 0 0;top:auto;bottom:0;
+  height:92vh;height:92dvh;transform:translateY(100%)}.sheet.on{transform:none}}
 .shead{position:sticky;top:0;z-index:2;padding:16px 22px;display:flex;align-items:center;gap:12px;
   background:color-mix(in srgb,var(--bg2) 82%,transparent);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   border-bottom:1px solid var(--hair)}
@@ -341,19 +389,141 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .box h3{margin:0 0 11px;font-size:13px;font-weight:650;letter-spacing:-.01em}
 .instr{font-size:12.5px;color:var(--ink2);line-height:1.6}
 .parm{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
-.parm span{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:6px;background:var(--hair2);color:var(--ink2)}
+.parm span{font-family:var(--mono);font-size:var(--fs-micro);padding:3px 8px;border-radius:6px;background:var(--hair2);color:var(--ink2)}
 .parm span.diff{background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue);font-weight:600}
 
 /* ============================================================ misc */
 .banner{margin:18px 0 0;padding:13px 17px;border-radius:var(--r-lg);font-size:13px;display:flex;gap:9px;align-items:flex-start;
   background:color-mix(in srgb,var(--orange) 11%,transparent);border:1px solid color-mix(in srgb,var(--orange) 26%,transparent);color:var(--ink)}
 .banner.err{background:color-mix(in srgb,var(--red) 11%,transparent);border-color:color-mix(in srgb,var(--red) 28%,transparent)}
-footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-size:11.5px;color:var(--ink3);line-height:1.65}
+footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-size:var(--fs-note);color:var(--ink3);line-height:1.65}
 .skel{background:linear-gradient(100deg,var(--hair2) 30%,var(--hair) 50%,var(--hair2) 70%);background-size:220% 100%;
   animation:sh 1.4s linear infinite;border-radius:var(--r-sm);color:transparent!important}
 @keyframes sh{to{background-position:-220% 0}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;
   transition-duration:.01ms!important}}
+
+/* ============================================================ phone (<=700px)
+   One block, appended last so it wins on source order without a single !important. Everything here is additive:
+   at 701px and up the page renders exactly as it did before. The rules are grouped the way a reader meets them --
+   header first, then what they touch, then the tape, then density. */
+@media(max-width:700px){
+  :root{--fs-chip:12px;--fs-micro:12px;--fs-note:12.5px;--fs-meta:13px;--lh-cjk:1.72;--gut:16px;--padb:56px}
+
+  /* --- the header: every control on screen, nothing behind a sideways swipe --------------------------------- */
+  .bar{padding:9px var(--gut);gap:8px;row-gap:8px}
+  .brand .sub{display:none}            /* restated by the PAPER ONLY pill, the footer, and (if not live) a banner */
+  .pills{flex-wrap:wrap;overflow-x:visible;row-gap:7px;padding-bottom:0}
+  .pills>*{max-width:100%}
+  .pills>select.exp{flex:1 1 170px;min-width:0;max-width:none;height:44px;font-size:16px;
+    padding:0 34px 0 14px;background-position:right 13px center}   /* 16px is the exact iOS no-zoom threshold */
+  header{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--bg)}
+
+  /* --- a thumb is 44px wide ------------------------------------------------------------------------------- */
+  .iconbtn{min-width:44px;height:44px;border-radius:12px}
+  .grpbtn{height:44px;padding:0 14px;font-size:14px}
+  .seg{height:44px;padding:3px;gap:4px}
+  .seg button{padding:0 16px;font-size:14px}
+  .canchip{height:44px;padding:0 14px}
+  .sf{height:40px;padding:0 12px;font-size:13px}
+  #shClose{width:44px;height:44px}
+  .agent:active{transform:scale(.97);opacity:.9}
+  /* the 36x21 slot pill sits inside a 40px row that does something ELSE (opens the drawer): give it a real hit box */
+  td.slotcell{position:relative}
+  .slotpill{position:relative}
+  .slotpill::after{content:"";position:absolute;top:-12px;bottom:-12px;left:-10px;right:-10px}
+
+  /* --- the tape: 254px of columns stop hiding behind a swipe ----------------------------------------------- */
+  .tw{overflow-x:visible}
+  table.tape thead{display:none}
+  table.tape,table.tape tbody{display:block;width:100%}
+  table.tape tbody tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px;padding:11px 14px;
+    border-top:1px solid var(--hair2)}
+  table.tape td{display:inline-flex;align-items:baseline;gap:4px;padding:0;border-top:0;max-width:100%;white-space:nowrap}
+  table.tape td::before{content:attr(data-k);color:var(--ink3);font-size:var(--fs-micro);font-weight:500}
+  table.tape td:not([data-k])::before{content:none}
+  /* a time reads as a time and the slot chip is already an S-number: those two labels are only noise, and each
+     one costs a wrapped line at 375px */
+  #tradebody td:nth-child(1)::before,#tradebody td:nth-child(2)::before{content:none}
+  /* the identity of the fill leads; the figures follow it as labelled chips, wrapping where they must */
+  table.tape tr.grp{display:block;padding:9px 14px}
+  table.tape tr.grp td{display:block;position:static;white-space:normal}
+  table.tape td.blank{flex:1 1 100%;text-align:center;white-space:normal;padding:22px 12px}
+  .wrapcell{max-width:100%}
+  /* legitimate ONLY because .tw is overflow-x:visible in this same block: there is no sideways gesture left to announce */
+  #tradeswipe{display:none}
+
+  /* --- type: a 12px floor, paid for by tighter chips and demoted headings --------------------------------- */
+  .sec h2{font-size:19px}
+  .aeq{font-size:23px}
+  .big{font-size:34px}
+  .stat .v.s{font-size:14px;line-height:1.4}
+  .statgrid.tight{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tag,.gen,.vchip,.oc{padding:1px 6px}
+  .hint,.aglegend{line-height:var(--lh-cjk);text-wrap:pretty}
+  footer>div:first-child{font-size:13px;font-weight:500;color:var(--ink2);line-height:var(--lh-cjk)}
+  #footmeta{font-size:12px;line-height:1.7}
+  .tk .px.q-stale{opacity:.82}
+  .tk .px.q-unk{opacity:.66}
+
+  /* --- density: ~350px of desktop spacing returned to the content ----------------------------------------- */
+  .hero{margin:18px 0 16px;gap:12px}
+  .sec{margin:22px 0 10px;gap:7px 10px}
+  .sec h2{flex:1 0 100%}
+  .sec .note{flex:1 1 100%}
+  .aglegend{margin:-4px 0 10px}
+  .agents{gap:10px}
+  .agent{padding:14px 15px 13px}
+  .spark{height:32px;margin-top:9px}
+  .statgrid{gap:12px 10px;margin-top:16px;padding-top:13px}
+  .cols{margin-top:22px;gap:12px}
+  .blank{padding:22px 12px}
+  .blank .ico{font-size:20px;margin-bottom:6px}
+  footer{margin-top:26px;padding-top:16px}
+  .ticker{grid-template-columns:repeat(auto-fill,minmax(min(106px,100%),1fr));gap:6px}
+  .tk{padding:8px 9px;border-radius:var(--r-md)}
+  .tk .px{font-size:17px}
+  .tk .ch{font-size:var(--fs-note)}
+
+  /* --- the drawer ----------------------------------------------------------------------------------------- */
+  .shead{padding:14px 16px 12px}
+  .shead::before{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    width:38px;height:5px;border-radius:3px;background:var(--hair);pointer-events:none}
+  .sbody{padding:16px 14px var(--padb)}
+  .box{padding:13px 14px}
+  .sheet{box-shadow:0 -1px 0 var(--hair)}
+  .sheet table.tape tbody tr{padding:10px 2px}
+  .sheet table.tape td:nth-child(3)::before,.sheet table.tape td:nth-child(4)::before{content:attr(data-k)}
+  .shead,.sheet{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .shead{background:var(--bg2)}
+
+  /* --- the scroll itself ---------------------------------------------------------------------------------- */
+  /* MEASURED AND REJECTED: content-visibility:auto on .agent / .round skips the offscreen cards, but no intrinsic
+     size estimate matches ten cards of differing height, so the document height walked 5542 -> 5325 during the
+     first scroll through them. A scroll height that moves under the thumb is the very thing being fixed here.
+     What is kept is the containment, which costs no estimate: a change inside one card can no longer invalidate
+     the layout or paint of the other nine. */
+  .agent,.tk,.round{contain:layout paint style}
+  /* the flash is a real signal (this price just moved); on a phone it moves the border instead of repainting the
+     whole card, up to 42 of them at once */
+  .tk.flash-up{animation:fub .85s var(--ease-out)}
+  .tk.flash-dn{animation:fdb .85s var(--ease-out)}
+
+  /* --- compositing: blurring a flat background returns that background, at GPU cost ------------------------ */
+  .card{background:var(--card-solid);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .tkhint{backdrop-filter:none}
+  .scrim{backdrop-filter:none;background:rgba(0,0,0,.45)}   /* the higher alpha replaces the separation the blur gave */
+  body{text-rendering:optimizeSpeed}
+}
+
+/* the page opts into viewport-fit=cover, so in landscape the gutters must clear the sensor housing and the bottom
+   padding must clear the home indicator. After the phone block, so it reads that block's smaller --gut/--padb. */
+@supports(padding:max(0px)){
+  .bar,.wrap{padding-left:max(var(--gut),env(safe-area-inset-left));
+             padding-right:max(var(--gut),env(safe-area-inset-right))}
+  .wrap{padding-bottom:calc(var(--padb) + env(safe-area-inset-bottom))}
+  .sbody{padding-bottom:calc(var(--padb) + env(safe-area-inset-bottom))}
+}
 </style>
 </head>
 <body>
@@ -424,8 +594,9 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   </section>
 
   <div class="sec"><h2>实时行情</h2><span class="note" id="tknote">公开只读报价 · 非交易所逐笔</span>
-    <span class="seslegend" id="seslegend"></span><span class="canchip stop" id="canchip">—</span>
+    <span class="seslegend" id="seslegend"></span><button class="canchip stop" id="canchip" type="button" aria-expanded="false">—</button>
     <button class="grpbtn" id="tkall" type="button" title="默认只显示这些 Agent 正在持仓、今日成交或最近成交的股票（外加基准）。点开显示全部可交易名单。">全部名单</button>
+    <p class="hint" id="canwhy" style="display:none;flex:1 0 100%;margin-top:4px"></p>
     <span class="note" id="tkidle" style="display:none"></span></div>
   <div class="tkwrap" id="tkwrap">
     <div class="ticker" id="ticker"></div>
@@ -433,7 +604,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   </div>
 
   <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span></div>
-  <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（写的是策略性格，A01–A10 见悬停）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
+  <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
 
   <div class="cols" style="margin-top:34px">
@@ -447,7 +618,8 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
         <button class="grpbtn" id="tradecolor" type="button" title="给每一行铺一层该 Agent 专属的淡底色，便于在混排时分辨；默认关闭">Agent 底色</button>
         <span class="note" id="tradenote"></span></div>
       <div class="sfwrap" id="sfwrap"><div class="sfrow" id="slotfilter" role="group" aria-label="按 Agent 筛选成交"></div></div>
-      <div class="card"><div class="tw"><table>
+      <div class="swipe" id="sfswipe"><span>⇢</span><span>左右滑动查看全部 Agent</span></div>
+      <div class="card"><div class="tw"><table class="tape">
         <thead><tr><th>时间</th><th>槽</th><th>方向</th><th>股票</th><th>数量</th><th>成交价</th><th>金额</th><th>已实现</th><th>意图</th></tr></thead>
         <tbody id="tradebody"></tbody>
       </table></div>
@@ -466,7 +638,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
 </div>
 
 <div class="scrim" id="scrim"></div>
-<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Agent 详情">
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Agent 详情" aria-hidden="true">
   <div class="shead">
     <div style="min-width:0">
       <div style="font-size:17px;font-weight:650;letter-spacing:-.022em" id="shTitle">—</div>
@@ -532,7 +704,7 @@ function setNum(node, value, fmt) {
   const target = isNum(value) ? value : null;
   const prev = TWEEN.get(node);
   if (target == null) { TWEEN.set(node, null); node.textContent = fmt(null); return; }
-  if (prev == null || !isNum(prev) || Math.abs(target - prev) < 1e-9 || document.hidden || REDUCED) {
+  if (prev == null || !isNum(prev) || Math.abs(target - prev) < 1e-9 || document.hidden || REDUCED || PHONE.matches) {
     TWEEN.set(node, target); node.textContent = fmt(target); return;
   }
   const from = prev, dur = 520, t0 = performance.now();
@@ -546,6 +718,10 @@ function setNum(node, value, fmt) {
   requestAnimationFrame(step);
 }
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* On a phone a quote frame would start up to 53 independent 520 ms rAF chains for the eight numbers actually on
+   screen, and during the animation every figure shown is an interpolated value that was never true. Snap instead:
+   strictly more honest, and free. */
+const PHONE = window.matchMedia("(max-width:700px)");
 
 /* sparkline: smooth path + gradient area, no library.
    A flat (or effectively flat) series is drawn as one quiet centred rule with no area fill — filling a 1-cent range
@@ -553,8 +729,10 @@ const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function spark(svg, pts, color) {
   if (!svg) return;
   const w = svg.clientWidth || 280, h = svg.clientHeight || 38;
-  // redraw only when something actually changed: at 1 Hz x 10 agents an unconditional SVG rebuild is pure waste
-  const sig = w + "x" + h + "|" + color + "|" + (pts || []).join(",");
+  // redraw only when something actually changed: at 1 Hz x 10 agents an unconditional SVG rebuild is pure waste.
+  // The key is the ROUNDED PIXEL path, not the raw cents: live equity is pushed on as the last point, so a $0.01
+  // tick used to rebuild all ten SVGs for a line that lands on the same pixels.
+  const sig = w + "x" + h + "|" + color + "|" + (pts || []).map(v => (isNum(v) ? v : "?")).join(",");
   if (svg.dataset.sig === sig) return;
   svg.dataset.sig = sig;
   const NS = "http://www.w3.org/2000/svg";
@@ -602,15 +780,39 @@ function spark(svg, pts, color) {
   last.setAttribute("r", "2.6"); last.setAttribute("fill", color);
   svg.appendChild(last);
 }
-const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+/* getComputedStyle() on the root is a style-recalc flush, and this ran ~100x per frame immediately after an
+   innerHTML write, i.e. with the style tree dirty every time. The values are palette tokens: they move only when the
+   theme moves, so both places that can move it clear the cache. */
+const CSSV = new Map();
+const cssVar = n => {
+  let v = CSSV.get(n);
+  if (v === undefined) { v = getComputedStyle(document.documentElement).getPropertyValue(n).trim(); CSSV.set(n, v); }
+  return v;
+};
 
 /* ============================================================ theme */
 (function theme() {
   const KEY = "arena.theme";
   let mode = null;
   try { mode = localStorage.getItem(KEY); } catch (e) { }
-  const apply = m => { if (m === "light" || m === "dark") document.documentElement.setAttribute("data-theme", m); else document.documentElement.removeAttribute("data-theme"); };
+  const apply = m => {
+    CSSV.clear();
+    if (m === "light" || m === "dark") document.documentElement.setAttribute("data-theme", m);
+    else document.documentElement.removeAttribute("data-theme");
+    // tell the phone's browser chrome which colour the page is, so the status bar stops fighting it
+    let mt = document.querySelector('meta[name="theme-color"]');
+    if (!mt) { mt = document.createElement("meta"); mt.setAttribute("name", "theme-color"); document.head.appendChild(mt); }
+    mt.setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#F5F5F7");
+  };
   apply(mode);
+  // following the OS theme is a real state change: without this, memoised colours would never be re-read
+  try {
+    window.matchMedia("(prefers-color-scheme:dark)").addEventListener("change", () => {
+      CSSV.clear();
+      apply(document.documentElement.getAttribute("data-theme"));
+      if (STATE.snap) render(STATE.snap, true);
+    });
+  } catch (e) { }
   $("themebtn").addEventListener("click", () => {
     const cur = document.documentElement.getAttribute("data-theme");
     const next = cur === "dark" ? "light" : cur === "light" ? null : "dark";
@@ -634,6 +836,7 @@ const I18N = {
     "实时 Paper · 真实行情 · 模拟成交": "Live paper trading · real quotes · simulated fills",
     "模拟盘：不连接任何券商账户，不发出真实委托": "Paper only: no brokerage account, no real orders",
     "加载中": "Loading", "连接中": "Connecting", "重连中": "Reconnecting", "已暂停": "Paused",
+    "数据已停滞": "no new data for",
     "离线": "Offline", "实时": "Live", "轮询": "Polling", "快照": "Snapshot",
     "选择实验": "Select experiment", "外观": "Appearance", "切换外观": "Toggle appearance",
     "语言": "Language", "切换语言": "Switch language",
@@ -656,7 +859,7 @@ const I18N = {
     "行情源已关闭（--no-feed）": "Quote feed disabled (--no-feed)",
     // ---- agents
     "十个 Agent": "Ten Agents",
-    "每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（写的是策略性格，A01–A10 见悬停）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。":
+    "每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。":
       "Each card: rank · capital slot (S01–S10, permanent) · current strategy (its personality; A01–A10 on hover) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.",
     "原版": "original", "可隔夜": "may hold overnight", "保留": "kept", "新生": "new", "任内": "tenure",
     // ---- trades
@@ -728,6 +931,7 @@ const I18N = {
     "当日收益相同，名次由 tie-break 决定": "same daily return; the rank comes from the tie-break",
     "读不到故障记录": "Cannot read the fault log",
     "无法判断": "cannot tell",
+    "左右滑动查看全部 Agent": "scroll sideways for every agent",
     "· 十个隔离虚拟子账本（每槽 $10,000，合计 $100,000），不连接任何券商账户、不发出真实委托、不使用任何凭证。本页只读。":
       "· Ten isolated virtual sub-ledgers ($10,000 per slot, $100,000 in total). No brokerage account, no real orders, no credentials. This page is read-only.",
     "笔": "fills", "全部交易日": "all trading days",
@@ -816,7 +1020,7 @@ const I18N = {
     "上次读取": "the last read",
   },
 };
-const I18N_ATTRS = ["title", "aria-label", "placeholder"];
+const I18N_ATTRS = ["title", "aria-label", "placeholder", "data-k"];
 
 function detectLang() {
   try { const v = localStorage.getItem("lang"); if (v === "zh" || v === "en") return v; } catch (e) { }
@@ -849,7 +1053,7 @@ function translateStatic(root) {
       const hit = I18N.en[k];
       if (hit !== undefined) nd.nodeValue = raw.replace(k, hit);
     });
-    scope.querySelectorAll("[title],[aria-label],[placeholder]").forEach(el => {
+    scope.querySelectorAll("[title],[aria-label],[placeholder],[data-k]").forEach(el => {
       I18N_ATTRS.forEach(a => {
         const v = el.getAttribute(a);
         if (v && I18N.en[v] !== undefined) el.setAttribute(a, I18N.en[v]);
@@ -935,6 +1139,8 @@ function setConn(ok, txt) {
   const p = $("connpill"), t = $("conntxt");
   p.className = "pill " + (ok ? "live" : "warn");
   t.textContent = txt;
+  const dot = p.querySelector(".dot");          // a pulsing dot over the word 离线 says the opposite of the word
+  if (dot) dot.classList.toggle("beat", !!ok);
 }
 
 function connect() {
@@ -946,7 +1152,11 @@ function connect() {
   STATE.es = es;
   es.addEventListener("snapshot", ev => {
     stopPolling();
-    try { render(JSON.parse(ev.data)); STATE.lastOk = Date.now(); } catch (e) { console.error(e); }
+    try {
+      const snap = JSON.parse(ev.data);
+      STATE.lastOk = Date.now();               // the DATA arrived now, whatever the paint does next
+      paintSoon(() => render(snap));
+    } catch (e) { console.error(e); }
   });
   // when only the clock moved the server sends a tick instead of the whole board: keep the header
   // and footer live without re-rendering ten agent cards, a trades table and an evolution log.
@@ -1002,10 +1212,20 @@ function startPolling() {
   if (STATE.pollTimer) return;
   const tick = async () => {
     try {
-      const r = await fetch(API.snapshot(), { cache: "no-store" });
+      // no-cache still revalidates on every poll and never serves a stale body; it just lets an unchanged
+      // published snapshot answer 304 instead of resending ~185 KB (overnight it is rewritten once per 900 s)
+      const r = await fetch(API.snapshot(), { cache: STATIC ? "no-cache" : "no-store" });
       if (!r.ok) throw new Error("HTTP " + r.status);
       const snap = await r.json();
-      render(snap); STATE.lastOk = Date.now();
+      // Safari has never implemented overflow-anchor, so a silent poll used to shift the row under the thumb
+      STATE.lastOk = Date.now();
+      paintSoon(() => {
+        const se = document.scrollingElement, keep = se ? se.scrollTop : 0, h0 = se ? se.scrollHeight : 0;
+        render(snap);
+        if (se && keep > 0 && !(window.CSS && CSS.supports && CSS.supports("overflow-anchor", "auto"))) {
+          se.scrollTop = keep + (se.scrollHeight - h0);
+        }
+      });
       if (API.live) setConn(true, tr("轮询"));
       else {
         // say how old the photograph is, and stop calling it live once it is older than two publish intervals
@@ -1021,10 +1241,39 @@ function startPolling() {
 function stopPolling() { if (STATE.pollTimer) { clearInterval(STATE.pollTimer); STATE.pollTimer = null; } }
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) { if (STATE.es) { STATE.es.close(); STATE.es = null; } stopPolling(); setConn(false, tr("已暂停")); }
-  else connect();
+  else { STATE.lastOk = 0; connect(); }    // the clock restarts with the connection, or the first thing a returning
+                                           // reader sees is a stall measured across the time the phone was asleep
 });
 
 /* ============================================================ render */
+/* A frame that lands mid-flick re-renders the board under the reader's thumb. Hold the NEWEST frame until the
+   scroll settles -- never longer than HOLD_MAX_MS, and never more than one frame deep, so the board can fall at
+   most half a second behind and can never show anything but the latest state. STATE.lastOk is still stamped when
+   the data ARRIVES, so the staleness the page reports is about the data, not about the paint. */
+const HOLD_MAX_MS = 500;
+let SCROLL_AT = 0, HELD = null, HELD_AT = 0, HELD_TIMER = 0;
+window.addEventListener("scroll", () => { SCROLL_AT = Date.now(); }, { passive: true });
+function paintSoon(fn) {
+  const now = Date.now();
+  const moving = now - SCROLL_AT < 120;
+  if (!moving || (HELD_AT && now - HELD_AT >= HOLD_MAX_MS)) {
+    HELD = null; HELD_AT = 0;
+    if (HELD_TIMER) { clearTimeout(HELD_TIMER); HELD_TIMER = 0; }
+    fn();
+    return;
+  }
+  HELD = fn;                                   // only the newest frame survives; an older one has nothing to add
+  if (!HELD_AT) HELD_AT = now;
+  if (HELD_TIMER) return;
+  const flush = () => {
+    HELD_TIMER = 0;
+    const late = Date.now() - HELD_AT >= HOLD_MAX_MS;
+    if (!late && Date.now() - SCROLL_AT < 120) { HELD_TIMER = setTimeout(flush, 80); return; }
+    const f = HELD; HELD = null; HELD_AT = 0;
+    if (f) f();
+  };
+  HELD_TIMER = setTimeout(flush, 80);
+}
 // Each panel renders independently: a throw in one must never freeze the others (that bug froze
 // the whole board at frame 1 once already). Failures are counted and shown, never swallowed silently.
 const RENDER_FAILS = new Map();
@@ -1096,6 +1345,9 @@ function renderHeader(s) {
     };
   }
   if (s.experiment_id) sel.value = s.experiment_id;
+  // on a phone the picker costs a whole 44px row of a sticky header; it only earns that when it can switch to
+  // something. The experiment id stays visible in the hero card and in the footer either way.
+  sel.style.display = (exps.length > 1 || window.innerWidth > 700) ? "" : "none";
   const ex = s.experiment || {};
   $("brandsub").textContent = ex.is_live ? tr("实时 Paper · 真实行情 · 模拟成交") : tr(ex.data_kind_zh || "Arena") + " · " + tr("非实时");
 }
@@ -1209,7 +1461,7 @@ function renderHero(s) {
   setNum($("sPos"), posVal, v => usd(v, { cents: false }));
   const un = $("sUnreal");
   un.textContent = usd(sys.live_unrealized_cents, { sign: isNum(sys.live_unrealized_cents) && sys.live_unrealized_cents > 0 });
-  un.style.color = isNum(sys.live_unrealized_cents) ? (sys.live_unrealized_cents > 0 ? cssVar("--green") : sys.live_unrealized_cents < 0 ? cssVar("--red") : "") : "";
+  un.style.color = isNum(sys.live_unrealized_cents) ? (sys.live_unrealized_cents > 0 ? cssVar("--green-ink") : sys.live_unrealized_cents < 0 ? cssVar("--red-ink") : "") : "";
   // drawdown is only shown when every scored day could be summed; "partial"/"unknown" render 未知, never $0
   const dd = $("sDD");
   dd.textContent = isNum(sys.max_dd_cents) ? usd(sys.max_dd_cents, { cents: false }) : tr(UNK);
@@ -1252,15 +1504,15 @@ function renderChips(s) {
   rn.textContent = !r ? (s.ok === false ? tr(UNK) : tr("未启动"))
     : r.alive === null ? UNK                       // clock stepped: we cannot tell, and must not guess
     : r.alive ? tr("运行中") : `${tr("停止")} · ${ago(r.age_s)}`;
-  rn.style.color = r && r.alive === true ? cssVar("--green")
-    : r && r.alive === null ? cssVar("--orange") : cssVar("--ink3");
+  rn.style.color = r && r.alive === true ? cssVar("--green-ink")
+    : r && r.alive === null ? cssVar("--orange-ink") : cssVar("--ink3");
   const f = s.feed || {};
   const fn = $("mFeed");
   const fresh = isNum(f.last_ok_age_s) && f.last_ok_age_s < 60;
   fn.textContent = !f.enabled ? tr("已关闭")
     : !isNum(f.last_ok_age_s) ? tr("等待中")
     : `${fresh ? tr("正常") : tr("陈旧")} · ${Math.round(f.last_ok_age_s)}s`;
-  fn.style.color = f.enabled && fresh ? cssVar("--green") : f.enabled && isNum(f.last_ok_age_s) ? cssVar("--orange") : cssVar("--ink3");
+  fn.style.color = f.enabled && fresh ? cssVar("--green-ink") : f.enabled && isNum(f.last_ok_age_s) ? cssVar("--orange-ink") : cssVar("--ink3");
 }
 
 const SESSION_CAN = {
@@ -1331,6 +1583,9 @@ function syncFilterHint() {
   const w = $("sfwrap"), r = $("slotfilter");
   if (!w || !r) return;
   w.classList.toggle("more", r.scrollWidth - r.clientWidth - r.scrollLeft > 8);
+  // the fade is a desktop affordance; on a phone the gesture has to be stated, exactly as the tape states its own
+  const h = $("sfswipe");
+  if (h) h.classList.toggle("on", r.scrollWidth - r.clientWidth > 8);
 }
 
 /* how far the ticker can still scroll, so the fade and the hint tell the truth */
@@ -1355,6 +1610,19 @@ function renderTicker(s, keep) {
     chip.className = "canchip " + (sess === "regular" && !inWindow ? "exit" : cls);
     chip.textContent = sess === "regular" && !inWindow ? tr("常规盘 · 已过入场窗口，只出场") : text;
     chip.title = tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈/收盘前平仓）：盘前、常规盘、盘后。夜盘与休市一律不可执行。");
+    // on a phone an empty tape outside the entry window reads as "the agents did nothing" -- the exact misreading
+    // this chip exists to prevent, and until now the rule behind it was reachable only by hovering
+    if (!chip.dataset.wired) {
+      chip.dataset.wired = "1";
+      chip.addEventListener("click", () => {
+        const w = $("canwhy");
+        if (!w) return;
+        const open = w.style.display === "none";
+        w.textContent = chip.title;
+        w.style.display = open ? "" : "none";
+        chip.setAttribute("aria-expanded", String(open));
+      });
+    }
   }
   const leg = $("seslegend");
   if (leg && leg.dataset.sess !== sess) {
@@ -1420,18 +1688,20 @@ function renderTicker(s, keep) {
     if (known) STATE.prices[sym] = Number(q.price);
     const stale = q.status === "stale", unknown = !known;
     const roleZh = tr(({ held: "持仓", traded: "今日交易", recent: "最近交易", benchmark: "基准", watch: "候选" })[role] || "");
-    node.querySelector(".sym").innerHTML = `${esc(sym)}${roleZh ? ` <span class='muted' style='font-size:10px'>${roleZh}</span>` : ""}${stale ? ` <span class='muted' style='font-size:10px'>${tr("陈旧")}</span>` : ""}${q.halted ? ` <span style='font-size:10px;color:var(--red)'>${tr("停牌")}</span>` : ""}`;
+    node.querySelector(".sym").innerHTML = `${esc(sym)}${roleZh ? ` <span class='muted qrole'>${roleZh}</span>` : ""}${stale ? ` <span class='muted qmark'>${tr("陈旧")}</span>` : ""}${q.halted ? ` <span class='qhalt'>${tr("停牌")}</span>` : ""}`;
     const pxn = node.querySelector(".px");
     setNum(pxn, known ? Number(q.price) : null, v => v == null ? UNK : "$" + v.toFixed(2));
-    pxn.style.opacity = unknown ? ".5" : stale ? ".72" : "1";
+    // the 陈旧 / 未知 WORD is the marker; the dimming is only a second signal, and at 50% it erased the price on a phone
+    pxn.classList.toggle("q-unk", !!unknown);
+    pxn.classList.toggle("q-stale", !!stale && !unknown);
     const ch = node.querySelector(".ch");
     if (isNum(q.change_pct)) {
       ch.textContent = `${q.change_pct > 0 ? "+" : q.change_pct < 0 ? "−" : ""}${Math.abs(q.change_pct).toFixed(2)}%  ${isNum(q.change) ? (q.change > 0 ? "+" : q.change < 0 ? "−" : "") + "$" + Math.abs(q.change).toFixed(2) : ""}`;
-      ch.style.color = q.change_pct > 0 ? cssVar("--green") : q.change_pct < 0 ? cssVar("--red") : cssVar("--ink3");
+      ch.style.color = q.change_pct > 0 ? cssVar("--green-ink") : q.change_pct < 0 ? cssVar("--red-ink") : cssVar("--ink3");
     } else { ch.textContent = unknown ? (q.error ? tr("无报价") : tr(UNK)) : "—"; ch.style.color = cssVar("--ink3"); }
-    syncTickerHint();
     node.title = `${sym} · ${q.field || ""} @ ${q.ts_ny || UNK}${isNum(q.age_s) ? " · " + ago(q.age_s) : ""}${q.source ? " · " + q.source : ""}`;
   });
+  syncTickerHint();          // once, after the grid is complete -- it was inside the loop, i.e. a forced layout per symbol
   const f = s.feed || {};
   const ttl = isNum(f.ttl_effective_s) ? f.ttl_effective_s : (f.ttl_s || "?");
   $("tknote").textContent = f.enabled
@@ -1464,6 +1734,12 @@ function renderAgents(s) {
         n.innerHTML = `<div class="ahead"><span class="rank"></span><span class="slotid"></span><span class="vchip"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="tag"></span></div>
           <div class="aeq num"></div><div class="arow"></div><svg class="spark"></svg><div class="posbox"></div><div class="warnbox"></div>`;
         n.addEventListener("click", () => openSheet(a.slot_id));
+        n.setAttribute("role", "button");
+        n.tabIndex = 0;
+        n.setAttribute("aria-label", a.slot_id);
+        n.addEventListener("keydown", ev => {
+          if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openSheet(a.slot_id); }
+        });
         wrap.appendChild(n);
       }
       const rk = n.querySelector(".rank");
@@ -1473,11 +1749,11 @@ function renderAgents(s) {
       rk.title = tr(a.live_rank_tied ? "并列：当日收益相同，名次由预先固定的 tie-break 规则决定，不代表优劣"
         : "当日净值收益率名次（实时徽章始终按当日口径排序）");
       n.querySelector(".slotid").textContent = a.slot_id;
-      // Personality in words. "A04" is still the cross-reference to the filter chips, so it stays
-      // in the tooltip together with the full version id and the parent it was mutated from.
+      // Personality in words, with the A-code in front of it: that code is the only cross-reference between a card
+      // and its filter chip (S01 · A01), and a touch reader can never reach a tooltip to find it.
       const gen = a.generation != null ? a.generation : null;
       const vc = n.querySelector(".vchip");
-      vc.textContent = tr(a.label_zh || "") || a.candidate_key || "?";
+      vc.textContent = (a.candidate_key ? a.candidate_key + " · " : "") + (tr(a.label_zh || "") || "") || a.candidate_key || "?";
       vc.title = `策略 ${a.candidate_key || "?"}${a.label_zh ? "（" + a.label_zh + "）" : ""} · 版本 ${a.version_id || "?"}`
         + (a.parent_version_id ? ` · 由 ${a.parent_version_id} 变异而来` : "");
       const g = n.querySelector(".gen");
@@ -1500,8 +1776,8 @@ function renderAgents(s) {
       const dayCls = signCls(a.live_day_return_bp);
       row.innerHTML = `<span class="chg s num ${dayCls}">${isNum(a.live_day_return_bp) ? bpPct(a.live_day_return_bp) : UNK}</span>
         <span class="muted">今日</span>
-        <span class="muted num">累计 <b style="color:${isNum(a.live_return_bp) ? (a.live_return_bp > 0 ? cssVar("--green") : a.live_return_bp < 0 ? cssVar("--red") : "") : ""}">${isNum(a.live_return_bp) ? bpPct(a.live_return_bp) : UNK}</b></span>
-        <span class="muted num" title="${tr("策略任内收益：本策略版本接手这个资金槽之后的收益，不含前任的盈亏")}">${tr("任内")} <b style="color:${isNum(a.live_tenure_return_bp) ? (a.live_tenure_return_bp > 0 ? cssVar("--green") : a.live_tenure_return_bp < 0 ? cssVar("--red") : "") : ""}">${isNum(a.live_tenure_return_bp) ? bpPct(a.live_tenure_return_bp) : UNK}</b>${isNum(a.tenure_sessions) ? ` <span class="muted">· ${a.tenure_sessions} 日</span>` : ""}</span>
+        <span class="muted num">累计 <b style="color:${isNum(a.live_return_bp) ? (a.live_return_bp > 0 ? cssVar("--green-ink") : a.live_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_return_bp) ? bpPct(a.live_return_bp) : UNK}</b></span>
+        <span class="muted num" title="${tr("策略任内收益：本策略版本接手这个资金槽之后的收益，不含前任的盈亏")}">${tr("任内")} <b style="color:${isNum(a.live_tenure_return_bp) ? (a.live_tenure_return_bp > 0 ? cssVar("--green-ink") : a.live_tenure_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_tenure_return_bp) ? bpPct(a.live_tenure_return_bp) : UNK}</b>${isNum(a.tenure_sessions) ? ` <span class="muted">· ${a.tenure_sessions} 日</span>` : ""}</span>
         ${a.live_rank_tied ? `<span class="muted" title="${tr("当日收益相同，名次由 tie-break 决定")}">· ${tr("并列")}</span>` : ""}`;
       const pts = curveVals(a.curve);
       if (isNum(a.live_equity_cents)) pts.push(a.live_equity_cents);
@@ -1513,7 +1789,7 @@ function renderAgents(s) {
         pb.innerHTML = a.positions.map(p => {
           const u = p.unrealized_cents;
           return `<div class="posrow"><span class="s">${esc(p.symbol)}</span><span class="q num">${p.qty} ${tr("股")} @ ${px(p.avg_cost)}</span>
-            <span class="u num" style="color:${isNum(u) ? (u > 0 ? cssVar("--green") : u < 0 ? cssVar("--red") : "") : cssVar("--ink3")}">${isNum(u) ? usd(u, { sign: u > 0 }) : UNK}${isNum(p.unrealized_bp) ? ` <span class="muted">${bpPct(p.unrealized_bp, 1)}</span>` : ""}</span></div>`;
+            <span class="u num" style="color:${isNum(u) ? (u > 0 ? cssVar("--green-ink") : u < 0 ? cssVar("--red-ink") : "") : cssVar("--ink3")}">${isNum(u) ? usd(u, { sign: u > 0 }) : UNK}${isNum(p.unrealized_bp) ? ` <span class="muted">${bpPct(p.unrealized_bp, 1)}</span>` : ""}</span></div>`;
         }).join("");
       } else if (a.ledger_readable === false || a.live_equity_status === "unreadable") {
         // we did not read this slot: we do not know whether it holds anything
@@ -1659,8 +1935,10 @@ function renderTape() {
   $("tradenote").textContent = note || "";
   // the signature must be written on EVERY path, blank included: otherwise the blank render leaves the
   // previous day's signature behind and re-selecting that day is suppressed as "unchanged".
+  // a phone row is three lines tall, so 60 of them is a 4000px scroll; the cap is disclosed either way, below
+  const SHOWN = window.innerWidth <= 700 ? 30 : 60;
   const sigNow = (STATE.tradeDay || "today") + "|" + STATE.tradeSlot + "|" + (STATE.tradeGroup ? "G" : "-") + (STATE.tradeColor ? "C" : "-")
-    + "|" + (failed ? "ERR" : "") + list.length + "|" + list.map(t => t.fill_id).join(",");
+    + "|" + (failed ? "ERR" : "") + list.length + "|" + SHOWN + "|" + list.map(t => t.fill_id).join(",");
   if (body.dataset.sig === sigNow) return;
   body.dataset.sig = sigNow;
   if (!list.length) {
@@ -1669,11 +1947,11 @@ function renderTape() {
       : STATE.tradeSlot !== "all" && all.length
       ? `<tr><td colspan="9" class="blank"><span class="ico">📈</span>${esc(STATE.tradeSlot)} 在这个范围内没有成交<br><span class="muted">其它 Agent 有 ${all.length} 笔；空仓与不交易都是合法状态</span></td></tr>`
       : `<tr><td colspan="9" class="blank"><span class="ico">📈</span>还没有成交<br><span class="muted">常规盘 09:45–15:30 才会评估入场；空仓与不交易都是合法状态</span></td></tr>`;
+    translateStatic(body);
     syncSwipeHint();
     return;
   }
   body.innerHTML = "";
-  const SHOWN = 60;
   const bits = [];
   if (STATE.tradeSlot !== "all") bits.push(`只看 ${STATE.tradeSlot}：${list.length} 笔 / 全部 ${all.length} 笔`);
   if (list.length > SHOWN) bits.push(`显示最近 ${SHOWN} 笔 / 共 ${list.length} 笔`);   // never cap silently
@@ -1709,15 +1987,16 @@ function renderTape() {
     const r = t.realized_pnl_cents;
     tr.dataset.slot = t.slot_id;
     tr.style.setProperty("--slotc", slotColor(t.slot_id));
-    tr.innerHTML = `<td class="num">${showDate ? mdhm(t.confirmed_ny) : hhmm(t.confirmed_ny)}</td>
-      <td class="slotcell"><span class="slotpill" title="只看 ${esc(t.slot_id)} 的成交">${esc(t.slot_id)}</span></td>
+    // data-k carries each <th>'s own word into the cell, so the phone layout can hide the head without losing it
+    tr.innerHTML = `<td class="num" data-k="时间">${showDate ? mdhm(t.confirmed_ny) : hhmm(t.confirmed_ny)}</td>
+      <td class="slotcell" data-k="槽"><span class="slotpill" title="只看 ${esc(t.slot_id)} 的成交">${esc(t.slot_id)}</span></td>
       <td><span class="side ${esc(t.side)}">${esc(t.side)}</span></td>
       <td><b>${esc(t.symbol)}</b></td>
-      <td class="num">${t.qty}</td>
-      <td class="num">${px(t.price)}</td>
-      <td class="num">${usd(t.notional_cents)}</td>
-      <td class="num" style="color:${isNum(r) && r !== 0 ? (r > 0 ? cssVar("--green") : cssVar("--red")) : ""}">${t.side === "SELL" && isNum(r) ? usd(r, { sign: r > 0 }) : "—"}</td>
-      <td class="muted"><span title="${t.intent === "CLEANUP" ? "策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜" : ""}">${esc(t.intent || "")}</span></td>`;
+      <td class="num" data-k="数量">${t.qty}</td>
+      <td class="num" data-k="成交价">${px(t.price)}</td>
+      <td class="num" data-k="金额">${usd(t.notional_cents)}</td>
+      <td class="num" data-k="已实现" style="color:${isNum(r) && r !== 0 ? (r > 0 ? cssVar("--green-ink") : cssVar("--red-ink")) : ""}">${t.side === "SELL" && isNum(r) ? usd(r, { sign: r > 0 }) : "—"}</td>
+      <td class="muted" data-k="意图"><span title="${t.intent === "CLEANUP" ? "策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜" : ""}">${esc(t.intent || "")}</span></td>`;
     tr.addEventListener("click", () => openSheet(t.slot_id));
     tr.style.cursor = "pointer";
     const pill = tr.querySelector(".slotpill");
@@ -1730,6 +2009,7 @@ function renderTape() {
     }
     body.appendChild(tr);
   });
+  translateStatic(body);
   syncSwipeHint();
 }
 
@@ -1865,11 +2145,23 @@ async function loadSheet(slotId, silent) {
     }
   }
 }
+let SHEET_OPENER = null;        // where the reader was standing when they opened it
+let SHEET_HIST = false;         // whether the drawer owns a history entry that it must consume on close
 function openSheet(slotId) {
+  const was = STATE.openSlot;
   STATE.openSlot = slotId;
   SHEET_AT = Date.now();
+  SHEET_OPENER = document.activeElement;
   $("scrim").classList.add("on");
-  $("sheet").classList.add("on");
+  const sh = $("sheet");
+  sh.classList.add("on");
+  sh.setAttribute("aria-hidden", "false");
+  sh.scrollTop = 0;
+  // On a phone the back gesture is how everything is dismissed. With no entry of its own the drawer sent the reader
+  // off the page entirely; with one, back closes the drawer and the board stays where they left it.
+  if (!was) {
+    try { history.pushState({ arenaSheet: 1 }, ""); SHEET_HIST = true; } catch (e) { SHEET_HIST = false; }
+  }
   loadSheet(slotId, false);
 }
 /* the whole experiment became unreadable while a drawer is open: say so on the drawer too */
@@ -1890,14 +2182,47 @@ function refreshSheet() {
   SHEET_AT = Date.now();
   loadSheet(STATE.openSlot, true);
 }
-function closeSheet() {
+function closeSheet(fromPop) {
+  const had = SHEET_HIST;
   STATE.openSlot = null;
+  SHEET_HIST = false;
   $("scrim").classList.remove("on");
-  $("sheet").classList.remove("on");
+  const sh = $("sheet");
+  sh.classList.remove("on");
+  sh.setAttribute("aria-hidden", "true");
+  sh.style.transform = "";
   const w = $("shStale"); if (w) { w.style.display = "none"; w.textContent = ""; }
+  try { if (SHEET_OPENER && SHEET_OPENER.focus) SHEET_OPENER.focus(); } catch (e) { }
+  SHEET_OPENER = null;
+  if (had && !fromPop) { try { history.back(); } catch (e) { } }   // consume our own entry, never somebody else's
 }
-$("scrim").addEventListener("click", closeSheet);
-$("shClose").addEventListener("click", closeSheet);
+window.addEventListener("popstate", () => { if (STATE.openSlot) closeSheet(true); });
+
+/* Swipe the drawer down to dismiss, armed only while it is already scrolled to the top so it can never steal a
+   scroll. All three listeners are passive: a downward drag is followed, never blocked. */
+(function sheetSwipe() {
+  const sh = $("sheet");
+  if (!sh) return;
+  let y0 = null, dy = 0;
+  sh.addEventListener("touchstart", ev => {
+    y0 = (sh.scrollTop <= 0 && ev.touches.length === 1) ? ev.touches[0].clientY : null;
+    dy = 0;
+  }, { passive: true });
+  sh.addEventListener("touchmove", ev => {
+    if (y0 == null) return;
+    dy = ev.touches[0].clientY - y0;
+    if (dy > 0) sh.style.transform = "translateY(" + dy + "px)";
+  }, { passive: true });
+  sh.addEventListener("touchend", () => {
+    if (y0 == null) return;
+    const far = dy > 90;
+    y0 = null;
+    if (far) { closeSheet(); return; }
+    sh.style.transform = "";
+  }, { passive: true });
+})();
+$("scrim").addEventListener("click", () => closeSheet());
+$("shClose").addEventListener("click", () => closeSheet());
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
 
 function renderSheet(d, fetched) {
@@ -1944,58 +2269,71 @@ function renderSheet(d, fetched) {
       ${Object.keys(diff || {}).length ? `<div class="instr" style="margin-top:9px">相对父代变异：${Object.entries(diff).map(([k, v]) => `<b>${esc(k)}</b> ${esc(v.from)} → ${esc(v.to)}`).join(" · ")}</div>` : ""}
       <dl class="kv" style="margin-top:12px">
         ${kv("家族", esc(a.family_id || "—"))}
-        ${kv("父代", `<span class="num" style="font-family:var(--mono);font-size:11px">${esc(a.parent_version_id || "—")}</span>`)}
+        ${kv("父代", `<span class="num vid">${esc(a.parent_version_id || "—")}</span>`)}
         ${kv("来源", esc({ init: "初代", mutation: "变异子代", baseline: "基准" }[a.created_by] || a.created_by || "—"))}
         ${kv("激活", esc(mdhm(a.activation_ny)))}
         ${kv("任内日数", a.tenure_sessions != null ? a.tenure_sessions : UNK)}
       </dl>
     </div>
 
-    ${(a.positions || []).length ? `<div class="box"><h3>当前持仓</h3><div class="tw"><table>
+    ${(a.positions || []).length ? `<div class="box"><h3>当前持仓</h3><div class="tw"><table class="tape">
       <thead><tr><th>股票</th><th>数量</th><th>成本</th><th>实时价</th><th>市值</th><th>未实现</th><th>止损/目标</th></tr></thead>
-      <tbody>${a.positions.map(p => `<tr><td><b>${esc(p.symbol)}</b></td><td class="num">${p.qty}</td><td class="num">${px(p.avg_cost)}</td>
-        <td class="num">${px(p.live_price)} <span class="muted">${esc(({ fresh: "", stale: "陈旧", unknown: "未知" })[p.price_status] || "")}</span></td><td class="num">${usd(p.market_value_cents)}</td>
-        <td class="num" style="color:${isNum(p.unrealized_cents) ? (p.unrealized_cents > 0 ? cssVar("--green") : p.unrealized_cents < 0 ? cssVar("--red") : "") : ""}">${usd(p.unrealized_cents, { sign: isNum(p.unrealized_cents) && p.unrealized_cents > 0 })}</td>
-        <td class="num muted">${px(p.stop_price)} / ${px(p.target_price)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+      <tbody>${a.positions.map(p => `<tr><td data-k="股票"><b>${esc(p.symbol)}</b></td><td class="num" data-k="数量">${p.qty}</td><td class="num" data-k="成本">${px(p.avg_cost)}</td>
+        <td class="num" data-k="实时价">${px(p.live_price)} <span class="muted">${esc(({ fresh: "", stale: "陈旧", unknown: "未知" })[p.price_status] || "")}</span></td><td class="num" data-k="市值">${usd(p.market_value_cents)}</td>
+        <td class="num" data-k="未实现" style="color:${isNum(p.unrealized_cents) ? (p.unrealized_cents > 0 ? cssVar("--green-ink") : p.unrealized_cents < 0 ? cssVar("--red-ink") : "") : ""}">${usd(p.unrealized_cents, { sign: isNum(p.unrealized_cents) && p.unrealized_cents > 0 })}</td>
+        <td class="num muted" data-k="止损/目标">${px(p.stop_price)} / ${px(p.target_price)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 
-    ${(d.fills || []).length ? `<div class="box"><h3>成交记录</h3><div class="tw"><table>
+    ${(d.fills || []).length ? `<div class="box"><h3>成交记录</h3><div class="tw"><table class="tape">
       <thead><tr><th>时间</th><th>方向</th><th>股票</th><th>数量</th><th>价格</th><th>已实现</th><th>意图</th></tr></thead>
-      <tbody>${d.fills.slice(0, 30).map(f => `<tr><td class="num">${esc(mdhm(f.confirmed_ny))}</td><td><span class="side ${esc(f.side)}">${esc(f.side)}</span></td>
-        <td>${esc(f.symbol)}</td><td class="num">${f.qty}</td><td class="num">${px(f.price)}</td>
-        <td class="num" style="color:${isNum(f.realized_pnl_cents) && f.realized_pnl_cents !== 0 ? (f.realized_pnl_cents > 0 ? cssVar("--green") : cssVar("--red")) : ""}">${f.side === "SELL" ? usd(f.realized_pnl_cents, { sign: isNum(f.realized_pnl_cents) && f.realized_pnl_cents > 0 }) : "—"}</td>
-        <td class="muted">${esc(f.intent || "")}</td></tr>`).join("")}</tbody></table></div></div>` : `<div class="box"><h3>成交记录</h3><div class="muted">暂无成交</div></div>`}
+      <tbody>${d.fills.slice(0, 30).map(f => `<tr><td class="num" data-k="时间">${esc(mdhm(f.confirmed_ny))}</td><td><span class="side ${esc(f.side)}">${esc(f.side)}</span></td>
+        <td data-k="股票">${esc(f.symbol)}</td><td class="num" data-k="数量">${f.qty}</td><td class="num" data-k="价格">${px(f.price)}</td>
+        <td class="num" data-k="已实现" style="color:${isNum(f.realized_pnl_cents) && f.realized_pnl_cents !== 0 ? (f.realized_pnl_cents > 0 ? cssVar("--green-ink") : cssVar("--red-ink")) : ""}">${f.side === "SELL" ? usd(f.realized_pnl_cents, { sign: isNum(f.realized_pnl_cents) && f.realized_pnl_cents > 0 }) : "—"}</td>
+        <td class="muted" data-k="意图">${esc(f.intent || "")}</td></tr>`).join("")}</tbody></table></div></div>` : `<div class="box"><h3>成交记录</h3><div class="muted">暂无成交</div></div>`}
 
-    ${(d.daily_scores || []).length ? `<div class="box"><h3>每日评分（账本冻结）</h3><div class="tw"><table>
+    ${(d.daily_scores || []).length ? `<div class="box"><h3>每日评分（账本冻结）</h3><div class="tw"><table class="tape">
       <thead><tr><th>交易日</th><th>净值</th><th>当日</th><th>累计</th><th>任内</th><th>可评分</th></tr></thead>
-      <tbody>${d.daily_scores.slice(0, 14).map(r => `<tr><td class="num">${esc(r.trading_day)}</td><td class="num">${usd(r.equity_cents)}</td>
-        <td class="num" style="color:${isNum(r.day_return_bp) ? (r.day_return_bp > 0 ? cssVar("--green") : r.day_return_bp < 0 ? cssVar("--red") : "") : ""}">${bpPct(r.day_return_bp)}</td>
-        <td class="num">${bpPct(r.cum_return_bp)}</td><td class="num">${bpPct(r.tenure_return_bp)}</td>
-        <td class="muted">${r.scorable ? tr("是") : esc(r.unscorable_reason || tr("否"))}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+      <tbody>${d.daily_scores.slice(0, 14).map(r => `<tr><td class="num" data-k="交易日">${esc(r.trading_day)}</td><td class="num" data-k="净值">${usd(r.equity_cents)}</td>
+        <td class="num" data-k="当日" style="color:${isNum(r.day_return_bp) ? (r.day_return_bp > 0 ? cssVar("--green-ink") : r.day_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${bpPct(r.day_return_bp)}</td>
+        <td class="num" data-k="累计">${bpPct(r.cum_return_bp)}</td><td class="num" data-k="任内">${bpPct(r.tenure_return_bp)}</td>
+        <td class="muted" data-k="可评分">${r.scorable ? tr("是") : esc(r.unscorable_reason || tr("否"))}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 
-    ${(d.decisions || []).length ? `<div class="box"><h3>最近决策（为什么买 / 不买）</h3><div class="tw"><table>
+    ${(d.decisions || []).length ? `<div class="box"><h3>最近决策（为什么买 / 不买）</h3><div class="tw"><table class="tape">
       <thead><tr><th>时间</th><th>类型</th><th>标的</th><th>动作</th><th>阻断原因</th></tr></thead>
-      <tbody>${d.decisions.slice(0, 20).map(x => `<tr><td class="num">${esc(mdhm(x.ts_ny))}</td><td class="muted">${esc(x.kind)}</td>
-        <td>${esc(x.chosen_symbol || "")}</td><td>${esc(x.action || "")}</td>
-        <td class="muted" style="white-space:normal;max-width:260px">${esc((x.blocked_by || []).join("；"))}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+      <tbody>${d.decisions.slice(0, 20).map(x => `<tr><td class="num" data-k="时间">${esc(mdhm(x.ts_ny))}</td><td class="muted" data-k="类型">${esc(x.kind)}</td>
+        <td data-k="标的">${esc(x.chosen_symbol || "")}</td><td data-k="动作">${esc(x.action || "")}</td>
+        <td class="muted wrapcell" data-k="阻断原因">${esc((x.blocked_by || []).join("；"))}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 
-    ${(d.activations || []).length > 1 ? `<div class="box"><h3>资金槽任职史（淘汰不删除历史）</h3><div class="tw"><table>
+    ${(d.activations || []).length > 1 ? `<div class="box"><h3>资金槽任职史（淘汰不删除历史）</h3><div class="tw"><table class="tape">
       <thead><tr><th>版本</th><th>激活</th><th>退役</th><th>起点净值</th><th>退役净值</th><th>原因</th></tr></thead>
-      <tbody>${d.activations.map(x => `<tr><td style="font-family:var(--mono);font-size:11px">${esc(x.version_id)}</td>
-        <td class="num">${esc(mdhm(x.activation_ny))}</td><td class="num">${x.retirement_ny ? esc(mdhm(x.retirement_ny)) : tr("在任")}</td>
-        <td class="num">${usd(x.start_equity_cents)}</td><td class="num">${usd(x.end_equity_cents)}</td>
-        <td class="muted" style="white-space:normal;max-width:200px">${esc(x.retirement_reason || "")}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+      <tbody>${d.activations.map(x => `<tr><td class="vid" data-k="版本">${esc(x.version_id)}</td>
+        <td class="num" data-k="激活">${esc(mdhm(x.activation_ny))}</td><td class="num" data-k="退役">${x.retirement_ny ? esc(mdhm(x.retirement_ny)) : tr("在任")}</td>
+        <td class="num" data-k="起点净值">${usd(x.start_equity_cents)}</td><td class="num" data-k="退役净值">${usd(x.end_equity_cents)}</td>
+        <td class="muted wrapcell" data-k="原因">${esc(x.retirement_reason || "")}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
   `;
   spark($("shSpark"), curve, curve.length > 1 && curve[curve.length - 1] >= curve[0] ? cssVar("--green") : cssVar("--red"));
   translateStatic($("sheet"));          // the drawer is not part of render(), so it needs its own pass
 }
 
 /* ============================================================ go */
-window.addEventListener("resize", () => { if (STATE.snap) { render(STATE.snap, true); } }, { passive: true });
+/* Chrome on Android fires resize every time the URL bar hides or shows, i.e. repeatedly DURING a scroll, and this
+   used to re-render the hero, 12-42 quote cards, ten agent cards, the tape, the rounds and the footer each time.
+   Nothing in the layout depends on viewport height, so only a width change is a real event. */
+let LAST_W = window.innerWidth, RAF_W = 0;
+window.addEventListener("resize", () => {
+  syncFilterHint(); syncTickerHint();
+  if (window.innerWidth === LAST_W) return;
+  LAST_W = window.innerWidth;
+  if (RAF_W) return;
+  RAF_W = requestAnimationFrame(() => {
+    RAF_W = 0;
+    document.querySelectorAll(".spark").forEach(sp => { delete sp.dataset.sig; });
+    if (STATE.snap) render(STATE.snap, true);
+  });
+}, { passive: true });
 try { $("tradebody").closest(".tw").addEventListener("scroll", syncSwipeHint, { passive: true }); } catch (e) { }
 try { $("ticker").addEventListener("scroll", syncTickerHint, { passive: true }); } catch (e) { }
 try { $("slotfilter").addEventListener("scroll", syncFilterHint, { passive: true }); } catch (e) { }
-window.addEventListener("resize", syncFilterHint, { passive: true });
-window.addEventListener("resize", syncTickerHint, { passive: true });
+
 loadTapePrefs();
 wireLangToggle();
 document.documentElement.lang = LANG === "en" ? "en" : "zh-CN";
@@ -2009,10 +2347,11 @@ connect();
 // means something is wrong is a MISSED poll, not the silence between polls.
 const STALL_S = API.live ? 6 : Math.max(20, Math.round(API.pollMs / 1000) * 2 + 15);
 setInterval(() => {
+  if (document.hidden) return;            // hiding the tab closes the stream on purpose; that is 已暂停, not a stall
   if (!STATE.lastOk) return;
   const gap = Math.round((Date.now() - STATE.lastOk) / 1000);
-  if (gap >= STALL_S) setConn(false, `数据已停滞 ${gap}s`);
-}, 2000);
+  if (gap >= STALL_S) setConn(false, `${tr("数据已停滞")} ${gap}s`);
+}, API.live ? 2000 : 5000);
 setTimeout(() => { if (!STATE.snap) startPolling(); }, 3500);
 </script>
 </body>
