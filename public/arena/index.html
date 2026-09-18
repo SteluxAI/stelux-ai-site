@@ -110,6 +110,9 @@ header{
 @keyframes beat{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.82)}}
 .iconbtn{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:var(--ink2);
   transition:background .25s var(--ease),color .25s var(--ease),transform .25s var(--ease)}
+/* the appearance button cycles auto -> dark -> light, and says which one it is on */
+#themebtn .ic{display:none;grid-area:1/1}
+#themebtn[data-mode=auto] .ic-auto,#themebtn[data-mode=dark] .ic-dark,#themebtn[data-mode=light] .ic-light{display:block}
 @media(hover:hover) and (pointer:fine){.iconbtn:hover{background:var(--hair2);color:var(--ink)}}
 .iconbtn:active{transform:scale(.92)}
 select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--ink2);padding:0 26px 0 11px;font-size:12.5px;
@@ -619,9 +622,15 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
       <select class="exp" id="expsel" title="选择实验"></select>
     </div>
     <button class="iconbtn" id="langbtn" type="button" title="切换语言" aria-label="切换语言" style="width:auto;padding:0 10px;font-size:12px;font-weight:650">EN</button>
-    <button class="iconbtn" id="themebtn" title="外观" aria-label="切换外观">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+    <button class="iconbtn" id="themebtn" data-mode="auto" title="外观：跟随系统" aria-label="外观：跟随系统">
+      <svg class="ic ic-light" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
         <circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.2M12 19.4v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.4 12h2.2M19.4 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/>
+      </svg>
+      <svg class="ic ic-dark" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round">
+        <path d="M20.4 14.6A8.7 8.7 0 0 1 9.4 3.6a8.7 8.7 0 1 0 11 11z"/>
+      </svg>
+      <svg class="ic ic-auto" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+        <circle cx="12" cy="12" r="8.3"/><path d="M12 3.7a8.3 8.3 0 0 0 0 16.6z" fill="currentColor" stroke="none"/>
       </svg>
     </button>
   </div>
@@ -885,10 +894,23 @@ const cssVar = n => {
   const KEY = "arena.theme";
   let mode = null;
   try { mode = localStorage.getItem(KEY); } catch (e) { }
+  const LABEL = { auto: "外观：跟随系统", dark: "外观：深色", light: "外观：浅色" };
   const apply = m => {
     CSSV.clear();
     if (m === "light" || m === "dark") document.documentElement.setAttribute("data-theme", m);
     else document.documentElement.removeAttribute("data-theme");
+    // which of the three we are actually in. "auto" is the one worth showing: on a dark phone a sun icon could not
+    // tell the reader whether the page was dark by their choice or by their OS's.
+    const b = $("themebtn");
+    if (b) {
+      const mode = m === "light" || m === "dark" ? m : "auto";
+      b.dataset.mode = mode;
+      b.title = LABEL[mode];
+      b.setAttribute("aria-label", LABEL[mode]);
+      // written as the Chinese key on purpose: this runs before the i18n table exists, and the attribute pass
+      // (here on later clicks, at boot from its own call) turns it into English when that is the language
+      try { translateStatic(b); } catch (e) { }
+    }
     // tell the phone's browser chrome which colour the page is, so the status bar stops fighting it
     let mt = document.querySelector('meta[name="theme-color"]');
     if (!mt) { mt = document.createElement("meta"); mt.setAttribute("name", "theme-color"); document.head.appendChild(mt); }
@@ -925,6 +947,7 @@ const I18N = {
     "十槽实时竞技场": "Ten-Slot Live Arena",
     "实时 Paper · 真实行情 · 模拟成交": "Live paper trading · real quotes · simulated fills",
     "模拟盘：不连接任何券商账户，不发出真实委托": "Paper only: no brokerage account, no real orders",
+    "外观：跟随系统": "Appearance: follow the system", "外观：深色": "Appearance: dark", "外观：浅色": "Appearance: light",
     "加载中": "Loading", "连接中": "Connecting", "重连中": "Reconnecting", "已暂停": "Paused",
     "数据已停滞": "no new data for",
     "离线": "Offline", "实时": "Live", "轮询": "Polling", "快照": "Snapshot",
