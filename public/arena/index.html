@@ -354,6 +354,23 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .blank .ico{font-size:26px;display:block;margin-bottom:8px;opacity:.5}
 
 /* ============================================================ equity comparison */
+/* crypto: the pool section. State pills carry the eligibility state; the table is the whole candidate list. */
+.crgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.crtile{padding:10px 12px;border-radius:var(--r-md);background:var(--hair2)}
+.crtile .k{font-size:var(--fs-note);color:var(--ink3);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crtile .v{font-size:15px;font-weight:650;letter-spacing:-.01em}
+.crtile .s{font-size:var(--fs-note);color:var(--ink3);margin-top:2px}
+.crtw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.crtable{width:100%;border-collapse:collapse;font-size:12px}
+.crtable td{padding:6px 8px;border-top:1px solid var(--hair2);vertical-align:top;white-space:nowrap}
+.crtable td.reasons{white-space:normal;max-width:360px;color:var(--ink3);font-size:11.5px}
+.crst{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:650;background:var(--hair2);color:var(--ink2)}
+.crst.ACTIVE{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green-ink)}
+.crst.ELIGIBLE{background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue)}
+.crst.DATA_WARMUP,.crst.STALE{background:color-mix(in srgb,var(--orange) 18%,transparent);color:var(--orange-ink)}
+.crst.UNAVAILABLE,.crst.RESTRICTED{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red-ink)}
+.crst.HELD_NOT_ACTIVE{background:color-mix(in srgb,var(--purple) 16%,transparent);color:var(--purple)}
+.crheld{font-weight:700}
 .cmpwrap{position:relative}
 .cmp{display:block;width:100%;height:300px;touch-action:pan-y;cursor:crosshair}
 .cmp text{font-size:11px;fill:var(--ink3);font-variant-numeric:tabular-nums}
@@ -731,6 +748,15 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
     <div class="tkhint"><span class="ar">›</span><span>左右滑动</span></div>
   </div>
 
+  <div class="sec" id="crsec" style="display:none"><h2>币池</h2><span class="note" id="crnote"></span>
+    <button class="grpbtn" id="crall" type="button" aria-pressed="false" title="默认只列活跃池与持有的币；点开显示全部 40 个候选及其状态原因">全部候选</button></div>
+  <div class="card pad" id="crcard" style="display:none">
+    <div class="crgrid" id="crstats"></div>
+    <div class="hint" id="crrule" style="margin:0 0 10px"></div>
+    <div class="crtw"><table class="crtable"><thead><tr><th>币种</th><th>分组</th><th>状态</th><th>名次</th><th>24h 成交额</th><th>点差</th><th>25bps 深度</th><th>样本</th><th>产品</th><th>原因</th></tr></thead>
+      <tbody id="crbody"></tbody></table></div>
+  </div>
+
   <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span></div>
   <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
@@ -804,7 +830,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":30,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":30,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -825,7 +851,21 @@ function bpPct(bp, digits) {
   const v = bp / 100;
   return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(digits == null ? 2 : digits) + "%";
 }
-function px(p) { return p == null ? UNK : "$" + Number(p).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function px(p) {
+  if (p == null) return UNK;
+  const v = Number(p);
+  // a crypto price needs the precision the asset trades at: PEPE at $0.000004 must not render as $0.00
+  const d = !STATE.crypto ? 2 : Math.abs(v) >= 1 ? 2 : Math.abs(v) >= 0.01 ? 4 : Math.abs(v) >= 0.0001 ? 6 : 9;
+  return "$" + v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+/* a fractional quantity, as the ledger holds it (Decimal string): trailing zeros trimmed, never rounded to an integer */
+function fmtQty(q) {
+  if (q == null) return UNK;
+  const sv = String(q);
+  if (!STATE.crypto) return sv;
+  if (!/^-?\d+(\.\d+)?$/.test(sv)) return sv;
+  return sv.includes(".") ? sv.replace(/0+$/, "").replace(/\.$/, "") : sv;
+}
 function signCls(v) { return !isNum(v) ? "unk" : v > 0 ? "up" : v < 0 ? "dn" : "flat"; }
 /* Every timestamp the server sends is already America/New_York. These read the clock straight out of the ISO string
    instead of going through Date(), which would re-interpret it in the VIEWER's timezone — a phone in Asia would then
@@ -1113,6 +1153,34 @@ const I18N = {
     "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
     "当前时段": "Current session", "今日全时段": "Today (all sessions)",
     "已放大": "zoomed",
+    "24/7 现货 · 每个整点评估一次，出场随时": "24/7 spot · evaluated every hour on the hour, exits any time",
+    "加密现货 24/7：每个决策周期（默认整点 +90s）在同一份快照上评估全部活跃币；下单后在下一份订单簿观测上按 taker 成交；按 UTC 日计分，00:00 UTC 为估值边界。":
+      "Crypto spot, 24/7: every decision cycle (default: on the hour + 90s) evaluates the whole active pool on one shared snapshot; orders fill as a taker on the next observed order book; scored per UTC day with the valuation boundary at 00:00 UTC.",
+    "持续运行": "open-ended", "现货": "spot", "活跃池": "active pool", "余尘": "dust",
+    "余尘：低于交易所最小下单量，无法卖出，仍按市价估值": "dust: below the venue's minimum order size, cannot be sold, still valued at market",
+    "收起，只留下这些 Agent 正在持仓、今日成交或最近成交的币": "collapse to what these agents hold, traded today or traded recently",
+    "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
+    "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
+    "币池": "Pool", "全部候选": "All candidates", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
+    "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
+    "币池版本": "Pool version", "生效": "effective", "下次决策": "Next decision", "每": "every", "分钟": "min", "上次快照": "last snapshot",
+    "距 UTC 日结": "To UTC close", "估值边界 00:00 UTC，00:05 起结算": "valuation at 00:00 UTC, processing from 00:05",
+    "行情新鲜度": "Data freshness", "最近 ticker": "last ticker", "产品核验": "Products verified", "Kraken AssetPairs：online 的 USD 现货对": "Kraken AssetPairs: online USD spot pairs",
+    "模型预算": "Model budget", "已授权": "authorised", "未授权：BLOCKED": "not authorised: BLOCKED", "规则策略，不调用模型": "rule-based, no model calls",
+    "HYBRID 需另行授权": "HYBRID needs explicit authorisation", "模式": "mode", "费用模型": "Fee model", "核对": "checked", "未入池原因": "Why not seated",
+    "主要": "main", "补充": "watch", "持有": "held", "活跃池为空": "the active pool is empty",
+    "数据预热中，或没有候选通过流动性门槛；不会为凑数降低门槛": "data is warming up, or no candidate passes the liquidity gates; the gates are never lowered to fill the pool",
+    "评估": "evaluated", "通过": "passed", "下单": "ordered", "持有不动": "held", "被风控拦下": "blocked by risk",
+    "已下单": "ordered", "未授权/被拦": "not authorised / blocked", "模型错误": "model error", "模型超时": "model timeout", "模型输出无效": "invalid model output", "预算耗尽": "budget exhausted",
+    "1h 无上升趋势": "no 1h uptrend", "4h 无上升趋势": "no 4h uptrend", "动量不足": "momentum too low", "偏离过大": "too extended", "量能不足": "volume too low",
+    "量能未知": "volume unknown", "1h 历史不足": "not enough 1h history", "4h 历史不足": "not enough 4h history", "BTC 4h 弱": "BTC 4h weak", "BTC 1h 弱": "BTC 1h weak",
+    "BTC 数据缺": "BTC data missing", "评分未过现金门槛": "score below cash threshold", "通过但未排前/无仓位空间": "passed but not top-ranked / no room",
+    "持仓数已满": "max positions", "今日入场次数已满": "daily entries used", "今日下单次数已满": "daily orders used", "单仓上限": "position cap", "现金不足": "insufficient cash",
+    "熔断": "breaker", "已暂停": "paused", "不在活跃池": "not in active pool", "产品非 online": "product not online", "产品核验过期": "product check stale",
+    "行情过期": "market data stale", "无行情观测": "no market observation", "已有挂单": "working order exists", "余尘无法卖出": "dust cannot be sold", "无持仓": "no position",
+    "每个决策周期在同一份快照上评估全部活跃币；空仓与不交易都是合法状态，币池为空或数据预热中也不会强行交易":
+      "Every decision cycle evaluates the whole active pool on one shared snapshot; holding cash and not trading are legal states, and an empty or warming-up pool never forces a trade",
+    "币种": "Asset", "分组": "Group", "状态": "State", "名次": "Rank", "24h 成交额": "24h turnover", "点差": "Spread", "25bps 深度": "Depth 25bps", "样本": "Samples", "产品": "Product", "原因": "Reasons",
     "在这条带上拖选一段即可放大": "drag across this strip to zoom into a stretch",
     "图下方的导航条：拖窗口左右移动，拖两端改时长，空白处拖选一段，← → 逐步移动":
       "the strip under the chart is the navigator: drag the window to move left and right, drag either end to "
@@ -1528,6 +1596,7 @@ function section(name, fn) {
 function render(s, keepPrices) {
   s = applyPublishLag(s);
   STATE.snap = s;
+  STATE.crypto = s.asset_class === "crypto_spot" || ((s.experiment || {}).asset_class === "crypto_spot");
   section("header", () => renderHeader(s));
   section("banners", () => renderBanners(s));
   if (!s.ok) {
@@ -1542,6 +1611,7 @@ function render(s, keepPrices) {
   }
   section("hero", () => renderHero(s));
   section("ticker", () => renderTicker(s, keepPrices));
+  section("crypto", () => renderCrypto(s));
   section("agents", () => renderAgents(s));
   section("compare", () => renderCompare(s));
   section("trades", () => renderTrades(s));
@@ -1575,7 +1645,8 @@ function renderHeader(s) {
     sel.dataset.sig = want;
     sel.innerHTML = "";
     exps.forEach(e => {
-      const o = el("option", null, e.experiment_id + " · " + (e.data_kind === "realtime_paper" ? tr("实时") : tr("回放")));
+      const o = el("option", null, e.experiment_id + " · " + (e.asset_class === "crypto_spot" ? "Crypto 24/7" : "") + (e.asset_class === "crypto_spot" ? " · " : "")
+        + (e.data_kind === "realtime_paper" ? tr("实时") : tr("回放")));
       o.value = e.experiment_id; sel.appendChild(o);
     });
     sel.onchange = () => {
@@ -1725,7 +1796,9 @@ function renderHero(s) {
   spark($("sysSpark"), curve, curve.length > 1 ? col : cssVar("--blue"));
 
   $("expName").textContent = s.experiment_id || UNK;
-  $("expMeta").innerHTML = `${esc(tr(ex.data_kind_zh || ""))} · ${esc(ex.mode || "")} · Day ${ex.day_index != null ? ex.day_index : "—"}/${ex.n_days || "—"} · ${esc(ex.day1 || "")} → ${esc(ex.last_day || "")}`;
+  $("expMeta").innerHTML = STATE.crypto
+    ? `${esc(tr(ex.data_kind_zh || ""))} · ${esc(ex.mode || "")} · ${esc(ex.agent_mode || "")} · ${LANG === "en" ? "UTC day" : "UTC 日"} ${ex.day_index != null ? ex.day_index : "—"} · ${esc(ex.day1 || "")} → ${tr("持续运行")} · ${esc(ex.venue || "")} / ${tr("现货")} USD`
+    : `${esc(tr(ex.data_kind_zh || ""))} · ${esc(ex.mode || "")} · Day ${ex.day_index != null ? ex.day_index : "—"}/${ex.n_days || "—"} · ${esc(ex.day1 || "")} → ${esc(ex.last_day || "")}`;
   $("mMetric").textContent = tr(ex.metric_zh || UNK);
   $("mRule").textContent = (ex.keep_top != null) ? `${tr("留")} ${ex.keep_top} / ${tr("换")} ${ex.replace_bottom}` : tr(UNK);
   const v = s.versions || {}, rc = s.rounds_count || {};
@@ -1760,6 +1833,7 @@ function renderChips(s) {
 }
 
 const SESSION_CAN = {
+  crypto_24_7: ["go", "24/7 现货 · 每个整点评估一次，出场随时"],
   pre: ["exit", "盘前 · 只处理出场与估值，不评估入场"],
   regular: ["go", "常规盘 · 09:45–15:30 评估入场，全时段可出场"],
   post: ["exit", "盘后 · 只处理出场与估值，不评估入场"],
@@ -1853,7 +1927,9 @@ function renderTicker(s, keep) {
       && String(m.clock_ny).slice(11, 16) <= "15:30";
     chip.className = "canchip " + (sess === "regular" && !inWindow ? "exit" : cls);
     chip.textContent = sess === "regular" && !inWindow ? tr("常规盘 · 已过入场窗口，只出场") : text;
-    chip.title = tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈/收盘前平仓）：盘前、常规盘、盘后。夜盘与休市一律不可执行。");
+    chip.title = STATE.crypto
+      ? tr("加密现货 24/7：每个决策周期（默认整点 +90s）在同一份快照上评估全部活跃币；下单后在下一份订单簿观测上按 taker 成交；按 UTC 日计分，00:00 UTC 为估值边界。")
+      : tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈/收盘前平仓）：盘前、常规盘、盘后。夜盘与休市一律不可执行。");
     // on a phone an empty tape outside the entry window reads as "the agents did nothing" -- the exact misreading
     // this chip exists to prevent, and until now the rule behind it was reachable only by hovering
     if (!chip.dataset.wired) {
@@ -1894,7 +1970,9 @@ function renderTicker(s, keep) {
     btn.classList.toggle("on", !!STATE.tickerAll);
     btn.setAttribute("aria-pressed", String(!!STATE.tickerAll));
     btn.textContent = STATE.tickerAll ? tr("只看在交易的") : `${tr("全部名单")} ${tradable}`;
-    btn.title = STATE.tickerAll
+    btn.title = STATE.crypto
+      ? (STATE.tickerAll ? tr("收起，只留下这些 Agent 正在持仓、今日成交或最近成交的币") : tr("展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）"))
+      : STATE.tickerAll
       ? tr("收起，只留下这些 Agent 正在持仓、今日成交或最近成交的股票（外加基准）")
       : (LANG === "en"
           ? `Show all ${tradable} stocks these agents may trade (SPY / QQQ are benchmarks only and never tradable)`
@@ -1919,7 +1997,7 @@ function renderTicker(s, keep) {
       node.innerHTML = `<div class="sym"></div><div class="px num"></div><div class="ch num"></div>`;
       wrap.appendChild(node);
     }
-    node.classList.toggle("bench", role === "benchmark" || role === "watch");   // held / traded / recent stay bright
+    node.classList.toggle("bench", role === "benchmark" || role === "watch" || role === "active");   // held / traded / recent stay bright
     node.dataset.role = role;
     if (wrap.children[idx] !== node) wrap.insertBefore(node, wrap.children[idx] || null);   // a symbol that became held moves forward
     const known = q.price != null;
@@ -1931,16 +2009,16 @@ function renderTicker(s, keep) {
     }
     if (known) STATE.prices[sym] = Number(q.price);
     const stale = q.status === "stale", unknown = !known;
-    const roleZh = tr(({ held: "持仓", traded: "今日交易", recent: "最近交易", benchmark: "基准", watch: "候选" })[role] || "");
+    const roleZh = tr(({ held: "持仓", traded: "今日交易", recent: "最近交易", benchmark: "基准", watch: "候选", active: "活跃池" })[role] || "");
     node.querySelector(".sym").innerHTML = `${esc(sym)}${roleZh ? ` <span class='muted qrole'>${roleZh}</span>` : ""}${stale ? ` <span class='muted qmark'>${tr("陈旧")}</span>` : ""}${q.halted ? ` <span class='qhalt'>${tr("停牌")}</span>` : ""}`;
     const pxn = node.querySelector(".px");
-    setNum(pxn, known ? Number(q.price) : null, v => v == null ? UNK : "$" + v.toFixed(2));
+    setNum(pxn, known ? Number(q.price) : null, v => v == null ? UNK : px(v));
     // the 陈旧 / 未知 WORD is the marker; the dimming is only a second signal, and at 50% it erased the price on a phone
     pxn.classList.toggle("q-unk", !!unknown);
     pxn.classList.toggle("q-stale", !!stale && !unknown);
     const ch = node.querySelector(".ch");
     if (isNum(q.change_pct)) {
-      ch.textContent = `${q.change_pct > 0 ? "+" : q.change_pct < 0 ? "−" : ""}${Math.abs(q.change_pct).toFixed(2)}%  ${isNum(q.change) ? (q.change > 0 ? "+" : q.change < 0 ? "−" : "") + "$" + Math.abs(q.change).toFixed(2) : ""}`;
+      ch.textContent = `${q.change_pct > 0 ? "+" : q.change_pct < 0 ? "−" : ""}${Math.abs(q.change_pct).toFixed(2)}%  ${isNum(q.change) ? (q.change > 0 ? "+" : q.change < 0 ? "−" : "") + px(Math.abs(q.change)) : ""}`;
       ch.style.color = q.change_pct > 0 ? cssVar("--green-ink") : q.change_pct < 0 ? cssVar("--red-ink") : cssVar("--ink3");
     } else { ch.textContent = unknown ? (q.error ? tr("无报价") : tr(UNK)) : "—"; ch.style.color = cssVar("--ink3"); }
     node.title = `${sym} · ${q.field || ""} @ ${q.ts_ny || UNK}${isNum(q.age_s) ? " · " + ago(q.age_s) : ""}${q.source ? " · " + q.source : ""}`;
@@ -1948,13 +2026,93 @@ function renderTicker(s, keep) {
   syncTickerHint();          // once, after the grid is complete -- it was inside the loop, i.e. a forced layout per symbol
   const f = s.feed || {};
   const ttl = isNum(f.ttl_effective_s) ? f.ttl_effective_s : (f.ttl_s || "?");
-  $("tknote").textContent = f.enabled
+  $("tknote").textContent = STATE.crypto
+    ? (LANG === "en"
+        ? `Venue ticker stored by the runner (last trade; no separate fetch by this page) · ${STATE.tickerAll ? "holding / traded / recent / active pool / candidate" : "holding / traded today / traded recently"} · change vs UTC-day open`
+        : `runner 已存储的交易所 ticker（最近成交价；本页不另行抓取）· ${STATE.tickerAll ? "持仓 / 今日交易 / 最近交易 / 活跃池 / 候选" : "持仓 / 今日交易 / 最近交易"} · 涨跌相对 UTC 日开盘`)
+    : f.enabled
     ? (LANG === "en"
         ? `Public read-only quotes (${f.source || ""}) · not exchange tape · refreshed every ${ttl}s this session · ` +
           (STATE.tickerAll ? "holding / traded today / traded recently / benchmark / candidate (full tradable list)" : "holding / traded today / traded recently / benchmark")
         : `公开只读报价（${f.source || ""}）· 非交易所逐笔 · 当前时段每 ${ttl}s 刷新 · ` +
           (STATE.tickerAll ? "持仓 / 今日交易 / 最近交易 / 基准 / 候选（全部可交易名单）" : "持仓 / 今日交易 / 最近交易 / 基准"))
     : tr("行情源已关闭（--no-feed）");
+}
+
+/* reason codes -> words. Left as the code when unknown, so nothing is hidden behind a friendlier label. */
+const REASON_WORDS = {
+  no_1h_uptrend: "1h 无上升趋势", no_4h_uptrend: "4h 无上升趋势", momentum_bps: "动量不足", extended: "偏离过大", rel_volume: "量能不足",
+  rel_volume_unknown: "量能未知", insufficient_1h_history: "1h 历史不足", insufficient_4h_history: "4h 历史不足", btc_4h_below_trend: "BTC 4h 弱",
+  btc_1h_below_slow: "BTC 1h 弱", btc_4h_data_missing: "BTC 数据缺", btc_1h_data_missing: "BTC 数据缺", score: "评分未过现金门槛",
+  passed_but_not_top_ranked_or_no_room: "通过但未排前/无仓位空间", max_positions: "持仓数已满", max_entries_per_day: "今日入场次数已满",
+  max_orders_per_day: "今日下单次数已满", position_cap_reached: "单仓上限", insufficient_cash: "现金不足", breaker: "熔断", paused: "已暂停",
+  not_active_in_universe_version: "不在活跃池", product_not_online: "产品非 online", product_check_stale: "产品核验过期", market_data_stale: "行情过期",
+  no_market_observation: "无行情观测", duplicate_working_order: "已有挂单", dust_below_ordermin: "余尘无法卖出", no_position: "无持仓",
+};
+const DECISION_STATUS_ZH = { ok: "已下单", hold: "持有不动", blocked: "未授权/被拦", error: "模型错误", timeout: "模型超时", invalid: "模型输出无效", budget_exhausted: "预算耗尽" };
+
+function renderCrypto(s) {
+  const sec = $("crsec"), card = $("crcard");
+  if (!sec || !card) return;
+  const on = !!STATE.crypto && s.ok && s.crypto;
+  sec.style.display = on ? "" : "none";
+  card.style.display = on ? "" : "none";
+  if (!on) return;
+  const cr = s.crypto, u = cr.universe || {}, eff = u.effective || {}, pend = u.pending, data = cr.data || {}, b = cr.budget || {}, fee = cr.fees || {};
+  const counts = u.state_counts || {};
+  const secs = isNum(cr.seconds_to_boundary) ? cr.seconds_to_boundary : null;
+  const toClose = secs == null ? UNK : `${Math.floor(secs / 3600)}h ${String(Math.floor((secs % 3600) / 60)).padStart(2, "0")}m`;
+  const nd = data.next_decision_utc ? hhmm(data.next_decision_utc) + " UTC" : UNK;
+  const tkAge = isNum(data.last_ticker_age_s) ? ago(data.last_ticker_age_s) : UNK;
+  const tkOk = isNum(data.last_ticker_age_s) && data.last_ticker_age_s < 180;
+  const today = b.today || {};
+  const calls = Object.entries(today).map(([k, v]) => `${k} ${v.n}`).join(" · ") || "0";
+  const budgetLine = cr.agent_mode === "HYBRID_LLM"
+    ? (b.llm_enabled ? `${tr("已授权")} · ${esc(b.model_id || "?")} · ${calls} / ${b.total_limit}` : tr("未授权：BLOCKED"))
+    : `${tr("规则策略，不调用模型")} · ${tr("HYBRID 需另行授权")}`;
+  const tiles = [
+    ["活跃池", `${counts.ACTIVE || 0} / ${u.active_limit != null ? u.active_limit : "—"}`, `${tr("合格未入池")} ${counts.ELIGIBLE || 0} · ${tr("候选")} ${u.n_candidates || 40}`],
+    ["未入池原因", `${tr("预热")} ${counts.DATA_WARMUP || 0} · ${tr("观察")} ${counts.OBSERVE_ONLY || 0}`, `${tr("过期")} ${counts.STALE || 0} · ${tr("不可用")} ${(counts.UNAVAILABLE || 0) + (counts.RESTRICTED || 0)} · ${tr("持有已出池")} ${counts.HELD_NOT_ACTIVE || 0}`],
+    ["币池版本", esc((eff.universe_version || "—").replace(/^U-.*?-/, "")), `${tr("生效")} ${eff.effective_utc ? hhmm(eff.effective_utc) + " UTC" : UNK}${pend ? ` · ${tr("待生效")} ${esc(String(pend.universe_version || "").replace(/^U-.*?-/, ""))}` : ""}`],
+    ["下次决策", nd, `${tr("每")} ${data.decision_interval_min || "?"} ${tr("分钟")} · ${tr("上次快照")} ${data.latest_snapshot ? hhmm(data.latest_snapshot.ts_utc) + " UTC" : UNK}`],
+    ["距 UTC 日结", toClose, `${tr("估值边界 00:00 UTC，00:05 起结算")}`],
+    ["行情新鲜度", `${tkOk ? tr("正常") : tr("陈旧")} · ${tkAge}`, `${tr("最近 ticker")} ${data.last_ticker_utc ? hhmm(data.last_ticker_utc) + " UTC" : UNK}`],
+    ["产品核验", `${data.n_products_verified != null ? data.n_products_verified : "?"} / ${data.n_products != null ? data.n_products : "?"}`, tr("Kraken AssetPairs：online 的 USD 现货对")],
+    ["模型预算", budgetLine, `${tr("模式")} ${esc(cr.agent_mode || "")}`],
+    ["费用模型", `taker ${fee.taker_bps} bps`, `${esc(fee.tier || "")} · ${tr("核对")} ${esc(String(fee.checked_at || "").slice(0, 10))}`],
+  ];
+  $("crstats").innerHTML = tiles.map(([k, v, sub]) => `<div class="crtile"><div class="k">${tr(k)}</div><div class="v num">${v}</div><div class="s">${sub}</div></div>`).join("");
+  const rule = u.rule || {};
+  const el_ = rule.eligibility || {};
+  $("crrule").textContent = LANG === "en"
+    ? `Pool rule ${esc(eff.rule_version || "")}: online USD spot pair · ≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} rolling-24h turnover (median over the sample window) · spread ≤ ${el_.max_spread_bps} bps · ask depth within 25 bps ≥ $${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")} · ≥ ${el_.min_samples} samples · warm-up ${el_.warmup_candles_1h} × 1h and ${el_.warmup_candles_4h} × 4h candles. Ranked by turnover then spread; incumbents keep a seat within ${rule.hysteresis_rank_band} ranks of the limit. Liquidity and data quality only: no return, no direction, no agent preference.`
+    : `币池规则 ${esc(eff.rule_version || "")}：online 的 USD 现货对 · 滚动 24h 成交额（采样窗口中位数）≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} · 点差 ≤ ${el_.max_spread_bps} bps · 25bps 内卖盘深度 ≥ $${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")} · 样本 ≥ ${el_.min_samples} · 预热 ${el_.warmup_candles_1h} 根 1h + ${el_.warmup_candles_4h} 根 4h。按成交额、点差排序；在池成员在上限 +${rule.hysteresis_rank_band} 名内保留席位。只看流动性与数据质量：不看收益、不看方向、不看 Agent 偏好。`;
+  $("crnote").textContent = `${tr("候选")} ${u.n_candidates || 40} · ${tr("活跃")} ${counts.ACTIVE || 0} · ${tr("版本")} ${eff.universe_version ? "1" : "0"}${pend ? " +1 " + tr("待生效") : ""}`;
+  const btn = $("crall");
+  if (btn && !btn.dataset.wired) {
+    btn.dataset.wired = "1";
+    btn.addEventListener("click", () => { STATE.crAll = !STATE.crAll; renderCrypto(STATE.snap); });
+  }
+  if (btn) { btn.classList.toggle("on", !!STATE.crAll); btn.setAttribute("aria-pressed", String(!!STATE.crAll)); btn.textContent = STATE.crAll ? tr("只看活跃与持有") : tr("全部候选"); }
+  const rows = (u.rows || []).filter(r => STATE.crAll || r.state === "ACTIVE" || r.held || r.state === "HELD_NOT_ACTIVE");
+  const fmtUsd = v => v == null ? "—" : "$" + Number(v).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  const fmtBps = v => v == null ? "—" : Number(v).toFixed(1);
+  const body = $("crbody");
+  const sig = rows.map(r => [r.candidate, r.state, r.rank, r.turnover_24h_usd, r.spread_bps, r.ask_depth_usd_25bps, r.n_samples, r.product_status, (r.reasons || []).join("|")].join(",")).join(";") + "|" + LANG;
+  if (body.dataset.sig === sig) return;
+  body.dataset.sig = sig;
+  body.innerHTML = rows.map(r => `<tr>
+    <td data-k="币种"><b class="${r.held ? "crheld" : ""}">${esc(r.candidate)}</b>${r.held ? ` <span class="muted">${tr("持有")}</span>` : ""}</td>
+    <td data-k="分组" class="muted">${tr(r.group === "main" ? "主要" : "补充")}</td>
+    <td data-k="状态"><span class="crst ${esc(r.state)}">${esc(tr((u.states_zh || {})[r.state] || r.state))}</span></td>
+    <td data-k="名次" class="num">${r.rank != null ? r.rank : "—"}</td>
+    <td data-k="24h 成交额" class="num">${fmtUsd(r.turnover_24h_usd)}</td>
+    <td data-k="点差" class="num">${fmtBps(r.spread_bps)}</td>
+    <td data-k="25bps 深度" class="num">${fmtUsd(r.ask_depth_usd_25bps)}</td>
+    <td data-k="样本" class="num">${r.n_samples != null ? r.n_samples : "—"}/${r.n_book_samples != null ? r.n_book_samples : "—"}</td>
+    <td data-k="产品" class="muted">${esc(r.altname || "—")} · ${esc(r.product_status || "?")}</td>
+    <td data-k="原因" class="reasons">${(r.reasons || []).map(x => esc(x)).join("；") || "—"}</td></tr>`).join("")
+    || `<tr><td colspan="10" class="blank"><span class="ico">🪙</span>${tr("活跃池为空")}<br><span class="muted">${tr("数据预热中，或没有候选通过流动性门槛；不会为凑数降低门槛")}</span></td></tr>`;
 }
 
 function renderAgents(s) {
@@ -2032,7 +2190,7 @@ function renderAgents(s) {
         pb.className = "posbox pos";   // keep the hook class: querySelector(".posbox") runs again next frame
         pb.innerHTML = a.positions.map(p => {
           const u = p.unrealized_cents;
-          return `<div class="posrow"><span class="s">${esc(p.symbol)}</span><span class="q num">${p.qty} ${tr("股")} @ ${px(p.avg_cost)}</span>
+          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}</span><span class="q num">${fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}</span>
             <span class="u num" style="color:${isNum(u) ? (u > 0 ? cssVar("--green-ink") : u < 0 ? cssVar("--red-ink") : "") : cssVar("--ink3")}">${isNum(u) ? usd(u, { sign: u > 0 }) : UNK}${isNum(p.unrealized_bp) ? ` <span class="muted">${bpPct(p.unrealized_bp, 1)}</span>` : ""}</span></div>`;
         }).join("");
       } else if (a.ledger_readable === false || a.live_equity_status === "unreadable") {
@@ -2052,7 +2210,21 @@ function renderAgents(s) {
       if (br.cum) warns.push("累计/回撤熔断已触发");
       if (a.live_equity_status === "unknown") warns.push("实时估值未知（缺报价）");
       if (a.live_equity_status === "unreadable" || a.ledger_readable === false) warns.push("账本读不到（文件缺失/损坏）");
-      wb.innerHTML = warns.length ? `<div class="warnrow"><span>●</span><span>${esc(warns.join(" · "))}</span></div>` : "";
+      let dec = "";
+      if (STATE.crypto && a.last_decision) {
+        // what the last decision round did for THIS slot, in one line: evaluated / passed / submitted, or why it held
+        const d = a.last_decision;
+        const when = hhmm(d.ts_ny);
+        const sub = (d.submitted || []).map(o => `${o.side} ${o.candidate}`).join(", ");
+        const why = (d.top_reasons || []).slice(0, 2).map(([k, c]) => `${tr(REASON_WORDS[k] || k)}×${c}`).join(" · ");
+        const st = d.status;
+        dec = st === "ok" ? `${when} · ${tr("评估")} ${d.n_active != null ? d.n_active : "?"} · ${tr("通过")} ${d.n_passed != null ? d.n_passed : "?"} · ${tr("下单")} ${sub || "—"}`
+          : st === "hold" ? `${when} · ${tr("持有不动")}${why ? " · " + why : ""}`
+          : `${when} · ${tr(DECISION_STATUS_ZH[st] || st)}${d.reason ? " · " + esc(String(d.reason).slice(0, 80)) : ""}`;
+        if ((d.blocked || []).length) dec += ` · ${tr("被风控拦下")} ${d.blocked.map(b => b.candidate + "(" + (b.blocked_by || []).map(x => tr(REASON_WORDS[String(x).split(":")[0]] || x)).join("/") + ")").join(", ")}`;
+      }
+      wb.innerHTML = (warns.length ? `<div class="warnrow"><span>●</span><span>${esc(warns.join(" · "))}</span></div>` : "")
+        + (dec ? `<div class="warnrow" style="color:var(--ink3)"><span>◦</span><span>${dec}</span></div>` : "");
     } catch (e) {
       RENDER_FAILS.set("agents:" + (a && a.slot_id || i), (e && e.message) || String(e));
       console.error("[render:agent]", a && a.slot_id, e);
@@ -2190,6 +2362,8 @@ function renderTape() {
       ? `<tr><td colspan="9" class="blank"><span class="ico">⚠️</span>读不到成交记录<br><span class="muted">这不表示当天没有成交，只表示这次没读到；请重选交易日重试</span></td></tr>`
       : STATE.tradeSlot !== "all" && all.length
       ? `<tr><td colspan="9" class="blank"><span class="ico">📈</span>${esc(STATE.tradeSlot)} 在这个范围内没有成交<br><span class="muted">其它 Agent 有 ${all.length} 笔；空仓与不交易都是合法状态</span></td></tr>`
+      : STATE.crypto
+      ? `<tr><td colspan="9" class="blank"><span class="ico">📈</span>还没有成交<br><span class="muted">每个决策周期在同一份快照上评估全部活跃币；空仓与不交易都是合法状态，币池为空或数据预热中也不会强行交易</span></td></tr>`
       : `<tr><td colspan="9" class="blank"><span class="ico">📈</span>还没有成交<br><span class="muted">常规盘 09:45–15:30 才会评估入场；空仓与不交易都是合法状态</span></td></tr>`;
     translateStatic(body);
     syncSwipeHint();
@@ -2607,7 +2781,7 @@ function renderCompare(s) {
       const step = Math.max(...(s.slots || []).map(a => (isNum(a.curve_step) ? a.curve_step : 1)), 1);
       // a line drawn at one point every few minutes must not imply it has every minute
       full.push(step > 1 ? `${tr("净值曲线")} · ${tr("每")} ${step} ${tr("分钟一个点")}` : tr("今日分钟级净值"));
-      if (STATE.cmpRange === "today") full.push(tr("今日 = 盘前 04:00 起，含盘前、常规盘、盘后"));
+      if (STATE.cmpRange === "today") full.push(STATE.crypto ? tr("今日 = UTC 日（00:00 UTC 起），24/7 连续") : tr("今日 = 盘前 04:00 起，含盘前、常规盘、盘后"));
       if (STATE.cmpRange === "session") full.push(tr("已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后"));
       if (STATE.cmpZoom) full.push(tr("已放大到一段时间；⟲ 回到整段"));
       full.push(tr("图下方的导航条：拖窗口左右移动，拖两端改时长，空白处拖选一段，← → 逐步移动"));
@@ -3368,6 +3542,19 @@ function renderFooter(s) {
         ? `Snapshot published at ${esc(String(s.published_ny).slice(11, 19))} ET${isNum(s.publish_lag_s) ? " (" + ago(s.publish_lag_s) + ")" : ""} · re-fetched every ${Math.round(API.pollMs / 1000)}s · read-only, no orders · `
         : `快照发布于 ${esc(String(s.published_ny).slice(11, 19))} ET${isNum(s.publish_lag_s) ? "（" + ago(s.publish_lag_s) + "）" : ""} · 每 ${Math.round(API.pollMs / 1000)}s 自动重取 · 只读、不可下单 · `)
     : "";
+  if (STATE.crypto) {
+    const cr = s.crypto || {}, fee = cr.fees || {}, xm = cr.execution_model || {};
+    $("footmeta").innerHTML = pub + (LANG === "en"
+      ? `Data ${esc(s.ts_ny || "")} · experiment <code>${esc(s.experiment_id || "")}</code> · ${esc(ex.data_kind || "")} · crypto spot on ${esc(cr.venue || "")} (public market data, no account, no credentials) ·
+         fills are simulated: taker against the next observed order book (${esc(xm.model || "")}), slippage cap ${xm.max_slippage_bps} bps, partial fills ${xm.partial_fills ? "on" : "off"} ·
+         fee ${fee.taker_bps} bps taker (${esc(fee.fee_model_version || "")}, ${esc(fee.tier || "")}; source checked ${esc(String(fee.checked_at || "").slice(0, 10))}) ·
+         scoring by UTC day; live equity is a display figure, the ledger equity is what was frozen at 00:00 UTC.`
+      : `数据 ${esc(s.ts_ny || "")} · 实验 <code>${esc(s.experiment_id || "")}</code> · ${esc(ex.data_kind || "")} · 环境 ${esc(s.env || "")} ·
+      ${esc(cr.venue || "")} 加密现货（公开行情，无账户、无凭证）· 成交为模拟：在下一份订单簿观测上按 taker 成交（${esc(xm.model || "")}），滑点上限 ${xm.max_slippage_bps} bps，部分成交${xm.partial_fills ? "开" : "关"} ·
+      手续费 taker ${fee.taker_bps} bps（${esc(fee.fee_model_version || "")}，${esc(fee.tier || "")}；来源核对于 ${esc(String(fee.checked_at || "").slice(0, 10))}）·
+      按 UTC 日计分；实时净值为显示口径，账本净值为 00:00 UTC 冻结值。`);
+    return;
+  }
   $("footmeta").innerHTML = pub + (LANG === "en"
     ? `Data ${esc(s.ts_ny || "")} · experiment <code>${esc(s.experiment_id || "")}</code> · ${esc(ex.data_kind || "")} ·
        quotes ${esc(f.source || "")} (read-only, no account, no credentials) · fills are simulated: the next complete
