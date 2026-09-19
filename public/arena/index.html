@@ -371,6 +371,13 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .crst.UNAVAILABLE,.crst.RESTRICTED{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red-ink)}
 .crst.HELD_NOT_ACTIVE{background:color-mix(in srgb,var(--purple) 16%,transparent);color:var(--purple)}
 .crheld{font-weight:700}
+/* the pool's detail is one tap away: the tiles are the answer, the 40 rows are the evidence */
+.crmore{display:flex;align-items:center;gap:7px;width:100%;min-height:40px;padding:8px 2px;margin-top:2px;border:0;
+  background:transparent;color:var(--ink2);font:inherit;font-size:var(--fs-meta);font-weight:600;cursor:pointer;text-align:left}
+.crmore .ar{display:inline-block;color:var(--ink3);transition:transform .2s var(--ease)}
+.crmore[aria-expanded="true"] .ar{transform:rotate(90deg)}
+@media(hover:hover) and (pointer:fine){.crmore:hover{color:var(--ink)}}
+.crmore:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:var(--r-sm)}
 .cmpwrap{position:relative}
 .cmp{display:block;width:100%;height:300px;touch-action:pan-y;cursor:crosshair}
 .cmp text{font-size:11px;fill:var(--ink3);font-variant-numeric:tabular-nums}
@@ -761,12 +768,16 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   </div>
 
   <div class="sec" id="crsec" style="display:none"><h2>币池</h2><span class="note" id="crnote"></span>
-    <button class="grpbtn" id="crall" type="button" aria-pressed="false" title="默认只列活跃池与持有的币；点开显示全部 40 个候选及其状态原因">全部候选</button></div>
+    <button class="grpbtn" id="crall" type="button" aria-pressed="false" style="display:none" title="默认只列活跃池与持有的币；点开显示全部 40 个候选及其状态原因">全部候选</button></div>
   <div class="card pad" id="crcard" style="display:none">
     <div class="crgrid" id="crstats"></div>
-    <div class="hint" id="crrule" style="margin:0 0 10px"></div>
-    <div class="crtw"><table class="crtable"><thead><tr><th>币种</th><th>分组</th><th>状态</th><th>名次</th><th>24h 成交额</th><th>点差</th><th>25bps 深度</th><th>样本</th><th>产品</th><th>原因</th></tr></thead>
-      <tbody id="crbody"></tbody></table></div>
+    <button class="crmore" id="crtoggle" type="button" aria-expanded="false" aria-controls="crdetail">
+      <span class="ar">›</span><span id="crtoggletxt">展开明细</span></button>
+    <div id="crdetail" hidden>
+      <div class="hint" id="crrule" style="margin:10px 0"></div>
+      <div class="crtw"><table class="crtable"><thead><tr><th>币种</th><th>分组</th><th>状态</th><th>名次</th><th>24h 成交额</th><th>点差</th><th>25bps 深度</th><th>样本</th><th>产品</th><th>原因</th></tr></thead>
+        <tbody id="crbody"></tbody></table></div>
+    </div>
   </div>
 
   <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span></div>
@@ -1173,7 +1184,7 @@ const I18N = {
     "收起，只留下这些 Agent 正在持仓、今日成交或最近成交的币": "collapse to what these agents hold, traded today or traded recently",
     "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
     "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
-    "币池": "Pool", "全部候选": "All candidates", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
+    "币池": "Pool", "全部候选": "All candidates", "展开明细": "Show the pool table", "收起明细": "Hide the pool table", "个候选": "candidates", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
     "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
     "币池版本": "Pool version", "生效": "effective", "下次决策": "Next decision", "每": "every", "分钟": "min", "上次快照": "last snapshot",
     "距 UTC 日结": "To UTC close", "估值边界 00:00 UTC，00:05 起结算": "valuation at 00:00 UTC, processing from 00:05",
@@ -2100,12 +2111,35 @@ function renderCrypto(s) {
     ? `Pool rule ${esc(eff.rule_version || "")}: online USD spot pair · ≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} rolling-24h turnover (median over the sample window) · spread ≤ ${el_.max_spread_bps} bps · ask depth within 25 bps ≥ $${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")} · ≥ ${el_.min_samples} samples · warm-up ${el_.warmup_candles_1h} × 1h and ${el_.warmup_candles_4h} × 4h candles. Ranked by turnover then spread; incumbents keep a seat within ${rule.hysteresis_rank_band} ranks of the limit. Liquidity and data quality only: no return, no direction, no agent preference.`
     : `币池规则 ${esc(eff.rule_version || "")}：online 的 USD 现货对 · 滚动 24h 成交额（采样窗口中位数）≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} · 点差 ≤ ${el_.max_spread_bps} bps · 25bps 内卖盘深度 ≥ $${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")} · 样本 ≥ ${el_.min_samples} · 预热 ${el_.warmup_candles_1h} 根 1h + ${el_.warmup_candles_4h} 根 4h。按成交额、点差排序；在池成员在上限 +${rule.hysteresis_rank_band} 名内保留席位。只看流动性与数据质量：不看收益、不看方向、不看 Agent 偏好。`;
   $("crnote").textContent = `${tr("候选")} ${u.n_candidates || 40} · ${tr("活跃")} ${counts.ACTIVE || 0} · ${tr("版本")} ${eff.universe_version ? "1" : "0"}${pend ? " +1 " + tr("待生效") : ""}`;
-  const btn = $("crall");
-  if (btn && !btn.dataset.wired) {
-    btn.dataset.wired = "1";
-    btn.addEventListener("click", () => { STATE.crAll = !STATE.crAll; renderCrypto(STATE.snap); });
+  // the detail is collapsed by default: the tiles above already answer "what is the pool doing", and the 40-row
+  // table is the evidence behind them. The choice is a per-viewer convenience, remembered locally.
+  const tog = $("crtoggle"), det = $("crdetail"), btn = $("crall");
+  if (tog && !tog.dataset.wired) {
+    tog.dataset.wired = "1";
+    try { STATE.crOpen = localStorage.getItem("arena.crOpen") === "1"; } catch (e) { }
+    tog.addEventListener("click", () => {
+      STATE.crOpen = !STATE.crOpen;
+      try { localStorage.setItem("arena.crOpen", STATE.crOpen ? "1" : "0"); } catch (e) { }
+      renderCrypto(STATE.snap);
+    });
   }
-  if (btn) { btn.classList.toggle("on", !!STATE.crAll); btn.setAttribute("aria-pressed", String(!!STATE.crAll)); btn.textContent = STATE.crAll ? tr("只看活跃与持有") : tr("全部候选"); }
+  const open = !!STATE.crOpen;
+  if (tog) {
+    tog.setAttribute("aria-expanded", String(open));
+    $("crtoggletxt").textContent = open ? tr("收起明细") : `${tr("展开明细")} · ${u.n_candidates || 40} ${tr("个候选")}`;
+  }
+  if (det) det.hidden = !open;
+  if (btn) {
+    btn.style.display = open ? "" : "none";          // the filter only means anything while the table is on screen
+    if (!btn.dataset.wired) {
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", () => { STATE.crAll = !STATE.crAll; renderCrypto(STATE.snap); });
+    }
+    btn.classList.toggle("on", !!STATE.crAll);
+    btn.setAttribute("aria-pressed", String(!!STATE.crAll));
+    btn.textContent = STATE.crAll ? tr("只看活跃与持有") : tr("全部候选");
+  }
+  if (!open) { delete $("crbody").dataset.sig; return; }   // collapsed: nothing to draw, and the next open redraws
   const rows = (u.rows || []).filter(r => STATE.crAll || r.state === "ACTIVE" || r.held || r.state === "HELD_NOT_ACTIVE");
   const fmtUsd = v => v == null ? "—" : "$" + Number(v).toLocaleString("en-US", { maximumFractionDigits: 0 });
   const fmtBps = v => v == null ? "—" : Number(v).toFixed(1);
