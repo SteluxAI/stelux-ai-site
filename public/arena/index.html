@@ -204,6 +204,20 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .agent::after{content:"";position:absolute;inset:0;border-radius:var(--r-xl);pointer-events:none;
   box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .5s var(--ease)}
 .agent.lead::after{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--green) 55%,transparent)}
+/* the band currently on course to be replaced at the next evolution node: a ring and a chip, in the same
+   vocabulary as the leader's ring, plus a wash faint enough to read as "watch this" rather than "broken" */
+.agent.atrisk{background:color-mix(in srgb,var(--red) 4.5%,var(--card))}
+.agent.atrisk::after{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--red) 45%,transparent);
+  animation:atrisk 2.8s var(--ease) infinite}
+@keyframes atrisk{0%,100%{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--red) 45%,transparent)}
+  50%{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--red) 20%,transparent)}}
+/* a round that cannot run is not a danger: same band, no alarm */
+.agent.atrisk.inert{background:var(--card)}
+.agent.atrisk.inert::after{box-shadow:inset 0 0 0 1.5px var(--hair);animation:none}
+@media(prefers-reduced-motion:reduce){.agent.atrisk::after{animation:none}}
+.riskchip{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:700;padding:3px 7px;border-radius:999px;
+  white-space:nowrap;background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red-ink)}
+.agent.atrisk.inert .riskchip{background:var(--hair2);color:var(--ink3);font-weight:600}
 /* a card in flight rides above the ones it is passing, and stops compositing the moment it lands */
 .agent.moving{z-index:3;will-change:transform}
 .agent.fresh{animation:pop .7s var(--ease-out)}
@@ -1196,7 +1210,8 @@ const I18N = {
     "收起，只留下这些 Agent 正在持仓、今日成交或最近成交的币": "collapse to what these agents hold, traded today or traded recently",
     "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
     "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
-    "按名次": "By rank", "按槽位": "By slot", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "即将": "any moment",
+    "按名次": "By rank", "按槽位": "By slot", "末位 · 待替换": "Bottom · to be replaced", "暂不淘汰": "Not this round",
+    "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "即将": "any moment",
     "十个 Agent 共用这一个可交易币池": "all ten agents trade from this one pool", "行情陈旧": "market data stale", "有新版本待生效": "a new version is pending", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
     "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
     "币池版本": "Pool version", "生效": "effective", "下次决策": "Next decision", "每": "every", "分钟": "min", "上次快照": "last snapshot",
@@ -2271,6 +2286,21 @@ function renderAgents(s) {
   }
   const ranked = STATE.agSort !== "slot";
   const ordered = ranked ? agentOrder(byIndex) : byIndex;
+  // The band on course to be replaced at the next node. `evolution.run_round` ranks by the day's scoring metric
+  // and retires `bottom = ranked[-replace_bottom:]`, so the size comes from the experiment, never a constant.
+  // Only a LIVE RANKING can project it: where the server declined to rank (unknown day return), a fallback order
+  // by cumulative return is explicitly not the competition ranking, and drawing a band on it would invent one.
+  const exr = s.experiment || {};
+  const nRep = isNum(exr.replace_bottom) ? exr.replace_bottom : 0;
+  const byRank = byIndex.filter(a => isNum(a.live_rank)).sort((a, b) => a.live_rank - b.live_rank);
+  const sameMetric = (exr.metric || "daily_net_equity_return") === "daily_net_equity_return";
+  // every reason run_round writes outcome=skipped and moves nobody
+  const inert = [];
+  if ((s.controls || {}).pause_evolution) inert.push(tr("进化已暂停"));
+  if (byRank.length < 2 * nRep) inert.push(tr("可排名的 Agent 不足"));
+  if (byIndex.some(a => a.live_equity_status && a.live_equity_status !== "known")) inert.push(tr("有 Agent 估值未知"));
+  const riskIds = new Set(nRep > 0 && sameMetric && byRank.length >= 2 * nRep
+    ? byRank.slice(-nRep).map(a => a.slot_id) : []);
   if (btn) {
     btn.textContent = ranked ? tr("按名次") : tr("按槽位");
     btn.classList.toggle("on", ranked);
@@ -2293,7 +2323,7 @@ function renderAgents(s) {
         // taken off once it has played, so a later reorder has no entrance left to restart
         n.addEventListener("animationend", () => n.classList.remove("enter"), { once: true });
         setTimeout(() => n.classList.remove("enter"), 1400);
-        n.innerHTML = `<div class="ahead"><span class="rank"></span><span class="slotid"></span><span class="vchip"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="tag"></span></div>
+        n.innerHTML = `<div class="ahead"><span class="rank"></span><span class="slotid"></span><span class="vchip"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="riskchip" hidden></span><span class="tag"></span></div>
           <div class="aeq num"></div><div class="arow"></div><svg class="spark"></svg><div class="posbox"></div><div class="warnbox"></div>`;
         n.addEventListener("click", () => openSheet(a.slot_id));
         n.setAttribute("role", "button");
@@ -2303,6 +2333,30 @@ function renderAgents(s) {
           if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openSheet(a.slot_id); }
         });
         wrap.appendChild(n);
+      }
+      const atRisk = riskIds.has(a.slot_id);
+      n.classList.toggle("atrisk", atRisk);
+      n.classList.toggle("inert", atRisk && inert.length > 0);
+      let rc = n.querySelector(".riskchip");
+      if (!rc) {                                             // a card built before this chip existed
+        rc = el("span", "riskchip");
+        n.querySelector(".ahead").insertBefore(rc, n.querySelector(".tag"));
+      }
+      rc.hidden = !atRisk;
+      if (atRisk) {
+        rc.textContent = inert.length ? tr("暂不淘汰") : tr("末位 · 待替换");
+        // a projection, never a verdict: the selection is made on the FROZEN daily close, and the slot keeps
+        // its money either way - what gets replaced is the strategy version sitting in it
+        rc.title = LANG === "en"
+          ? (inert.length
+            ? `In the bottom ${nRep} on the live ranking, but nothing is replaced this round: ${inert.join(", ")}`
+            : `In the bottom ${nRep} on the live ranking. The slot and its money are permanent - what gets replaced `
+            + `is the strategy version in it. The real selection is made from the FROZEN daily close at the next `
+            + `evolution node; this is a live projection.`)
+          : (inert.length
+            ? `按当前实时名次属于末 ${nRep} 名，但本轮不会替换：${inert.join("、")}`
+            : `按当前实时名次属于末 ${nRep} 名。资金槽与本金永久保留，被替换的是槽里的策略版本；`
+            + `实际淘汰以 UTC 日结冻结后的当日成绩为准，现在只是实时推演。`);
       }
       const rk = n.querySelector(".rank");
       rk.textContent = isNum(a.live_rank) ? a.live_rank : "–";
@@ -2404,6 +2458,13 @@ function renderAgents(s) {
   // The order is a claim too. When the server has a live ranking the cards stand in it and the badges match;
   // when it does not - it refuses to rank a slot whose day return is unknown - they stand by the cumulative
   // return printed on each card, and that is said out loud rather than left to look like a ranking.
+  if (riskIds.size) {
+    $("agnote").textContent += inert.length
+      ? (LANG === "en" ? ` · the bottom ${nRep} are marked, but nothing will be replaced this round (${inert.join(", ")})`
+        : ` · 已标出末 ${nRep} 名，但本轮不会替换（${inert.join("、")}）`)
+      : (LANG === "en" ? ` · the bottom ${nRep} are on course to have their strategy replaced at the next node; the slot and its money stay`
+        : ` · 末 ${nRep} 名的策略将在下个进化结点被替换（资金槽与本金保留），以日结冻结成绩为准`);
+  }
   if (ranked) {
     const b = ordered.basis;
     $("agnote").textContent += b === "rank"
