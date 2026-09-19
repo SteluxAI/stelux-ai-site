@@ -191,8 +191,11 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 
 /* ============================================================ agents */
 .agents{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(296px,100%),1fr));gap:14px}
-.agent{position:relative;padding:17px 18px 15px;cursor:pointer;overflow:hidden;
-  animation:rise .55s var(--ease-out) backwards}
+.agent{position:relative;padding:17px 18px 15px;cursor:pointer;overflow:hidden}
+/* The entrance belongs to the card's FIRST appearance only. Moving a node in the DOM restarts its CSS
+   animations, so while this lived on the base class a card that was merely changing places replayed its
+   entrance - sliding up from below - instead of travelling from where it actually was. */
+.agent.enter{animation:rise .55s var(--ease-out) backwards}
 @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
 @media(hover:hover) and (pointer:fine){.agent:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--hair)}}
 .agent:active{transform:translateY(-1px) scale(.995)}
@@ -201,6 +204,8 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .agent::after{content:"";position:absolute;inset:0;border-radius:var(--r-xl);pointer-events:none;
   box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .5s var(--ease)}
 .agent.lead::after{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--green) 55%,transparent)}
+/* a card in flight rides above the ones it is passing, and stops compositing the moment it lands */
+.agent.moving{z-index:3;will-change:transform}
 .agent.fresh{animation:pop .7s var(--ease-out)}
 @keyframes pop{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--blue) 45%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
 .ahead{display:flex;align-items:center;gap:8px;margin-bottom:11px}
@@ -786,7 +791,8 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
     </div>
   </div>
 
-  <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span></div>
+  <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span>
+    <button class="grpbtn" id="agsort" type="button" aria-pressed="true" title="按名次排列：领先的在前面。点一下改回按槽位 S01–S10 排列">按名次</button></div>
   <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
 
@@ -1190,7 +1196,7 @@ const I18N = {
     "收起，只留下这些 Agent 正在持仓、今日成交或最近成交的币": "collapse to what these agents hold, traded today or traded recently",
     "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
     "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
-    "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "即将": "any moment",
+    "按名次": "By rank", "按槽位": "By slot", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "即将": "any moment",
     "十个 Agent 共用这一个可交易币池": "all ten agents trade from this one pool", "行情陈旧": "market data stale", "有新版本待生效": "a new version is pending", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
     "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
     "币池版本": "Pool version", "生效": "effective", "下次决策": "Next decision", "每": "every", "分钟": "min", "上次快照": "last snapshot",
@@ -2187,11 +2193,90 @@ function renderCrypto(s) {
     || `<tr><td colspan="10" class="blank"><span class="ico">🪙</span>${tr("活跃池为空")}<br><span class="muted">${tr("数据预热中，或没有候选通过流动性门槛；不会为凑数降低门槛")}</span></td></tr>`;
 }
 
+// How the ten cards are ordered, and on what.
+// `live_rank` first: the badge and the position must agree, or a card reading "3" ends up standing first. The
+// server refuses to rank a slot whose day return is unknown ("listed but never ranked"), which on a closed
+// weekend is every stock slot - so the fallback is the cumulative return the card already prints. That orders
+// cards by a number on the card; it does not invent a rank, and the badge still reads "–". Unknown sorts last.
+function agentOrder(slots) {
+  const ranked = slots.some(a => isNum(a.live_rank));
+  const key = a => ranked
+    ? (isNum(a.live_rank) ? a.live_rank : Infinity)
+    : (isNum(a.live_return_bp) ? -a.live_return_bp : Infinity);
+  const out = slots.slice().sort((a, b) => {
+    const d = key(a) - key(b);
+    if (d) return d;
+    return (a.slot_index || 0) - (b.slot_index || 0);     // stable: equal returns must not reshuffle every second
+  });
+  out.basis = ranked ? "rank" : (slots.some(a => isNum(a.live_return_bp)) ? "return" : "none");
+  return out;
+}
+
+// FLIP: where each card was, where it now is, and the difference played backwards. The transform is inline
+// because `.agent:hover` also sets one and would fight it mid-flight.
+function flipAgents(wrap, ids) {
+  const kids = [...wrap.children];
+  if (kids.length !== ids.length || kids.every((nd, i) => nd.dataset.slot === ids[i])) {
+    for (const id of ids) { const nd = wrap.querySelector(`[data-slot="${id}"]`); if (nd) wrap.appendChild(nd); }
+    wrap.dataset.flipReady = "1";
+    return;
+  }
+  // a board should not shuffle itself the moment it opens, in a hidden tab, or for someone who asked for less motion
+  const play = wrap.dataset.flipReady === "1" && !REDUCED && !document.hidden;
+  const first = new Map();
+  for (const nd of kids) {
+    if (play) first.set(nd.dataset.slot, nd.getBoundingClientRect());   // mid-flight cards measure where they LOOK
+    nd.style.transition = "none";
+    nd.style.transform = "";
+  }
+  for (const id of ids) { const nd = wrap.querySelector(`[data-slot="${id}"]`); if (nd) wrap.appendChild(nd); }
+  wrap.dataset.flipReady = "1";
+  if (!play) { for (const nd of wrap.children) nd.style.transition = ""; return; }
+  const moving = [];
+  for (const nd of wrap.children) {
+    const f = first.get(nd.dataset.slot);
+    if (!f) { nd.style.transition = ""; continue; }        // appeared this frame: let `rise` have it
+    const l = nd.getBoundingClientRect();
+    const dx = f.left - l.left, dy = f.top - l.top;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) { nd.style.transition = ""; continue; }
+    nd.style.transform = `translate(${dx}px, ${dy}px)`;
+    nd.classList.add("moving");
+    moving.push(nd);
+  }
+  if (!moving.length) return;
+  void wrap.offsetHeight;                                   // one reflow: the inverted position is the start
+  for (const nd of moving) {
+    nd.style.transition = "transform .5s var(--ease-out)";
+    nd.style.transform = "";
+    const done = () => { nd.style.transition = ""; nd.style.transform = ""; nd.classList.remove("moving"); };
+    nd.addEventListener("transitionend", done, { once: true });
+    setTimeout(done, 700);                                  // transitionend does not fire if it is interrupted
+  }
+}
+
 function renderAgents(s) {
   const wrap = $("agents");
   // a slot that recovered must stop being reported as failed
   [...RENDER_FAILS.keys()].forEach(k => { if (k.startsWith("agents:")) RENDER_FAILS.delete(k); });
-  const slots = (s.slots || []).slice().sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
+  const byIndex = (s.slots || []).slice().sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
+  const btn = $("agsort");
+  if (btn && !btn.dataset.wired) {
+    btn.dataset.wired = "1";
+    try { STATE.agSort = localStorage.getItem("arena.agSort") === "slot" ? "slot" : "rank"; } catch (e) { }
+    btn.addEventListener("click", () => {
+      STATE.agSort = STATE.agSort === "rank" ? "slot" : "rank";
+      try { localStorage.setItem("arena.agSort", STATE.agSort); } catch (e) { }
+      renderAgents(STATE.snap);
+    });
+  }
+  const ranked = STATE.agSort !== "slot";
+  const ordered = ranked ? agentOrder(byIndex) : byIndex;
+  if (btn) {
+    btn.textContent = ranked ? tr("按名次") : tr("按槽位");
+    btn.classList.toggle("on", ranked);
+    btn.setAttribute("aria-pressed", String(ranked));
+  }
+  const slots = ordered;
   const lead = (s.system || {}).leader_slot;
   const live = new Set(slots.map(a => a.slot_id));
   // drop anything that is not a card for a current slot -- including the empty-state placeholder,
@@ -2202,9 +2287,12 @@ function renderAgents(s) {
     try {
       let n = wrap.querySelector(`[data-slot="${a.slot_id}"]`);
       if (!n) {
-        n = el("div", "card agent");
+        n = el("div", "card agent enter");
         n.dataset.slot = a.slot_id;
         n.style.animationDelay = (i * 38) + "ms";
+        // taken off once it has played, so a later reorder has no entrance left to restart
+        n.addEventListener("animationend", () => n.classList.remove("enter"), { once: true });
+        setTimeout(() => n.classList.remove("enter"), 1400);
         n.innerHTML = `<div class="ahead"><span class="rank"></span><span class="slotid"></span><span class="vchip"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="tag"></span></div>
           <div class="aeq num"></div><div class="arow"></div><svg class="spark"></svg><div class="posbox"></div><div class="warnbox"></div>`;
         n.addEventListener("click", () => openSheet(a.slot_id));
@@ -2302,6 +2390,8 @@ function renderAgents(s) {
       console.error("[render:agent]", a && a.slot_id, e);
     }
   });
+  // the cards move to their places only once every one of them has this frame's numbers on it
+  try { flipAgents(wrap, slots.map(a => a.slot_id)); } catch (e) { console.error("[render:agents:order]", e); }
   const ex = s.experiment || {};
   // say it plainly when the configured competition metric is not what the badges are showing
   const daily = (ex.metric || "daily_net_equity_return") === "daily_net_equity_return";
@@ -2311,6 +2401,19 @@ function renderAgents(s) {
         : (LANG === "en"
             ? ` (note: the badges and ranks below sort by DAILY net equity return, which differs from the competition metric ${tr(ex.metric_zh || "")}; each card lists its cumulative return separately)`
             : `（注意：下方徽章与名次按当日净值收益率排序，与竞争口径 ${ex.metric_zh} 不同；每卡的累计收益单列）`));
+  // The order is a claim too. When the server has a live ranking the cards stand in it and the badges match;
+  // when it does not - it refuses to rank a slot whose day return is unknown - they stand by the cumulative
+  // return printed on each card, and that is said out loud rather than left to look like a ranking.
+  if (ranked) {
+    const b = ordered.basis;
+    $("agnote").textContent += b === "rank"
+      ? (LANG === "en" ? " · cards ordered by live rank" : " · 卡片按实时名次排列")
+      : b === "return"
+        ? (LANG === "en" ? " · no live rank yet (no prior close), so cards are ordered by the cumulative return on each card"
+          : " · 今日尚无实时名次（无前收基准），卡片按各自的累计收益排列")
+        : (LANG === "en" ? " · nothing is rankable yet; cards stay in slot order"
+          : " · 暂无可排序的收益，卡片保持槽位顺序");
+  }
 }
 
 function syncSwipeHint() {
