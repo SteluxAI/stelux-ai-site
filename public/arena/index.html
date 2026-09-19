@@ -555,6 +555,18 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   table.tape tr.grp{display:block;padding:9px 14px}
   table.tape tr.grp td{display:block;position:static;white-space:normal}
   table.tape td.blank{flex:1 1 100%;text-align:center;white-space:normal;padding:22px 12px}
+  /* --- the crypto pool table: same row-card treatment ------------------------------------------------------ */
+  .crtw{overflow-x:visible}
+  .crtable thead{display:none}
+  .crtable,.crtable tbody{display:block;width:100%}
+  .crtable tbody tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px;padding:10px 12px;border-top:1px solid var(--hair2)}
+  .crtable td{display:inline-flex;align-items:baseline;gap:4px;padding:0;border-top:0;max-width:100%;white-space:nowrap}
+  .crtable td::before{content:attr(data-k);color:var(--ink3);font-size:var(--fs-micro);font-weight:500}
+  .crtable td:not([data-k])::before{content:none}
+  .crtable td.reasons{flex:1 1 100%;white-space:normal;max-width:none}
+  .crtable td.blank{flex:1 1 100%;text-align:center;white-space:normal;padding:22px 12px}
+  .crgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .crtile .v{font-size:14px}
   .wrapcell{max-width:100%}
   /* legitimate ONLY because .tw is overflow-x:visible in this same block: there is no sideways gesture left to announce */
   #tradeswipe{display:none}
