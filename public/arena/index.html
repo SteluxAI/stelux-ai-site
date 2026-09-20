@@ -415,7 +415,7 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmp text{font-size:11px;fill:var(--ink3);font-variant-numeric:tabular-nums}
 /* the leader joining a displaced name back to the point its line ends at; under the text, and quiet enough
    that a cluster of them reads as a fan rather than a wall */
-.cmp .leadln{stroke-width:1;opacity:.5;shape-rendering:geometricPrecision}
+.cmp .leadln{stroke-width:1.1;opacity:.55;fill:none;stroke-linejoin:round;shape-rendering:geometricPrecision}
 .cmp text.slotlbl{font-weight:650}
 .cmp .grid{stroke:var(--hair2);stroke-width:1;opacity:.7}
 .cmp .base{stroke:var(--ink3);stroke-width:1;stroke-dasharray:4 4;opacity:.8}
@@ -448,6 +448,7 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmptip .tipv{margin-left:auto;font-weight:600}
 .cmptip .tipb{min-width:52px;text-align:right}
 .cmptip .up{color:var(--green-ink)} .cmptip .dn{color:var(--red-ink)} .cmptip .flat{color:var(--ink3)}
+
 .cmpwhy{width:26px;height:26px;border-radius:999px;font-size:13px;color:var(--ink3)}
 .cmpzoom{display:inline-flex;gap:4px}
 .cmpzoom .grpbtn{width:28px;height:26px;padding:0;font-size:14px;line-height:1;display:grid;place-items:center}
@@ -3031,7 +3032,10 @@ function renderCompare(s) {
 
   const w = Math.max(240, svg.clientWidth || 600), h = svg.clientHeight || 280;
   // money on the left, one label per line on the right; both margins tighten on a narrow chart
-  const PL = w < 430 ? 48 : 58, PR = w < 430 ? 54 : 74, PT = 14;
+  // PR carries the end labels AND the leaders that reach them. Five pixels of horizontal run cannot separate
+  // ten leaders spanning two hundred pixels vertically - they collapse into one bundle - so the margin is wide
+  // enough for the elbow to angle across.
+  const PL = w < 430 ? 48 : 58, PR = w < 430 ? 62 : 96, PT = 14;
   // two rows under the plot when the session bands are drawn: the boundary times, then the band names
   const PB = (mode === "intraday" && cmpSessions(s)) ? 36 : 24;
   // identical series are one line; they are grouped so each can be drawn a couple of pixels off the shared path
@@ -3375,12 +3379,15 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     // the leader, drawn first so it sits under the text: from where the line really ends to where its name had
     // to go. Seven of these slots end within two pixels of each other while their labels are spread over a
     // hundred, so without this the names are unattributable however well they are coloured.
+    // an elbow, not a near-vertical stub: out of the series flat, across the margin at an angle, then flat
+    // into its own label. Ten of these fan apart; ten verticals sit on top of one another.
+    const xa = w - PR + 2, xb = w - PR + PR * 0.46, xc = w - PR + PR * 0.58;
     if (Math.abs(y - t.y0) > 1.5) {
-      const ld = mk("line", { x1: (w - PR + 1).toFixed(1), y1: t.y0.toFixed(1), x2: (w - PR + 6).toFixed(1), y2: y.toFixed(1) }, "leadln");
+      const ld = mk("polyline", { points: `${xa.toFixed(1)},${t.y0.toFixed(1)} ${xb.toFixed(1)},${y.toFixed(1)} ${xc.toFixed(1)},${y.toFixed(1)}` }, "leadln");
       ld.style.stroke = t.color;
       svg.appendChild(ld);
     }
-    const el2 = label(w - PR + 8, y + 3.5, t.text, "start", "slotlbl");
+    const el2 = label(w - PR + PR * 0.62, y + 3.5, t.text, "start", "slotlbl");
     // an inline STYLE, not a fill attribute: a presentation attribute loses to `.cmp text{fill:var(--ink3)}`,
     // which is why every one of these names rendered the same grey however carefully it was coloured
     el2.style.fill = t.color;
@@ -3647,12 +3654,16 @@ function cmpHoverAt(clientX, clientY) {
   });
   cmpEmphasise(best.line);
 
-  // the agents ON that line, at that point. A merged line carries several, so it lists several.
+  /* The agents ON the line being read - one on the crypto board, where nothing is ever equal to the cent, and
+     several on a merged stock line. Asked for directly, 2026-09-19: hovering a line shows that agent. "Who is
+     on which line" is answered by the leader fan at the right-hand end, so the panel does not have to carry
+     the whole field as well. */
   const rows = best.line.series.map(s2 => {
     const own = cmpValueAt(s2, snapX) || best.pt;
     return { id: s2.id, color: s2.color, v: own[1],
              bp: (isNum(s2.principal) && s2.principal) ? Math.round((own[1] - s2.principal) / s2.principal * 10000) : null };
-  }).sort((a, b) => b.v - a.v || a.id.localeCompare(b.id));
+  });
+  rows.sort((a, b) => b.v - a.v || a.id.localeCompare(b.id));
 
   const tip = $("cmptip");
   if (!tip) return;
@@ -3661,17 +3672,21 @@ function cmpHoverAt(clientX, clientY) {
       + `<span class="tips">${esc(x.id)}</span><span class="num tipv">${esc(usd(x.v))}</span>`
       + `<span class="num ${x.bp > 0 ? "up" : x.bp < 0 ? "dn" : "flat"} tipb">${isNum(x.bp) ? esc(bpPct(x.bp, 2)) : ""}</span></div>`).join("");
   tip.style.display = "";
-  /* Park it, do not let it follow the cursor into the data. A panel that chases the pointer is itself the thing
-     blocking the view, and it lands on the right-hand side exactly where the newest points are. So: top right by
-     default, and only swapped to the left when the crosshair would end up underneath it. */
+  /* Beside the pointer, asked for 2026-09-19. The old rule parked it in a corner because a panel that chases
+     the cursor is itself what blocks the view - true of a ten-row field, much less true of a two-line card. It
+     is offset far enough not to sit under the point being read, and flips side or goes above at an edge. */
   const wrap = tip.parentElement, wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
   const tw = tip.offsetWidth || 170, th = tip.offsetHeight || 60;
-  const PAD = 8;
-  const crossX = sx / CMP.w * wrapW;
-  let tipL = wrapW - tw - PAD;
-  if (crossX > tipL - 16) tipL = PAD;                 // the point being read must never sit under the readout
+  const PAD = 8, OFF = 16;
+  const wr = wrap.getBoundingClientRect();
+  const px2 = clientX - wr.left, py2 = clientY - wr.top;     // the cursor, in the wrapper's own coordinates
+  let tipL = px2 + OFF;
+  if (tipL + tw + PAD > wrapW) tipL = px2 - OFF - tw;        // no room on the right: put it on the left
+  let tipT = py2 - th / 2;
+  if (tipT < PAD) tipT = PAD;
+  if (tipT + th + PAD > wrapH) tipT = wrapH - th - PAD;
   tip.style.left = Math.max(PAD, Math.min(wrapW - tw - PAD, tipL)) + "px";
-  tip.style.top = Math.max(PAD, Math.min(wrapH - th - PAD, PAD + 2)) + "px";
+  tip.style.top = Math.max(PAD, Math.min(Math.max(PAD, wrapH - th - PAD), tipT)) + "px";
 }
 
 /* Emphasise the line being READ: thicker, others dimmed, nobody recoloured. Separate from cmpHighlight, which
