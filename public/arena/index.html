@@ -413,6 +413,10 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmpwrap{position:relative}
 .cmp{display:block;width:100%;height:300px;touch-action:pan-y;cursor:crosshair}
 .cmp text{font-size:11px;fill:var(--ink3);font-variant-numeric:tabular-nums}
+/* the leader joining a displaced name back to the point its line ends at; under the text, and quiet enough
+   that a cluster of them reads as a fan rather than a wall */
+.cmp .leadln{stroke-width:1;opacity:.5;shape-rendering:geometricPrecision}
+.cmp text.slotlbl{font-weight:650}
 .cmp .grid{stroke:var(--hair2);stroke-width:1;opacity:.7}
 .cmp .base{stroke:var(--ink3);stroke-width:1;stroke-dasharray:4 4;opacity:.8}
 .cmp .baselbl{fill:var(--ink2);font-weight:650}
@@ -3319,7 +3323,9 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   /* One label per line at the height it ends on, in its own colour: at a glance, which line is whose. A merged line
      shows its lead slot and how many share it; the full list is in the note, the legend and the crosshair readout.
      When two lines end close together the LABELS are pushed apart - never the lines. */
-  const tags = lines.map(l => ({ y: l.y, text: l.ids[0] + (l.ids.length > 1 ? "  x" + l.ids.length : ""), color: l.color }));
+  // y0 is where the series actually ENDS; y is where its label is allowed to sit after the anti-collision
+  // pass. Keeping both is what lets a leader line join them back up.
+  const tags = lines.map(l => ({ y: l.y, y0: l.y, text: l.ids[0] + (l.ids.length > 1 ? "  x" + l.ids.length : ""), color: l.color }));
   tags.sort((a, b) => a.y - b.y);
   const GAP = 16, TOP = PT + 4, BOT = h - PB - 4;   // >= the 11-12px label's own line box, or they still touch
   for (let i = 1; i < tags.length; i++) if (tags[i].y - tags[i - 1].y < GAP) tags[i].y = tags[i - 1].y + GAP;
@@ -3329,8 +3335,18 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   }
   tags.forEach(t => {
     const y = Math.max(TOP, Math.min(BOT, t.y));
+    // the leader, drawn first so it sits under the text: from where the line really ends to where its name had
+    // to go. Seven of these slots end within two pixels of each other while their labels are spread over a
+    // hundred, so without this the names are unattributable however well they are coloured.
+    if (Math.abs(y - t.y0) > 1.5) {
+      const ld = mk("line", { x1: (w - PR + 1).toFixed(1), y1: t.y0.toFixed(1), x2: (w - PR + 6).toFixed(1), y2: y.toFixed(1) }, "leadln");
+      ld.style.stroke = t.color;
+      svg.appendChild(ld);
+    }
     const el2 = label(w - PR + 8, y + 3.5, t.text, "start", "slotlbl");
-    el2.setAttribute("fill", t.color);
+    // an inline STYLE, not a fill attribute: a presentation attribute loses to `.cmp text{fill:var(--ink3)}`,
+    // which is why every one of these names rendered the same grey however carefully it was coloured
+    el2.style.fill = t.color;
     svg.appendChild(el2);
   });
 
