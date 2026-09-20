@@ -235,7 +235,8 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .aglegend{font-size:12px;color:var(--ink3);margin:-6px 0 14px;line-height:1.6}
 .vchip{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:600;padding:2px 7px;border-radius:6px;background:var(--hair2);color:var(--ink2);
   font-family:var(--mono);letter-spacing:0}
-.tag{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:650;padding:2px 7px;border-radius:6px;letter-spacing:.03em}
+/* nowrap like its sibling .gen: without it the two-character 初代 badge broke across two lines on a phone */
+.tag{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:650;padding:2px 7px;border-radius:6px;letter-spacing:.03em;white-space:nowrap}
 .tag.new{background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue)}
 .tag.kept{background:var(--hair2);color:var(--ink3)}
 .tag.init{background:color-mix(in srgb,var(--purple) 15%,transparent);color:var(--purple)}
@@ -403,6 +404,11 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 @media(max-width:560px){.crmore{align-items:flex-start;padding:8px 2px}.crmore .ar{line-height:1.5}.crmx{align-self:center}}
 @media(hover:hover) and (pointer:fine){.crmore:hover{color:var(--ink)}}
 .crmore:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:var(--r-sm)}
+/* the same disclosure vocabulary as the pool's, one step quieter: these fold a definition, not a table */
+.crmore.disc{min-height:34px;padding:4px 2px;margin:8px 0 0;font-size:var(--fs-note);font-weight:600}
+.crmore.disc .crmx{color:var(--ink3)}
+@media(hover:hover) and (pointer:fine){.crmore.disc:hover .crmx{color:var(--ink2)}}
+#aglegend{margin-top:6px}
 .cmpwrap{position:relative}
 .cmp{display:block;width:100%;height:300px;touch-action:pan-y;cursor:crosshair}
 .cmp text{font-size:11px;fill:var(--ink3);font-variant-numeric:tabular-nums}
@@ -485,7 +491,7 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 /* ============================================================ evolution */
 .round{padding:13px 15px;border-radius:var(--r-lg);border:1px solid var(--hair);margin-bottom:9px;background:var(--hair2)}
 .round .rh{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.round .day{font-weight:650;font-size:13.5px}
+.round .day{font-weight:650;font-size:15px}
 .oc{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:650;padding:2px 8px;border-radius:6px;letter-spacing:.03em}
 .oc.completed{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green)}
 .oc.skipped{background:var(--hair);color:var(--ink3)}
@@ -518,7 +524,7 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .kv dt{color:var(--ink3)}
 .kv dd{margin:0;text-align:right;font-weight:550;word-break:break-word;overflow-wrap:anywhere;min-width:0}
 .box{background:var(--card-solid);border:1px solid var(--hair);border-radius:var(--r-lg);padding:15px 17px;min-width:0;max-width:100%;box-sizing:border-box}
-.box h3{margin:0 0 11px;font-size:13px;font-weight:650;letter-spacing:-.01em}
+.box h3{margin:0 0 11px;font-size:15px;font-weight:650;letter-spacing:-.01em}
 .instr{font-size:12.5px;color:var(--ink2);line-height:1.6}
 .parm{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
 .parm span{font-family:var(--mono);font-size:var(--fs-micro);padding:3px 8px;border-radius:6px;background:var(--hair2);color:var(--ink2)}
@@ -557,6 +563,10 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
     padding:0 34px 0 14px;background-position:right 13px center}   /* 16px is the exact iOS no-zoom threshold */
   header{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--bg)}
 
+  /* NOT attempted here: making only the state band sticky so the brand row could scroll away. `.pills` is a
+     child of `.bar`, and a sticky element cannot outlive its containing block - measured, the band left the
+     screen with the header and PAPER ONLY stopped being pinned, which is the one thing it may not do. Shrinking
+     the 150px header needs the band moved out of `.bar` in the markup, which is a change of its own. */
   /* --- a thumb is 44px wide ------------------------------------------------------------------------------- */
   .iconbtn{min-width:44px;height:44px;border-radius:12px}
   .grpbtn{height:44px;padding:0 14px;font-size:14px}
@@ -565,11 +575,25 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   .canchip{height:44px;padding:0 14px}
   .sf{height:40px;padding:0 12px;font-size:13px}
   #shClose{width:44px;height:44px}
+  /* The rule above loses on specificity: `.cmpzoom .grpbtn` is (0,2,0) and `.grpbtn` here is (0,1,0), so the
+     chart's zoom buttons stayed 28x26 however loudly this block declared 44. Match the specificity. */
+  .cmpzoom .grpbtn{width:44px;height:44px}
+  .cmpwhy{width:44px;height:44px}
+  /* Under 16px, iOS Safari zooms the WHOLE PAGE when a form control takes focus, and the reader has to pinch
+     back by hand. These two are the only form controls on the page. */
+  select.exp{height:44px;font-size:16px;padding:0 34px 0 14px;background-position:right 13px center}
+  .cmpdates input{height:44px;font-size:16px;padding:0 12px}
+  /* eleven chips governing the 2500px of tape below them, 1030px of them in a 343px window: this is the one
+     block that still hid content behind a gesture after .tw and .crtw were unwrapped */
+  .sfrow{flex-wrap:wrap;overflow-x:visible}
+  #sfswipe{display:none}
   .agent:active{transform:scale(.97);opacity:.9}
   /* the 36x21 slot pill sits inside a 40px row that does something ELSE (opens the drawer): give it a real hit box */
   td.slotcell{position:relative}
   .slotpill{position:relative}
-  .slotpill::after{content:"";position:absolute;top:-12px;bottom:-12px;left:-10px;right:-10px}
+  /* bounded to the pill's own line: the row wraps, its padding is 11px, and -12px reached into the NEXT line,
+     where the target belongs to the row itself (which opens the drawer) */
+  .slotpill::after{content:"";position:absolute;top:-9px;bottom:-9px;left:-10px;right:-10px}
 
   /* --- the tape: 254px of columns stop hiding behind a swipe ----------------------------------------------- */
   .tw{overflow-x:visible}
@@ -763,6 +787,8 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
         <div class="stat"><div class="k">今日成交</div><div class="v num s" id="sFills">—</div></div>
         <div class="stat"><div class="k">活跃 / 持仓</div><div class="v num s" id="sAgents">—</div></div>
       </div>
+      <button class="crmore disc" id="valtoggle" type="button" aria-expanded="true" aria-controls="valnote">
+        <span class="ar">›</span><span class="crmx">口径说明</span></button>
       <p class="hint" id="valnote"></p>
     </div>
 
@@ -770,6 +796,9 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
       <p class="eyebrow">实验</p>
       <div class="big sm" id="expName">—</div>
       <div class="muted" id="expMeta" style="margin-top:6px"></div>
+      <button class="crmore disc" id="sidetoggle" type="button" aria-expanded="true" aria-controls="sidebody">
+        <span class="ar">›</span><span class="crmx">规则与状态</span></button>
+      <div id="sidebody">
       <div class="statgrid" style="grid-template-columns:repeat(auto-fit,minmax(min(92px,100%),1fr))">
         <div class="stat"><div class="k">排名口径</div><div class="v s" id="mMetric">—</div></div>
         <div class="stat"><div class="k">规则</div><div class="v s" id="mRule">—</div></div>
@@ -779,13 +808,23 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
         <div class="stat"><div class="k">行情源</div><div class="v s" id="mFeed">—</div></div>
       </div>
       <p class="hint" id="sidehint"></p>
+      </div>
     </div>
   </section>
 
-  <div class="sec"><h2>实时行情</h2><span class="note" id="tknote">公开只读报价 · 非交易所逐笔</span>
+  </div>
+
+  <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span>
+    <button class="grpbtn" id="agsort" type="button" aria-pressed="true" title="按名次排列：领先的在前面。点一下改回按槽位 S01–S10 排列">按名次</button>
     <span class="seslegend" id="seslegend"></span><button class="canchip stop" id="canchip" type="button" aria-expanded="false">—</button>
+    <p class="hint" id="canwhy" style="display:none;flex:1 0 100%;margin-top:4px"></p></div>
+  <button class="crmore disc" id="agltoggle" type="button" aria-expanded="true" aria-controls="aglegend">
+    <span class="ar">›</span><span class="crmx">每张卡怎么读</span></button>
+  <div class="aglegend" id="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
+  <div class="agents" id="agents"></div>
+
+  <div class="sec"><h2>实时行情</h2><span class="note" id="tknote">公开只读报价 · 非交易所逐笔</span>
     <button class="grpbtn" id="tkall" type="button" title="默认只显示这些 Agent 正在持仓、今日成交或最近成交的股票（外加基准）。点开显示全部可交易名单。">全部名单</button>
-    <p class="hint" id="canwhy" style="display:none;flex:1 0 100%;margin-top:4px"></p>
     <span class="note" id="tkidle" style="display:none"></span></div>
   <div class="tkwrap" id="tkwrap">
     <div class="ticker" id="ticker"></div>
@@ -803,12 +842,6 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
       <div class="crtw"><table class="crtable"><thead><tr><th>币种</th><th>分组</th><th>状态</th><th>名次</th><th>24h 成交额</th><th>点差</th><th>25bps 深度</th><th>样本</th><th>产品</th><th>原因</th></tr></thead>
         <tbody id="crbody"></tbody></table></div>
     </div>
-  </div>
-
-  <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span>
-    <button class="grpbtn" id="agsort" type="button" aria-pressed="true" title="按名次排列：领先的在前面。点一下改回按槽位 S01–S10 排列">按名次</button></div>
-  <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
-  <div class="agents" id="agents"></div>
 
   <div class="sec"><h2>净值对比</h2>
     <select class="exp" id="cmprange" title="选择时间范围"></select>
@@ -913,7 +946,20 @@ function fmtQty(q) {
   const sv = String(q);
   if (!STATE.crypto) return sv;
   if (!/^-?\d+(\.\d+)?$/.test(sv)) return sv;
-  return sv.includes(".") ? sv.replace(/0+$/, "").replace(/\.$/, "") : sv;
+  const trimmed = sv.includes(".") ? sv.replace(/0+$/, "").replace(/\.$/, "") : sv;
+  // A card is a summary. The venue's full precision - 8858.26771653 - wrapped the row onto a second line on a
+  // phone, and this arena holds both 221,820,581 PEPE and fractions of a coin, so the decimals have to follow
+  // the magnitude rather than be a fixed count. The exact figure is in the title, the drawer and the export.
+  const v = Number(trimmed);
+  if (!isFinite(v)) return trimmed;
+  const a = Math.abs(v);
+  const dp = a >= 1000 ? 2 : a >= 1 ? 4 : 8;
+  const short = v.toFixed(dp).replace(/0+$/, "").replace(/\.$/, "");
+  return short.length < trimmed.length ? short : trimmed;
+}
+function qtyTitle(q) {
+  const sv = q == null ? "" : String(q);
+  return sv && fmtQty(q) !== sv ? `${LANG === "en" ? "exact quantity" : "精确数量"} ${sv}` : "";
 }
 function signCls(v) { return !isNum(v) ? "unk" : v > 0 ? "up" : v < 0 ? "dn" : "flat"; }
 /* Every timestamp the server sends is already America/New_York. These read the clock straight out of the ISO string
@@ -962,6 +1008,33 @@ const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
    screen, and during the animation every figure shown is an interpolated value that was never true. Snap instead:
    strictly more honest, and free. */
 const PHONE = window.matchMedia("(max-width:700px)");
+// A block of reference rather than state - a definition, a configuration table, a legend - folds where there
+// is no room and stays open where there is. The width only decides until the reader decides; from then on
+// their choice is what is remembered. Nothing carrying state or a warning is ever put behind one of these.
+const DISC = {};
+function discOpen(key) {
+  if (key in DISC) return DISC[key];
+  let v = null;
+  try { v = localStorage.getItem("arena.disc." + key); } catch (e) { }
+  DISC[key] = v === "1" ? true : v === "0" ? false : !PHONE.matches;
+  return DISC[key];
+}
+function wireDisc(key, btnId, panelId, label) {
+  const b = $(btnId), p = $(panelId);
+  if (!b || !p) return;
+  if (!b.dataset.wired) {
+    b.dataset.wired = "1";
+    b.addEventListener("click", () => {
+      DISC[key] = !discOpen(key);
+      try { localStorage.setItem("arena.disc." + key, DISC[key] ? "1" : "0"); } catch (e) { }
+      wireDisc(key, btnId, panelId, label);
+    });
+  }
+  const open = discOpen(key);
+  p.hidden = !open;
+  b.setAttribute("aria-expanded", String(open));
+  b.querySelector(".crmx").textContent = open ? tr("收起") : tr(label);
+}
 
 /* sparkline: smooth path + gradient area, no library.
    A flat (or effectively flat) series is drawn as one quiet centred rule with no area fill — filling a 1-cent range
@@ -1210,7 +1283,8 @@ const I18N = {
     "收起，只留下这些 Agent 正在持仓、今日成交或最近成交的币": "collapse to what these agents hold, traded today or traded recently",
     "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
     "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
-    "按名次": "By rank", "按槽位": "By slot", "末位 · 待替换": "Bottom · to be replaced", "暂不淘汰": "Not this round",
+    "按名次": "By rank", "按槽位": "By slot", "口径说明": "How this is measured", "规则与状态": "Rules and state",
+    "每张卡怎么读": "How to read a card", "末位 · 待替换": "Bottom · to be replaced", "暂不淘汰": "Not this round",
     "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "即将": "any moment",
     "十个 Agent 共用这一个可交易币池": "all ten agents trade from this one pool", "行情陈旧": "market data stale", "有新版本待生效": "a new version is pending", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
     "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
@@ -1669,6 +1743,12 @@ function render(s, keepPrices) {
   section("rounds", () => renderRounds(s));
   section("footer", () => renderFooter(s));
   section("sheet", () => refreshSheet());
+  // reference rather than state: folded where there is no room, open where there is, until the reader decides
+  section("disc", () => {
+    wireDisc("valnote", "valtoggle", "valnote", "口径说明");
+    wireDisc("side", "sidetoggle", "sidebody", "规则与状态");
+    wireDisc("aglegend", "agltoggle", "aglegend", "每张卡怎么读");
+  });
   RENDER_FAILS.delete("empty");        // not rendered on this path, so a stale entry would misreport
   renderFailNote();
   translateStatic();                   // a render replaces nodes, so the pass runs again over the new ones
@@ -2404,7 +2484,7 @@ function renderAgents(s) {
         pb.className = "posbox pos";   // keep the hook class: querySelector(".posbox") runs again next frame
         pb.innerHTML = a.positions.map(p => {
           const u = p.unrealized_cents;
-          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}</span><span class="q num">${fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}</span>
+          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}</span><span class="q num"${qtyTitle(p.qty) ? ` title="${esc(qtyTitle(p.qty))}"` : ""}>${fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}</span>
             <span class="u num" style="color:${isNum(u) ? (u > 0 ? cssVar("--green-ink") : u < 0 ? cssVar("--red-ink") : "") : cssVar("--ink3")}">${isNum(u) ? usd(u, { sign: u > 0 }) : UNK}${isNum(p.unrealized_bp) ? ` <span class="muted">${bpPct(p.unrealized_bp, 1)}</span>` : ""}</span></div>`;
         }).join("");
       } else if (a.ledger_readable === false || a.live_equity_status === "unreadable") {
