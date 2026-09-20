@@ -417,6 +417,12 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
    that a cluster of them reads as a fan rather than a wall */
 .cmp .leadln{stroke-width:1.1;opacity:.55;fill:none;stroke-linejoin:round;shape-rendering:geometricPrecision}
 .cmp text.slotlbl{font-weight:650}
+/* the reference portfolios: the backdrop a result is judged against, never a competitor on it */
+.cmp .ln.bench{stroke-dasharray:5 4;stroke-width:1.4;opacity:.62}
+.cmp text.slotlbl.bench{font-weight:600;font-size:10.5px}
+/* a reference chip is not a competitor: dashed edge, quieter, and it never carries a rank */
+.cmpchip.bench{border-style:dashed;color:var(--ink3)}
+.cmpchip.bench i{border-radius:1px}
 .cmp .grid{stroke:var(--hair2);stroke-width:1;opacity:.7}
 .cmp .base{stroke:var(--ink3);stroke-width:1;stroke-dasharray:4 4;opacity:.8}
 .cmp .baselbl{fill:var(--ink2);font-weight:650}
@@ -830,7 +836,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
 
-  <div class="sec"><h2>净值对比</h2>
+  <div class="sec"><h2>净值对比</h2><span class="note" id="bmknote" style="display:none"></span>
     <select class="exp" id="cmprange" title="选择时间范围"></select>
     <span class="cmpdates" id="cmpdates" style="display:none">
       <input type="date" id="cmpfrom" aria-label="起始日"><span class="muted">→</span><input type="date" id="cmpto" aria-label="结束日">
@@ -1281,6 +1287,7 @@ const I18N = {
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
     "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
     "日收盘": "daily closes", "基准线 = 本金": "baseline = principal",
+    "十槽合计": "ten slots combined", "最强基准": "best reference", "超额": "excess",
     "今日（UTC 日）": "Today (UTC day)",
     "这个竞技场按 UTC 日计分；今天的 UTC 日从": "this arena scores on UTC days; today's UTC day began at",
     "开始": "", "这个 UTC 日才过了": "this UTC day is only",
@@ -2487,6 +2494,21 @@ function renderAgents(s) {
   const ex = s.experiment || {};
   // say it plainly when the configured competition metric is not what the badges are showing
   const daily = (ex.metric || "daily_net_equity_return") === "daily_net_equity_return";
+  // The excess over the best reference portfolio, in percentage POINTS. "up 0.87%" answers nothing on its own;
+  // "+2.01 pp better than simply holding BTC" is the question the arena exists to settle.
+  const bench = ((s.crypto || {}).benchmark_curves || []).filter(b => isNum(b.return_bp));
+  const sysBp = ((s.system || {}).live_return_bp);
+  const bnote = $("bmknote");
+  if (bnote) {
+    if (bench.length && isNum(sysBp)) {
+      const top = bench.reduce((a, b) => (b.return_bp > a.return_bp ? b : a));
+      const ex = (sysBp - top.return_bp) / 100;
+      bnote.innerHTML = `${tr("十槽合计")} <b class="num ${sysBp > 0 ? "up" : sysBp < 0 ? "dn" : "flat"}">${esc(bpPct(sysBp, 2))}</b>`
+        + ` · ${tr("最强基准")} ${esc(tr(top.label_zh || top.id))} <b class="num ${top.return_bp > 0 ? "up" : top.return_bp < 0 ? "dn" : "flat"}">${esc(bpPct(top.return_bp, 2))}</b>`
+        + ` · ${tr("超额")} <b class="num ${ex > 0 ? "up" : ex < 0 ? "dn" : "flat"}">${(ex > 0 ? "+" : "") + ex.toFixed(2)} pp</b>`;
+      bnote.style.display = "";
+    } else { bnote.style.display = "none"; }
+  }
   $("agnote").textContent = `${tr("资金槽永久保留 · 策略版本可更换 · 竞争口径")}${LANG === "en" ? ": " : "："}${tr(ex.metric_zh || UNK)}`
     + (daily
         ? (LANG === "en" ? " (the badges rank on this same metric)" : "（徽章即此口径）")
@@ -2804,6 +2826,19 @@ function dayKeyOf(iso) {
   return isNaN(t) ? String(iso).slice(0, 10) : new Date(t).toISOString().slice(0, 10);
 }
 
+/* The declared reference portfolios as chart series. They are the backdrop, not competitors: never ranked,
+   never eliminated, never part of the ten-slot total - so they are drawn dashed and unsaturated, and they are
+   skipped by the legend's scoreboard. Only the intraday modes have their minute curves. */
+function cmpBenchSeries(s, mode) {
+  if (mode !== "intraday") return [];
+  const bs = ((s.crypto || {}).benchmark_curves) || [];
+  return bs.filter(b => (b.curve || []).length).map(b => ({
+    id: b.id, bench: true, label: tr(b.label_zh || b.id), color: cssVar("--ink3"),
+    principal: b.principal_cents,
+    pts: b.curve.map(p => [Date.parse(p[0]), p[1], p[0]]).filter(p => !isNaN(p[0]) && isNum(p[1])),
+  }));
+}
+
 function cmpSeries(s, mode, axis) {
   const now = Date.parse(s.ts_ny || "");
   const today = (s.market && s.market.trading_day) || null;
@@ -2973,7 +3008,7 @@ function renderCompare(s) {
 
   const mode = CMP_INTRADAY[STATE.cmpRange] ? "intraday" : "daily";
   const win = mode === "daily" ? cmpWindow(s) : { axis: [], unreadable: false, absent: false, nFrozen: 0 };
-  const all = cmpSeries(s, mode, win.axis);
+  const all = cmpSeries(s, mode, win.axis).concat(cmpBenchSeries(s, mode));
   const dates = $("cmpdates");
   if (dates) {
     dates.style.display = STATE.cmpRange === "custom" ? "" : "none";
@@ -3000,11 +3035,11 @@ function renderCompare(s) {
     all.forEach(x => {
       const has = x.pts.length >= 1;
       const off = STATE.cmpHide.has(x.id);
-      const b = el("button", "cmpchip" + (!has ? " dead" : off ? " off" : ""));
+      const b = el("button", "cmpchip" + (!has ? " dead" : off ? " off" : "") + (x.bench ? " bench" : ""));
       b.type = "button";
       const last = has ? x.pts[x.pts.length - 1][1] : null;
       const bp = (has && isNum(x.principal) && x.principal) ? Math.round((last - x.principal) / x.principal * 10000) : null;
-      b.innerHTML = `<i style="background:${has ? x.color : "var(--ink3)"}"></i><span>${esc(x.id)}</span>`
+      b.innerHTML = `<i style="background:${has ? x.color : "var(--ink3)"}"></i><span>${esc(x.bench ? (x.label || x.id) : x.id)}</span>`
         + (isNum(bp) ? `<b class="num ${bp > 0 ? "up" : bp < 0 ? "dn" : "flat"}">${esc(bpPct(bp, 2))}</b>` : "");
       if (!has) {
         b.appendChild(el("span", "muted", tr("无数据")));
@@ -3350,7 +3385,7 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     const lead = g[0];
     const d = lead.pts.map(([x, v], i) => `${i ? "L" : "M"}${X(x).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
     const ids = g.map(o => o.id);
-    const path = mk("path", { d, stroke: lead.color, "data-slots": ids.join(" ") }, "ln");
+    const path = mk("path", { d, stroke: lead.color, "data-slots": ids.join(" ") }, lead.bench ? "ln bench" : "ln");
     const ttl = mk("title");
     ttl.textContent = `${ids.join(" ")} · ${usd(lead.pts[lead.pts.length - 1][1])}`;
     path.appendChild(ttl);
@@ -3366,7 +3401,9 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
      When two lines end close together the LABELS are pushed apart - never the lines. */
   // y0 is where the series actually ENDS; y is where its label is allowed to sit after the anti-collision
   // pass. Keeping both is what lets a leader line join them back up.
-  const tags = lines.map(l => ({ y: l.y, y0: l.y, text: l.ids[0] + (l.ids.length > 1 ? "  x" + l.ids.length : ""), color: l.color }));
+  const tags = lines.map(l => ({ y: l.y, y0: l.y, bench: !!l.series[0].bench,
+    text: l.series[0].bench ? (l.series[0].label || l.ids[0]) : l.ids[0] + (l.ids.length > 1 ? "  x" + l.ids.length : ""),
+    color: l.color }));
   tags.sort((a, b) => a.y - b.y);
   const GAP = 16, TOP = PT + 4, BOT = h - PB - 4;   // >= the 11-12px label's own line box, or they still touch
   for (let i = 1; i < tags.length; i++) if (tags[i].y - tags[i - 1].y < GAP) tags[i].y = tags[i - 1].y + GAP;
@@ -3387,7 +3424,7 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
       ld.style.stroke = t.color;
       svg.appendChild(ld);
     }
-    const el2 = label(w - PR + PR * 0.62, y + 3.5, t.text, "start", "slotlbl");
+    const el2 = label(w - PR + PR * 0.62, y + 3.5, t.text, "start", t.bench ? "slotlbl bench" : "slotlbl");
     // an inline STYLE, not a fill attribute: a presentation attribute loses to `.cmp text{fill:var(--ink3)}`,
     // which is why every one of these names rendered the same grey however carefully it was coloured
     el2.style.fill = t.color;
