@@ -985,6 +985,9 @@ const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
    screen, and during the animation every figure shown is an interpolated value that was never true. Snap instead:
    strictly more honest, and free. */
 const PHONE = window.matchMedia("(max-width:700px)");
+// set while the compare chart's y domain is computed; the note reads it so the axis never silently drops the
+// principal without saying that it did
+let CMP_BASE_OFF = false;
 
 /* sparkline: smooth path + gradient area, no library.
    A flat (or effectively flat) series is drawn as one quiet centred rule with no area fill — filling a 1-cent range
@@ -1277,6 +1280,13 @@ const I18N = {
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
     "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
     "日收盘": "daily closes", "基准线 = 本金": "baseline = principal",
+    "今日（UTC 日）": "Today (UTC day)",
+    "这个竞技场按 UTC 日计分；今天的 UTC 日从": "this arena scores on UTC days; today's UTC day began at",
+    "开始": "", "这个 UTC 日才过了": "this UTC day is only",
+    "分钟，所以横轴很短；想看满 24 小时请选「最近 24 小时」": "minutes old, which is why the axis is short - pick \u300cLast 24 hours\u300d for a full day",
+    "这个竞技场按 UTC 日计分，今日从 00:00 UTC 起算": "this arena scores on UTC days; today starts at 00:00 UTC",
+    "纵轴贴合数据（本金线在范围外）": "axis fits the data (principal off range)",
+    "本金线不在当前纵轴范围内：净值已离开本金较远，纵轴改为贴合可见数据": "the principal is outside the current y range: equity has moved well away from it, so the axis fits the visible data instead",
     "个槽净值相同，已合并": "slots share one equity (merged into one line)", "口径说明": "how to read this",
     "净值完全相同，合并为一条线": "have identical equity and are drawn as one line (hover a chip to light it up)",
 
@@ -2856,7 +2866,8 @@ function wireCmpControls() {
     sel.dataset.lang = LANG;
     sel.innerHTML = "";
     CMP_RANGES.forEach(r => {
-      const o = el("option", null, tr(CMP_RANGE_ZH[r]));
+      // 全时段 means pre + regular + post, which a 24/7 market does not have: there 今日 is the UTC day
+      const o = el("option", null, tr(r === "today" && STATE.crypto ? "今日（UTC 日）" : CMP_RANGE_ZH[r]));
       o.value = r;
       sel.appendChild(o);
     });
@@ -3069,11 +3080,27 @@ function renderCompare(s) {
     coincident.forEach(g => full.push(`${g.map(x => x.id).join(" ")} ${tr("净值完全相同，合并为一条线")}`));
     full.push(tr("基准线为本金，上方盈利、下方亏损"));
     full.push(tr("纵轴按可见区间缩放，基准线为本金"));
+    if (CMP_BASE_OFF) full.push(tr("本金线不在当前纵轴范围内：净值已离开本金较远，纵轴改为贴合可见数据"));
+    if (STATE.crypto && STATE.cmpRange === "today") {
+      // A 57-minute axis under a label that says "today" reads as a bug. It is not: this arena scores on UTC
+      // days, so 今日 began at 00:00 UTC. Stated as an ELAPSED time, which needs no timezone arithmetic - the
+      // file is explicit that Date() would re-read a New York stamp in the viewer's own zone.
+      const toB = (s.crypto || {}).seconds_to_boundary;
+      const age = isNum(toB) ? 86400 - toB : null;
+      if (isNum(age)) {
+        const mins = Math.max(1, Math.round(age / 60));
+        full.push(`${tr("这个竞技场按 UTC 日计分：今日从 00:00 UTC 起算，到现在只过了")} ${mins < 120 ? mins + " " + tr("分钟") : Math.round(age / 3600) + " " + tr("小时")}${tr("，横轴因此只有这么长")}`);
+        if (age < 6 * 3600) full.push(tr("想看满 24 小时，请在上面选「最近 24 小时」"));
+      } else {
+        full.push(tr("这个竞技场按 UTC 日计分，今日从 00:00 UTC 起算"));
+      }
+    }
     full.push(tr("最后一点为实时净值（未冻结）"));
     // the short line keeps the two things a reader could otherwise MISREAD: what the baseline is, and that some
     // lines are drawn apart despite being equal
     // zoomed, the axis no longer centres on the principal, so the short line must not keep promising that it does
-    const short = [tr(CMP_RANGE_ZH[STATE.cmpRange] || "今日全时段"), tr("基准线 = 本金")];
+    const short = [tr(STATE.cmpRange === "today" && STATE.crypto ? "今日（UTC 日）" : (CMP_RANGE_ZH[STATE.cmpRange] || "今日全时段")),
+      CMP_BASE_OFF ? tr("纵轴贴合数据（本金线在范围外）") : tr("基准线 = 本金")];
     if (STATE.cmpZoom) short.push(tr("已放大"));
     if (coincident.length) short.push(`${coincident.reduce((a, g) => a + g.length, 0)} ${tr("个槽净值相同，已合并")}`);
     if (dead.length) short.push(`${dead.length} ${tr("无数据")}`);
@@ -3150,8 +3177,18 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   // into the domain so $10,000 stays on screen and "above the line is profit" still reads. A symmetric domain was
   // the earlier rule; it made the height depend on the distance from $10,000 rather than on the move itself, which
   // is why four zoom steps used to leave the axis identical.
-  if (base != null) { lo = Math.min(lo, base); hi = Math.max(hi, base); }
-  const pad = Math.max(1, (hi - lo) * 0.14) || 1;
+  // ...but only while it is CHEAP. Forcing it in unconditionally handed a quarter of the axis to empty space
+  // once the arena had moved away from $10,000 - measured: a visible span of 145 stretched to 180 - and that
+  // cost grows with every point of return. It comes in when it costs at most 15% of the domain, and steps
+  // aside beyond that; the baseline draw below already declines to draw one that falls outside, and the note
+  // says so, because an axis that silently dropped the principal would be worse than one that squeezed.
+  const spanRaw = hi - lo;
+  /* eslint-disable-next-line no-undef */
+  const withBase = base == null ? null : { lo: Math.min(lo, base), hi: Math.max(hi, base) };
+  const baseShown = !!withBase && (spanRaw <= 0 || (withBase.hi - withBase.lo) <= spanRaw * 1.15);
+  if (baseShown) { lo = withBase.lo; hi = withBase.hi; }
+  CMP_BASE_OFF = base != null && !baseShown;
+  const pad = Math.max(1, (hi - lo) * 0.09) || 1;
   const yLo = lo - pad, yHi = hi + pad;
 
   /* The left margin is measured, not guessed. A guessed 48px fitted "$9,978" and clipped "$10,024": on a 306px
