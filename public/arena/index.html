@@ -156,7 +156,7 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 /* Every symbol the agents may trade is on screen at once: a wrapping grid, not a one-row scroller that hid most of a
    40-name universe behind a horizontal scrollbar. auto-fill keeps the cards evenly sized at any width, and the
    overflow fade / 左右滑动 hint switch themselves off because there is no longer anything to scroll. */
-.ticker{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;padding:2px 0 10px}
+.ticker{display:grid;grid-template-columns:repeat(auto-fill,minmax(144px,1fr));gap:8px;padding:2px 0 10px}
 .ticker::-webkit-scrollbar{display:none}
 /* #ticker[data-session] .tk paints an OPAQUE background on every frame anyway (renderTicker always sets it), so the
    blur under these 12-42 cards was compositing work with no possible visual result */
@@ -166,7 +166,17 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 @media(hover:hover) and (pointer:fine){.tk:hover{transform:translateY(-2px);box-shadow:var(--shadow)}}
 .tk:active{transform:scale(.98)}
 .tk .sym{font-size:12.5px;font-weight:600;color:var(--ink2);letter-spacing:.02em;display:flex;align-items:center;gap:5px}
-.tk .px{font-size:21px;font-weight:650;letter-spacing:-.025em;margin:3px 0 1px;transition:color .5s var(--ease)}
+.tk .px{font-size:21px;font-weight:650;letter-spacing:-.025em;margin:3px 0 1px;transition:color .5s var(--ease);
+  white-space:nowrap}
+/* a sub-cent price is a long string of digits: $0.000004110 is 145px of 21px type in a 136px tile, and it was
+   clipped at the edge. A price is never truncated or rounded away - it renders a step smaller instead. */
+.tk .px.long{font-size:17px;letter-spacing:-.02em}
+.tk .px.xlong{font-size:14.5px;letter-spacing:-.01em}
+/* the change line WRAPS rather than truncating: on a 160px tile at 360px the percentage and the per-unit
+   change do not always share a line, and clipping the number would hide the half a reader came for. Wrapping
+   needs no width threshold and costs one line only on the tiles that actually need it. */
+.tk .ch{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+.tk .ch.long{font-size:var(--fs-micro);letter-spacing:-.01em}
 .tk .ch{font-size:var(--fs-meta);font-weight:550}
 .qrole,.qmark{font-size:var(--fs-chip);font-weight:600}
 .qmark{color:var(--ink3)}
@@ -222,7 +232,14 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .agent.moving{z-index:3;will-change:transform}
 .agent.fresh{animation:pop .7s var(--ease-out)}
 @keyframes pop{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--blue) 45%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
-.ahead{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+/* identity on the left, state on the right. It wraps rather than crushing a child: five unshrinkable badges on
+   one row is what squeezed the strategy label to 71px and broke it one character per line. */
+.ahead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+/* the strategy gets a row of its own - it is the most descriptive thing on the card and it was fighting the
+   badges for scraps of one line */
+.astrat{display:flex;align-items:baseline;gap:7px;min-width:0;margin:0 0 9px}
+.vlabel{flex:1 1 auto;min-width:0;font-size:var(--fs-note);color:var(--ink3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rank{width:23px;height:23px;border-radius:7px;display:grid;place-items:center;font-size:11.5px;font-weight:700;
   background:var(--hair2);color:var(--ink2);flex:none}
 .rank.r1{background:linear-gradient(145deg,#FFD60A,#FF9500);color:#3a2a00}
@@ -241,7 +258,12 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .tag.kept{background:var(--hair2);color:var(--ink3)}
 .tag.init{background:color-mix(in srgb,var(--purple) 15%,transparent);color:var(--purple)}
 .aeq{font-size:26px;font-weight:680;letter-spacing:-.03em;line-height:1.1}
-.arow{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap}
+/* three aligned columns instead of a run-on sentence: 今日/累计/任内 wrapped to three lines as prose, and
+   columns let the ten cards be compared down a column instead of read one at a time */
+.arow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px 8px;align-items:baseline;margin-top:5px}
+.acell{min-width:0}
+.acell .k{display:block;font-size:var(--fs-micro);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acell .v{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chg.s{font-size:13px;padding:2px 8px}
 .spark{height:38px;margin:11px -4px 0;display:block;width:calc(100% + 8px)}
 .pos{margin-top:11px;padding-top:10px;border-top:1px solid var(--hair2);display:grid;gap:6px}
@@ -938,7 +960,11 @@ function px(p) {
   const v = Number(p);
   // a crypto price needs the precision the asset trades at: PEPE at $0.000004 must not render as $0.00
   const d = !STATE.crypto ? 2 : Math.abs(v) >= 1 ? 2 : Math.abs(v) >= 0.01 ? 4 : Math.abs(v) >= 0.0001 ? 6 : 9;
-  return "$" + v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  // `d` is the precision the asset may need, not the precision it must PAD to: minimumFractionDigits made
+  // $0.00047 render as $0.000470 and $0.007 as $0.007000, and those trailing zeros were what pushed the tile's
+  // change line past its edge. Two decimals stay the floor, so $10.40 never becomes $10.4.
+  const lo = (STATE.crypto && Math.abs(v) < 1) ? Math.min(2, d) : d;
+  return "$" + v.toLocaleString("en-US", { minimumFractionDigits: lo, maximumFractionDigits: d });
 }
 /* a fractional quantity, as the ledger holds it (Decimal string): trailing zeros trimmed, never rounded to an integer */
 function fmtQty(q) {
@@ -1016,7 +1042,7 @@ function discOpen(key) {
   if (key in DISC) return DISC[key];
   let v = null;
   try { v = localStorage.getItem("arena.disc." + key); } catch (e) { }
-  DISC[key] = v === "1" ? true : v === "0" ? false : !PHONE.matches;
+  DISC[key] = v === "1";        // folded by default at every width, until the reader opens it
   return DISC[key];
 }
 function wireDisc(key, btnId, panelId, label) {
@@ -2145,11 +2171,21 @@ function renderTicker(s, keep) {
     const pxn = node.querySelector(".px");
     setNum(pxn, known ? Number(q.price) : null, v => v == null ? UNK : px(v));
     // the 陈旧 / 未知 WORD is the marker; the dimming is only a second signal, and at 50% it erased the price on a phone
+    // a price is never truncated or rounded away; a long one renders a step smaller so it fits its tile
+    const plen = (pxn.textContent || "").length;
+    pxn.classList.toggle("long", plen >= 10 && plen < 12);
+    pxn.classList.toggle("xlong", plen >= 12);
     pxn.classList.toggle("q-unk", !!unknown);
     pxn.classList.toggle("q-stale", !!stale && !unknown);
     const ch = node.querySelector(".ch");
     if (isNum(q.change_pct)) {
-      ch.textContent = `${q.change_pct > 0 ? "+" : q.change_pct < 0 ? "−" : ""}${Math.abs(q.change_pct).toFixed(2)}%  ${isNum(q.change) ? (q.change > 0 ? "+" : q.change < 0 ? "−" : "") + px(Math.abs(q.change)) : ""}`;
+      // below a cent the per-unit absolute change is millionths of a dollar - it tells a reader nothing and it
+      // was crowding the percentage, which does. It stays available in the title.
+      const tiny = known && Math.abs(Number(q.price)) < 0.01;
+      const abs = isNum(q.change) ? (q.change > 0 ? "+" : q.change < 0 ? "−" : "") + px(Math.abs(q.change)) : "";
+      ch.textContent = `${q.change_pct > 0 ? "+" : q.change_pct < 0 ? "−" : ""}${Math.abs(q.change_pct).toFixed(2)}%${tiny || !abs ? "" : " · " + abs}`;
+      ch.classList.toggle("long", ch.textContent.length >= 15);
+      ch.title = tiny && abs ? `${LANG === "en" ? "change per unit" : "每单位变动"} ${abs}` : "";
       ch.style.color = q.change_pct > 0 ? cssVar("--green-ink") : q.change_pct < 0 ? cssVar("--red-ink") : cssVar("--ink3");
     } else { ch.textContent = unknown ? (q.error ? tr("无报价") : tr(UNK)) : "—"; ch.style.color = cssVar("--ink3"); }
     node.title = `${sym} · ${q.field || ""} @ ${q.ts_ny || UNK}${isNum(q.age_s) ? " · " + ago(q.age_s) : ""}${q.source ? " · " + q.source : ""}`;
@@ -2403,7 +2439,8 @@ function renderAgents(s) {
         // taken off once it has played, so a later reorder has no entrance left to restart
         n.addEventListener("animationend", () => n.classList.remove("enter"), { once: true });
         setTimeout(() => n.classList.remove("enter"), 1400);
-        n.innerHTML = `<div class="ahead"><span class="rank"></span><span class="slotid"></span><span class="vchip"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="riskchip" hidden></span><span class="tag"></span></div>
+        n.innerHTML = `<div class="ahead"><span class="rank"></span><span class="slotid"></span><span class="spacer" style="flex:1"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="riskchip" hidden></span><span class="tag"></span></div>
+          <div class="astrat"><span class="vchip"></span><span class="vlabel"></span></div>
           <div class="aeq num"></div><div class="arow"></div><svg class="spark"></svg><div class="posbox"></div><div class="warnbox"></div>`;
         n.addEventListener("click", () => openSheet(a.slot_id));
         n.setAttribute("role", "button");
@@ -2449,7 +2486,10 @@ function renderAgents(s) {
       // and its filter chip (S01 · A01), and a touch reader can never reach a tooltip to find it.
       const gen = a.generation != null ? a.generation : null;
       const vc = n.querySelector(".vchip");
-      vc.textContent = (a.candidate_key ? a.candidate_key + " · " : "") + (tr(a.label_zh || "") || "") || a.candidate_key || "?";
+      vc.textContent = a.candidate_key || "?";
+      // the personality gets the rest of the row, on one line, with the whole of it in the title
+      const vl = n.querySelector(".vlabel");
+      if (vl) { vl.textContent = tr(a.label_zh || "") || ""; vl.title = tr(a.label_zh || "") || ""; }
       vc.title = `策略 ${a.candidate_key || "?"}${a.label_zh ? "（" + a.label_zh + "）" : ""} · 版本 ${a.version_id || "?"}`
         + (a.parent_version_id ? ` · 由 ${a.parent_version_id} 变异而来` : "");
       const g = n.querySelector(".gen");
@@ -2470,11 +2510,13 @@ function renderAgents(s) {
       setNum(n.querySelector(".aeq"), a.live_equity_cents, v => usd(v));
       const row = n.querySelector(".arow");
       const dayCls = signCls(a.live_day_return_bp);
-      row.innerHTML = `<span class="chg s num ${dayCls}">${isNum(a.live_day_return_bp) ? bpPct(a.live_day_return_bp) : UNK}</span>
-        <span class="muted">今日</span>
-        <span class="muted num">累计 <b style="color:${isNum(a.live_return_bp) ? (a.live_return_bp > 0 ? cssVar("--green-ink") : a.live_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_return_bp) ? bpPct(a.live_return_bp) : UNK}</b></span>
-        <span class="muted num" title="${tr("策略任内收益：本策略版本接手这个资金槽之后的收益，不含前任的盈亏")}">${tr("任内")} <b style="color:${isNum(a.live_tenure_return_bp) ? (a.live_tenure_return_bp > 0 ? cssVar("--green-ink") : a.live_tenure_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_tenure_return_bp) ? bpPct(a.live_tenure_return_bp) : UNK}</b>${isNum(a.tenure_sessions) ? ` <span class="muted">· ${a.tenure_sessions} 日</span>` : ""}</span>
-        ${a.live_rank_tied ? `<span class="muted" title="${tr("当日收益相同，名次由 tie-break 决定")}">· ${tr("并列")}</span>` : ""}`;
+      const col = v => isNum(v) ? (v > 0 ? cssVar("--green-ink") : v < 0 ? cssVar("--red-ink") : "") : "";
+      row.innerHTML = `<div class="acell"><span class="k">${tr("今日")}${a.live_rank_tied ? ` · <span title="${tr("当日收益相同，名次由 tie-break 决定")}">${tr("并列")}</span>` : ""}</span>
+          <span class="chg s num ${dayCls}" style="display:inline-flex">${isNum(a.live_day_return_bp) ? bpPct(a.live_day_return_bp) : UNK}</span></div>
+        <div class="acell"><span class="k">${tr("累计")}</span>
+          <span class="v num" style="color:${col(a.live_return_bp)}">${isNum(a.live_return_bp) ? bpPct(a.live_return_bp) : UNK}</span></div>
+        <div class="acell" title="${tr("策略任内收益：本策略版本接手这个资金槽之后的收益，不含前任的盈亏")}"><span class="k">${tr("任内")}${isNum(a.tenure_sessions) ? ` · ${a.tenure_sessions} ${tr("日")}` : ""}</span>
+          <span class="v num" style="color:${col(a.live_tenure_return_bp)}">${isNum(a.live_tenure_return_bp) ? bpPct(a.live_tenure_return_bp) : UNK}</span></div>`;
       const pts = curveVals(a.curve);
       if (isNum(a.live_equity_cents)) pts.push(a.live_equity_cents);
       spark(n.querySelector(".spark"), pts, !isNum(a.live_day_return_bp) ? cssVar("--ink3")
@@ -2836,6 +2878,14 @@ function cmpSessions(s) {
   return (o.extOpen && o.open && o.close && o.extClose && o.extOpen < o.open && o.open < o.close && o.close < o.extClose) ? o : null;
 }
 
+/* The date of a timestamp in the convention the current arena counts days in: UTC for crypto (its scoring day
+   is the UTC day), New York for stocks. Falls back to the raw NY prefix if the string will not parse. */
+function dayKeyOf(iso) {
+  if (!STATE.crypto) return String(iso).slice(0, 10);
+  const t = Date.parse(iso);
+  return isNaN(t) ? String(iso).slice(0, 10) : new Date(t).toISOString().slice(0, 10);
+}
+
 function cmpSeries(s, mode, axis) {
   const now = Date.parse(s.ts_ny || "");
   const today = (s.market && s.market.trading_day) || null;
@@ -2870,7 +2920,11 @@ function cmpSeries(s, mode, axis) {
         } else if (today) {
           // 今日 = the three sessions a reader means by it: pre, regular, post. What comes before the venue's own
           // pre-market open is the overnight hold, where nothing can execute - hours of flat line on the left.
-          if (String(p[0]).slice(0, 10) !== today) return;
+          // The date must be read in the convention this arena counts days in. `trading_day` is a UTC day for a
+          // crypto experiment and a New York day for a stock one, while p[0] is always a New York timestamp - so
+          // comparing its NY date against a UTC day emptied the whole chart between 20:00 and 24:00 ET, every
+          // night, leaving only the live point appended below.
+          if (dayKeyOf(p[0]) !== today) return;
           if (sess && t < sess.extOpen) return;
         }
         pts.push([t, v, p[0]]);
@@ -2879,6 +2933,7 @@ function cmpSeries(s, mode, axis) {
         pts.push([now, a.live_equity_cents, s.ts_ny]);
       }
     } else {
+      // curve_days keys are already the arena's own scoring days, so they need no conversion
       (a.curve_days || []).forEach(d => {
         if (!Array.isArray(d) || !(d[0] in idx) || !isNum(d[1])) return;    // unknown valuation => a gap, not a 0
         pts.push([idx[d[0]], d[1], d[0]]);
