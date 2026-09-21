@@ -652,6 +652,17 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   footer>div:first-child{font-size:13px;font-weight:500;color:var(--ink2);line-height:var(--lh-cjk)}
   #footmeta{font-size:12px;line-height:1.7}
 /* The pool's "why" sits above its numbers: readable prose width, one idea per line. */
+/* The brief fills the card's empty half: a label column narrow enough to scan, prose beside it. */
+.brief{margin-top:16px;border-top:1px solid var(--hair);padding-top:12px;font-size:var(--fs-note);line-height:1.7}
+.brief .brow{display:flex;gap:12px;margin-top:8px}
+.brief .brow:first-child{margin-top:0}
+.brief .bk{flex:0 0 108px;color:var(--ink3)}
+.brief .bv{flex:1;color:var(--ink2)}
+/* the frozen stock list: chips, because forty tickers in a sentence is not a list */
+.stsyms{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.stsyms span{font:500 12px/1.4 var(--mono,ui-monospace,monospace);color:var(--ink2);background:var(--chip,#1a1a1a);
+  border:1px solid var(--hair);border-radius:6px;padding:3px 7px}
+@media(max-width:620px){.brief .brow{display:block}.brief .bk{margin-bottom:2px}}
 .crwhy{margin:12px 0 2px;font-size:var(--fs-note);color:var(--ink2);line-height:1.7;max-width:78ch}
 .crwhy div{margin-top:3px}
 .crwhy div:first-child{margin-top:0}
@@ -822,6 +833,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
         <div class="stat"><div class="k">行情源</div><div class="v s" id="mFeed">—</div></div>
       </div>
       <p class="hint" id="sidehint"></p>
+      <div class="brief" id="expbrief"></div>
     </div>
   </section>
 
@@ -834,6 +846,9 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
     <div class="ticker" id="ticker"></div>
     <div class="tkhint"><span class="ar">›</span><span>左右滑动</span></div>
   </div>
+
+  <div class="sec" id="stsec" style="display:none"><h2>可交易名单</h2><span class="note" id="stnote"></span></div>
+  <div class="card pad" id="stpool" style="display:none"></div>
 
   <div class="sec" id="crsec" style="display:none"><h2>币池</h2><span class="note" id="crnote"></span>
     <button class="grpbtn" id="crall" type="button" aria-pressed="false" style="display:none" title="默认只列活跃池与持有的币；点开显示全部 40 个候选及其状态原因">全部候选</button></div>
@@ -930,7 +945,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T02:19:54Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919","stock-research-20260921","stock-frozen-validation-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T02:52:02Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919","stock-research-20260921","stock-frozen-validation-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1311,7 +1326,7 @@ const I18N = {
     "尚无已冻结的日收盘，图上只有今日的实时点": "no daily close has been frozen yet: what is plotted is today's live point",
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
     "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
-    "日收盘": "daily closes", "基准线 = 本金": "baseline = principal", "横轴": "x axis", "本 UTC 日": "this UTC day", "计分按 UTC 日": "scored by UTC day", "今日（00:00–24:00 ET）": "Today (00:00-24:00 ET)", "规则": "rule",
+    "日收盘": "daily closes", "基准线 = 本金": "baseline = principal", "横轴": "x axis", "本 UTC 日": "this UTC day", "可交易名单": "Tradable list", "那一轮": "round", "分钟一轮": "min per round", "十个 Agent 共用这一份名单 · 实验创建时冻结，全程不变": "all ten agents share this list - frozen when the experiment was created and unchanged since", "这个实验想回答什么": "What is this trying to find out", "进展到哪了": "Where it has got to", "今天怎么样": "How today is going", "要注意": "Worth knowing", "计分按 UTC 日": "scored by UTC day", "今日（00:00–24:00 ET）": "Today (00:00-24:00 ET)", "规则": "rule",
     "十个 Agent 共用一个币池 · 只按能不能顺利成交筛选，不看涨跌": "all ten agents trade one pool - chosen purely on whether an order can be filled, never on which way a coin might go",
     "历史不够": "too little history", "排名靠后": "ranked below the line", "行情过期": "quotes stale", "交易所不可用": "unavailable at the venue", "仍持有但已出池": "held but out of the pool", "交易对仍可交易": "Pairs still tradable", "每轮向交易所核对一次：下架或暂停的币会被移出，不会拿着失效的代码下单": "re-checked with the venue each cycle: a delisted or halted coin leaves the pool rather than being ordered with a dead symbol", "是否用 AI 模型": "Uses an AI model?", "否：全部由固定规则决定": "No - every decision comes from fixed rules", "每笔手续费": "Fee per trade", "按吃单价计，约每 $10,000 收 $": "taker side; about $ per $10,000 traded: ", "虚拟成交量不享受任何折扣档": "virtual volume earns no discount tier",
     "十槽合计": "ten slots combined", "最强基准": "best reference", "超额": "excess",
@@ -1750,6 +1765,7 @@ function render(s, keepPrices) {
   section("hero", () => renderHero(s));
   section("ticker", () => renderTicker(s, keepPrices));
   section("crypto", () => renderCrypto(s));
+  section("stockpool", () => renderStockPool(s));
   section("agents", () => renderAgents(s));
   section("shelves", () => renderShelves(s));
   section("compare", () => renderCompare(s));
@@ -1943,6 +1959,11 @@ function renderHero(s) {
   // the mechanism to guesswork - and the thing readers most often assume is that a replaced agent's money is
   // taken away, which is the one thing that never happens.
   if (evo) evo.textContent = evoHowItWorks();
+  const brief = $("expbrief");
+  if (brief) {
+    const rows = experimentBrief(s);
+    brief.innerHTML = rows.map(r => `<div class="brow"><div class="bk">${esc(r.k)}</div><div class="bv">${r.v}</div></div>`).join("");
+  }
   $("mMetric").textContent = tr(ex.metric_zh || UNK);
   $("mRule").textContent = (ex.keep_top != null) ? `${tr("留")} ${ex.keep_top} / ${tr("换")} ${ex.replace_bottom}` : tr(UNK);
   // Either spelling. The stock layer expands these counters to total/completed and the crypto layer used to
@@ -2215,6 +2236,29 @@ function reasonWord(key) {
   return word ? `${tr(word)} ${m[2]}${m[3]}` : k;
 }
 
+/* ---- the stock board's own pool ---------------------------------------------------------------------------
+   The crypto board has a panel because its pool is re-evaluated every cycle. The stock pool is FROZEN at
+   experiment creation and never moves, so it needs no live panel - but a reader still deserves to know which
+   forty names the agents may buy and what put them there, and until now the stock board said neither. Frozen is
+   a reason to render it once, not a reason to hide it. */
+function renderStockPool(s) {
+  const sec = $("stsec"), box = $("stpool");
+  if (!sec || !box) return;
+  const ex = s.experiment || {};
+  const syms = ex.universe || [];
+  if (STATE.crypto || !syms.length) { sec.style.display = "none"; box.style.display = "none"; return; }
+  sec.style.display = ""; box.style.display = "";
+  $("stnote").textContent = tr("十个 Agent 共用这一份名单 · 实验创建时冻结，全程不变");
+  const bm = ex.benchmarks || [];
+  box.innerHTML =
+    `<div class="crwhy">
+       <div><b>${tr("这不是选股推荐。")}</b>${tr("名单是实验开始前用机械规则筛一次定下来的，之后不再变动——不会因为哪只涨了就加进来，也不会因为哪只跌了就踢出去。")}</div>
+       <div>${tr("共")} <b>${syms.length}</b> ${tr("只可交易")}${bm.length ? ` · ${tr("另有基准")} <b>${esc(bm.join("、"))}</b>${tr("，只用来判断大盘方向，永远不可买卖")}` : ""}。</div>
+       <div>${tr("冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。")}</div>
+     </div>
+     <div class="stsyms">${syms.map(x => `<span>${esc(x)}</span>`).join("")}</div>`;
+}
+
 function renderCrypto(s) {
   const sec = $("crsec"), card = $("crcard");
   if (!sec || !card) return;
@@ -2282,6 +2326,7 @@ function renderCrypto(s) {
      and the card pushed the numbers off the screen. They live inside the toggle the card already had - one
      control, not two, and nothing new to discover. */
   $("crnote").textContent = tr("十个 Agent 共用一个币池 · 只按能不能顺利成交筛选，不看涨跌");
+
   // collapsed, the card is this one line: how many coins can be traded, out of how many, and when next. Anything
   // wrong is appended here too - folding the evidence away must never fold away a problem.
   const warn = [];
@@ -2570,7 +2615,11 @@ function renderAgents(s) {
       if (STATE.crypto && a.last_decision) {
         // what the last decision round did for THIS slot, in one line: evaluated / passed / submitted, or why it held
         const d = a.last_decision;
-        const when = hhmm(d.ts_ny);
+        /* The decision time alone read as a fault: a 10:02 PM stamp beside a green 实时 pill, ten minutes after
+           the fact, looks like the board stopped. Crypto decides once an HOUR - nothing is wrong between them -
+           so the cadence travels with the timestamp. */
+        const iv = (s.crypto && s.crypto.data && s.crypto.data.decision_interval_min);
+        const when = hhmm(d.ts_ny) + (isNum(iv) ? ` ${tr("那一轮")}（${tr("每")} ${iv} ${tr("分钟一轮")}）` : "");
         const sub = (d.submitted || []).map(o => `${o.side} ${o.candidate}`).join(", ");
         const why = (d.top_reasons || []).slice(0, 2).map(([k, c]) => `${reasonWord(k)}×${c}`).join(" · ");
         const st = d.status;
@@ -2701,6 +2750,53 @@ const SHELF_WHY = {
   evidence_supported: "通过了一条在数据产生之前就写好的检验规则。规则必须先写、后看数据——这是这一栏唯一算「被证明」的格子。",
   evidence_insufficient: "要么数据还不够，要么没通过。这是正常结论，不是失败垃圾桶：大多数想法本来就到不了第四格。",
 };
+
+/* ---- the experiment brief ---------------------------------------------------------------------------------
+   The card said what the experiment IS (mode, metric, rule) in six abbreviations and left half its area empty.
+   What a person opening this page wants first is two sentences: what is this trying to find out, and how is it
+   going. Both are derivable from what the snapshot already carries, so this works on every experiment rather
+   than only on the ones whose config someone remembered to annotate. */
+
+const MODE_PURPOSE = {
+  USER_DAILY_3: "让十个策略每天同场竞争：每天结算一次，前三名各留一个微调后代，顶掉后三名。目的是看「让它们互相淘汰」能不能自己长出更好的策略。",
+  FROZEN10: "十个策略全程不进化，作为对照。它存在的意义就是回答一句话：进化到底有没有比原地不动更好。",
+  ROBUST: "和每日进化一样，但要求足够多的评估日才允许淘汰，避免一两天的运气决定去留。",
+  RESEARCH: "开发区：可以随便试假设、试参数，失败会被保留下来。它永远不能自己宣布成功——产出只是「值得拿去验证的候选」。",
+  FROZEN_VALIDATION: "把十个版本锁死，用锁死之后才产生的数据检验它们。期间不许改参数，否则就是边考边改答案。这是唯一能产生「被证明」结论的地方。",
+  PAPER_CHAMPION: "只接收带着事前登记规则 PASS 的版本。没有合格者就空着——空位是结论，不是缺陷。",
+};
+
+function pct1(bp) { return (bp >= 0 ? "+" : "") + (bp / 100).toFixed(2) + "%"; }
+
+function experimentBrief(s) {
+  const ex = s.experiment || {}, sys = s.system || {}, rc = s.rounds_count || {}, v = s.versions || {};
+  const out = [];
+  const purpose = MODE_PURPOSE[ex.mode];
+  if (purpose) out.push({ k: "这个实验想回答什么", v: tr(purpose) });
+
+  // progress: where in the window, how many rounds have actually settled, how many versions are alive
+  const dayWord = STATE.crypto ? tr("UTC 日") : tr("交易日");
+  const prog = [];
+  if (isNum(ex.day_index)) prog.push(`${tr("已进行")} ${ex.day_index} ${dayWord}${isNum(ex.n_days) ? ` / ${tr("计划")} ${ex.n_days}` : tr("（持续运行）")}`);
+  const done = (rc.completed != null ? rc.completed : rc.c), tot = (rc.total != null ? rc.total : rc.t);
+  if (isNum(done) || isNum(tot)) prog.push(`${tr("已结算")} ${isNum(done) ? done : "?"} ${tr("轮进化")}${isNum(tot) && isNum(done) && tot > done ? `（${tot - done} ${tr("轮因数据不完整未进化")}）` : ""}`);
+  const vTot = (v.total != null ? v.total : v.t), vAct = (v.active != null ? v.active : v.a);
+  if (isNum(vTot)) prog.push(`${tr("共出现过")} ${vTot} ${tr("个策略版本")}${isNum(vAct) ? `，${tr("当前在岗")} ${vAct} ${tr("个")}` : ""}`);
+  if (prog.length) out.push({ k: tr("进展到哪了"), v: prog.join(" · ") });
+
+  // today: the number, the leader, and what has not happened yet
+  const today = [];
+  if (isNum(sys.day_return_bp)) today.push(`${tr("十槽合计")} ${pct1(sys.day_return_bp)}`);
+  else if (isNum(sys.cum_return_bp)) today.push(`${tr("累计")} ${pct1(sys.cum_return_bp)}`);
+  if (sys.leader_slot) today.push(`${tr("今天领先")} ${esc(sys.leader_slot)}`);
+  const nd = (s.crypto && s.crypto.data && s.crypto.data.next_decision_utc);
+  if (nd) today.push(`${tr("下次决策")} ${hhmm(nd)} UTC`);
+  if (today.length) out.push({ k: tr("今天怎么样"), v: today.join(" · ") + " · " + tr("当日净值未冻结，以日结为准") });
+
+  // and the thing every one of these is for
+  out.push({ k: tr("要注意"), v: tr("这是模拟盘。领先不等于有效——是否有效由「研究状态」那一栏的第 ④ 格回答，现在它是空的。") });
+  return out;
+}
 
 function renderShelves(s) {
   const sec = $("shelfsec"), box = $("shelves");
@@ -3064,13 +3160,32 @@ function cmpBenchSeries(s, mode) {
 
 /* The intraday window rule, in one place. Every series drawn on the comparison chart - the ten agents and the
    reference portfolios behind them - has to answer to the same one, or the axis describes neither. */
-function cmpWindowFilter(s) {
-  // 今日 on a 24/7 board is the reader's calendar day, so the filter takes its bounds from the same place the
-  // window does rather than from the ledger's UTC scoring day.
-  const localDay = STATE.crypto ? cmpLocalDayWindow(s) : null;
-  const today = (s.market && s.market.trading_day) || null;
+/* Whether a point belongs to the currently selected range.
+
+   This existed TWICE - once here for the filter that decides which points are "in view", once inside cmpSeries
+   for the points actually drawn - and the two drifted the moment 今日 changed meaning. cmpWindowFilter learned
+   that 今日 is the reader's calendar day; cmpSeries was still comparing the point's day against the ledger's UTC
+   scoring day, and since dayKeyOf now answers in ET, that comparison could never be true again. Every agent
+   curve for the whole day vanished and only the single live-equity point at the right survived, which is why
+   the chart looked like the agents had stopped trading at 8 PM.
+
+   One function, both callers. A range rule that lives in two places is a range rule that will disagree with
+   itself. */
+function cmpInRange(s, ctxIn) {
+  const c = ctxIn || cmpRangeCtx(s);
+  return (t, iso) => {
+    if (c.hours) return t >= c.from;
+    if (c.win2) return t >= c.win2.a && t <= c.win2.b;
+    if (c.localDay) return t >= c.localDay.a && t < c.localDay.b;
+    if (c.today) return dayKeyOf(iso || new Date(t).toISOString()) === c.today
+                       && !(c.sess && t < c.sess.extOpen);
+    return true;
+  };
+}
+
+/* Everything the range rule needs, resolved once per render. */
+function cmpRangeCtx(s) {
   const sess = cmpSessions(s);
-  const win2 = STATE.cmpRange === "session" ? cmpActiveWindow(s, sess) : null;
   const hours = STATE.cmpRange === "8h" ? 8 : STATE.cmpRange === "24h" ? 24 : 0;
   let newest = 0;
   if (hours) {
@@ -3081,35 +3196,29 @@ function cmpWindowFilter(s) {
     const now0 = Date.parse(s.ts_ny || "");
     if (!newest && !isNaN(now0)) newest = now0;
   }
-  const from = hours ? newest - hours * 3600e3 : 0;
-  return (t, _v, iso) => {
-    if (hours) return t >= from;
-    if (win2) return t >= win2.a && t <= win2.b;
-    if (localDay) return t >= localDay.a && t < localDay.b;
-    if (today) return dayKeyOf(iso || new Date(t).toISOString()) === today && !(sess && t < sess.extOpen);   // eslint-disable-line
-    return true;
+  return {
+    sess, hours, from: hours ? newest - hours * 3600e3 : 0,
+    win2: STATE.cmpRange === "session" ? cmpActiveWindow(s, sess) : null,
+    // 今日 on a 24/7 board is the reader's calendar day; on a stock board it is the trading day the venue names.
+    localDay: (STATE.crypto && STATE.cmpRange === "today") ? cmpLocalDayWindow(s) : null,
+    today: (!STATE.crypto && STATE.cmpRange === "today") ? ((s.market && s.market.trading_day) || null) : null,
   };
+}
+
+function cmpWindowFilter(s) {
+  const inRange = cmpInRange(s);
+  return (t, _v, iso) => inRange(t, iso);
 }
 
 function cmpSeries(s, mode, axis) {
   const now = Date.parse(s.ts_ny || "");
-  const today = (s.market && s.market.trading_day) || null;
   const idx = {};
   (axis || []).forEach((d, i) => { idx[d] = i; });
-  // 今日 is the whole trading DAY - pre, regular and post - and the hour windows are counted back from the
-  // newest point the data has, not from the reader's own clock, which may not be in New York at all
-  const sess = cmpSessions(s);
-  const win2 = STATE.cmpRange === "session" ? cmpActiveWindow(s, sess) : null;
-  const hours = STATE.cmpRange === "8h" ? 8 : STATE.cmpRange === "24h" ? 24 : 0;
-  let newest = 0;
-  if (hours) {
-    (s.slots || []).forEach(a => (a.curve || []).forEach(p => {
-      const t = Array.isArray(p) ? Date.parse(p[0]) : NaN;
-      if (!isNaN(t) && t > newest) newest = t;
-    }));
-    if (!newest && !isNaN(now)) newest = now;
-  }
-  const from = hours ? newest - hours * 3600e3 : 0;
+  // 今日 is the whole trading DAY on a stock board - pre, regular and post - and the reader's calendar day on a
+  // 24/7 one. The hour windows count back from the newest point the data has, not from the reader's own clock,
+  // which may not be in New York at all. All of that lives in cmpRangeCtx, shared with cmpWindowFilter.
+  const ctx = cmpRangeCtx(s);
+  const inRange = cmpInRange(s, ctx);
   return (s.slots || []).map(a => {
     const pts = [];
     if (mode === "intraday") {
@@ -3117,17 +3226,7 @@ function cmpSeries(s, mode, axis) {
         const t = Array.isArray(p) ? Date.parse(p[0]) : NaN;
         const v = Array.isArray(p) ? p[1] : null;
         if (!isNum(v) || isNaN(t)) return;
-        if (hours) { if (t < from) return; }
-        else if (win2) {
-          // the session running right now: its own boundaries, so the part of the day where things happen fills
-          // the chart instead of sitting squeezed between two empty wings
-          if (t < win2.a || t > win2.b) return;
-        } else if (today) {
-          // 今日 = the three sessions a reader means by it: pre, regular, post. What comes before the venue's own
-          // pre-market open is the overnight hold, where nothing can execute - hours of flat line on the left.
-          if (dayKeyOf(p[0]) !== today) return;
-          if (sess && t < sess.extOpen) return;
-        }
+        if (!inRange(t, p[0])) return;
         pts.push([t, v, p[0]]);
       });
       if (isNum(a.live_equity_cents) && !isNaN(now) && (!pts.length || now > pts[pts.length - 1][0])) {
