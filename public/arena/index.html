@@ -873,7 +873,14 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   </div>
 
   <div class="sec" id="stsec" style="display:none"><h2>可交易名单</h2><span class="note" id="stnote"></span></div>
-  <div class="card pad" id="stpool" style="display:none"></div>
+  <div class="card pad" id="stpool" style="display:none">
+    <button class="crmore" id="sttoggle" type="button" aria-expanded="false" aria-controls="stdetail">
+      <span class="ar">›</span><span class="crsum" id="stsum"></span><span class="crmx" id="sttoggletxt">展开名单</span></button>
+    <div id="stdetail" hidden>
+      <div id="stwhy" class="crwhy"></div>
+      <div class="stsyms" id="stsyms"></div>
+    </div>
+  </div>
 
   <div class="sec" id="crsec" style="display:none"><h2>币池</h2><span class="note" id="crnote"></span>
     <button class="grpbtn" id="crall" type="button" aria-pressed="false" style="display:none" title="默认只列活跃池与持有的币；点开显示全部 40 个候选及其状态原因">全部候选</button></div>
@@ -970,7 +977,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T04:45:23Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260919","experiments":["crypto-kraken-20260919","stock-research-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T14:59:07Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260919","experiments":["crypto-kraken-20260919","stock-research-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1374,6 +1381,7 @@ const I18N = {
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
     "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
     "日收盘": "daily closes", "基准线 = 本金": "baseline = principal", "横轴": "x axis", "本 UTC 日": "this UTC day",
+    "展开名单": "show the list", "实验创建时冻结": "frozen when the experiment was created",
     "本轮淘汰": "eliminated this round",
     "按指标": "on the metric",
     "按并列的槽位编号": "on the tied slot number",
@@ -2394,13 +2402,40 @@ function renderStockPool(s) {
   sec.style.display = ""; box.style.display = "";
   $("stnote").textContent = tr("十个 Agent 共用这一份名单 · 实验创建时冻结，全程不变");
   const bm = ex.benchmarks || [];
-  box.innerHTML =
-    `<div class="crwhy">
-       <div><b>${tr("这不是选股推荐。")}</b>${tr("名单是实验开始前用机械规则筛一次定下来的，之后不再变动——不会因为哪只涨了就加进来，也不会因为哪只跌了就踢出去。")}</div>
-       <div>${tr("共")} <b>${syms.length}</b> ${tr("只可交易")}${bm.length ? ` · ${tr("另有基准")} <b>${esc(bm.join("、"))}</b>${tr("，只用来判断大盘方向，永远不可买卖")}` : ""}。</div>
-       <div>${tr("冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。")}</div>
-     </div>
-     <div class="stsyms">${syms.map(x => `<span>${esc(x)}</span>`).join("")}</div>`;
+  const sep = LANG === "en" ? ", " : "、";
+  const stop = LANG === "en" ? "." : "。";
+
+  // the summary row, readable without opening anything: the count, the benchmarks, and that it is frozen
+  $("stsum").innerHTML = `<b>${syms.length}</b> ${tr("只可交易")}`
+    + (bm.length ? ` <span class="s">· ${tr("另有基准")} ${esc(bm.join(sep))}</span>` : "")
+    + ` <span class="s">· ${tr("实验创建时冻结")}</span>`;
+
+  $("stwhy").innerHTML =
+    `<div><b>${tr("这不是选股推荐。")}</b>${tr("名单是实验开始前用机械规则筛一次定下来的，之后不再变动——不会因为哪只涨了就加进来，也不会因为哪只跌了就踢出去。")}</div>
+     <div>${tr("共")} <b>${syms.length}</b> ${tr("只可交易")}${bm.length ? ` · ${tr("另有基准")} <b>${esc(bm.join(sep))}</b>${tr("，只用来判断大盘方向，永远不可买卖")}` : ""}${stop}</div>
+     <div>${tr("冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。")}</div>`;
+  $("stsyms").innerHTML = syms.map(x => `<span>${esc(x)}</span>`).join("");
+
+  /* Collapsed by default, same as the coin pool: the summary row answers "what may these agents trade", and the
+     forty chips plus three paragraphs are the evidence behind it. Wired once - the button lives in the static
+     markup precisely so this listener outlives a re-render - and the choice is a per-viewer convenience kept in
+     localStorage, never sent anywhere. */
+  const tog = $("sttoggle"), det = $("stdetail");
+  if (tog && !tog.dataset.wired) {
+    tog.dataset.wired = "1";
+    try { STATE.stOpen = localStorage.getItem("arena.stOpen") === "1"; } catch (e) { }
+    tog.addEventListener("click", () => {
+      STATE.stOpen = !STATE.stOpen;
+      try { localStorage.setItem("arena.stOpen", STATE.stOpen ? "1" : "0"); } catch (e) { }
+      renderStockPool(STATE.snap);
+    });
+  }
+  const open = !!STATE.stOpen;
+  if (tog) {
+    tog.setAttribute("aria-expanded", String(open));
+    $("sttoggletxt").textContent = open ? tr("收起") : tr("展开名单");
+  }
+  if (det) det.hidden = !open;
 }
 
 /* The crypto countdown and ticker age are deliberately NOT part of the SSE change key - they move every second,
