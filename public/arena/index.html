@@ -518,6 +518,9 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .oc.skipped{background:var(--hair);color:var(--ink3)}
 .oc.partial{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
 .reason{font-size:var(--fs-note);color:var(--ink3);margin-top:6px;line-height:1.5;word-break:break-word}
+/* The one-line story of a round, above its numbers: brighter than the disclosures under it, because it is the
+   sentence a reader should be able to stop at. */
+.story{font-size:var(--fs-note);color:var(--ink2);margin-top:6px;line-height:1.6}
 .round .disc{margin-top:6px;font-size:12px;color:var(--ink2);line-height:1.5}
 .round .disc div+div{margin-top:2px}
 .mut{font-size:var(--fs-note);margin-top:7px;font-family:var(--mono);color:var(--ink2);line-height:1.6}
@@ -648,6 +651,10 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   .hint,.aglegend{line-height:var(--lh-cjk);text-wrap:pretty}
   footer>div:first-child{font-size:13px;font-weight:500;color:var(--ink2);line-height:var(--lh-cjk)}
   #footmeta{font-size:12px;line-height:1.7}
+/* The pool's "why" sits above its numbers: readable prose width, one idea per line. */
+.crwhy{margin:10px 0 2px;font-size:var(--fs-note);color:var(--ink2);line-height:1.75;max-width:78ch}
+.crwhy div{margin-top:4px}
+.crwhy b{color:var(--ink)}
   .tk .px.q-stale{opacity:.82}
   .tk .px.q-unk{opacity:.66}
 
@@ -828,6 +835,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   </div>
 
   <div class="sec" id="crsec" style="display:none"><h2>币池</h2><span class="note" id="crnote"></span>
+    <div id="crwhy" class="crwhy"></div>
     <button class="grpbtn" id="crall" type="button" aria-pressed="false" style="display:none" title="默认只列活跃池与持有的币；点开显示全部 40 个候选及其状态原因">全部候选</button></div>
   <div class="card pad" id="crcard" style="display:none">
     <button class="crmore" id="crtoggle" type="button" aria-expanded="false" aria-controls="crdetail">
@@ -921,7 +929,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T01:33:15Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919","stock-research-20260921","stock-frozen-validation-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T01:48:13Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919","stock-research-20260921","stock-frozen-validation-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1302,7 +1310,8 @@ const I18N = {
     "尚无已冻结的日收盘，图上只有今日的实时点": "no daily close has been frozen yet: what is plotted is today's live point",
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
     "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
-    "日收盘": "daily closes", "基准线 = 本金": "baseline = principal",
+    "日收盘": "daily closes", "基准线 = 本金": "baseline = principal", "横轴": "x axis",
+    "历史不够": "too little history", "排名靠后": "ranked below the line", "行情过期": "quotes stale", "交易所不可用": "unavailable at the venue", "仍持有但已出池": "held but out of the pool", "交易对仍可交易": "Pairs still tradable", "每轮向交易所核对一次：下架或暂停的币会被移出，不会拿着失效的代码下单": "re-checked with the venue each cycle: a delisted or halted coin leaves the pool rather than being ordered with a dead symbol", "是否用 AI 模型": "Uses an AI model?", "否：全部由固定规则决定": "No - every decision comes from fixed rules", "每笔手续费": "Fee per trade", "按吃单价计，约每 $10,000 收 $": "taker side; about $ per $10,000 traded: ", "虚拟成交量不享受任何折扣档": "virtual volume earns no discount tier",
     "十槽合计": "ten slots combined", "最强基准": "best reference", "超额": "excess",
     "研究状态": "Research status", "无合格候选": "no qualifying candidate",
     "当日领先者": "Day leader", "开发区候选": "Research candidates", "冻结验证中": "In frozen validation",
@@ -1928,7 +1937,10 @@ function renderHero(s) {
     ? `${esc(tr(ex.data_kind_zh || ""))} · ${esc(ex.mode || "")} · ${esc(ex.agent_mode || "")} · ${LANG === "en" ? "UTC day" : "UTC 日"} ${ex.day_index != null ? ex.day_index : "—"} · ${esc(ex.day1 || "")} → ${tr("持续运行")} · ${esc(ex.venue || "")} / ${tr("现货")} USD`
     : `${esc(tr(ex.data_kind_zh || ""))} · ${esc(ex.mode || "")} · Day ${ex.day_index != null ? ex.day_index : "—"}/${ex.n_days || "—"} · ${esc(ex.day1 || "")} → ${esc(ex.last_day || "")}`;
   const evo = $("evonote");
-  if (evo) evo.textContent = STATE.crypto ? tr("每个完整 UTC 日 00:05 UTC 结算一轮") : tr("每个完整交易日收盘后一轮");
+  // What a round IS, not just when it happens. "每个完整 UTC 日 00:05 UTC 结算一轮" answers the clock and leaves
+  // the mechanism to guesswork - and the thing readers most often assume is that a replaced agent's money is
+  // taken away, which is the one thing that never happens.
+  if (evo) evo.textContent = evoHowItWorks();
   $("mMetric").textContent = tr(ex.metric_zh || UNK);
   $("mRule").textContent = (ex.keep_top != null) ? `${tr("留")} ${ex.keep_top} / ${tr("换")} ${ex.replace_bottom}` : tr(UNK);
   // Either spelling. The stock layer expands these counters to total/completed and the crypto layer used to
@@ -2219,21 +2231,41 @@ function renderCrypto(s) {
   const calls = Object.entries(today).map(([k, v]) => `${k} ${v.n}`).join(" · ") || "0";
   const budgetLine = cr.agent_mode === "HYBRID_LLM"
     ? (b.llm_enabled ? `${tr("已授权")} · ${esc(b.model_id || "?")} · ${calls} / ${b.total_limit}` : tr("未授权：BLOCKED"))
-    : `${tr("规则策略，不调用模型")} · ${tr("HYBRID 需另行授权")}`;
+    : tr("否：全部由固定规则决定");
   const tiles = [
     ["活跃池", `${counts.ACTIVE || 0} / ${u.active_limit != null ? u.active_limit : "—"}`, `${tr("合格未入池")} ${counts.ELIGIBLE || 0} · ${tr("候选")} ${u.n_candidates || 40}`],
-    ["未入池原因", `${tr("预热")} ${counts.DATA_WARMUP || 0} · ${tr("观察")} ${counts.OBSERVE_ONLY || 0}`, `${tr("过期")} ${counts.STALE || 0} · ${tr("不可用")} ${(counts.UNAVAILABLE || 0) + (counts.RESTRICTED || 0)} · ${tr("持有已出池")} ${counts.HELD_NOT_ACTIVE || 0}`],
+    ["未入池原因", `${tr("历史不够")} ${counts.DATA_WARMUP || 0} · ${tr("排名靠后")} ${counts.OBSERVE_ONLY || 0}`,
+      `${tr("行情过期")} ${counts.STALE || 0} · ${tr("交易所不可用")} ${(counts.UNAVAILABLE || 0) + (counts.RESTRICTED || 0)} · ${tr("仍持有但已出池")} ${counts.HELD_NOT_ACTIVE || 0}`],
     ["币池版本", esc((eff.universe_version || "—").replace(/^U-.*?-/, "")), `${tr("生效")} ${eff.effective_utc ? hhmm(eff.effective_utc) + " UTC" : UNK}${pend ? ` · ${tr("待生效")} ${esc(String(pend.universe_version || "").replace(/^U-.*?-/, ""))}` : ""}`],
     ["下次决策", nd, `${tr("每")} ${data.decision_interval_min || "?"} ${tr("分钟")} · ${tr("上次快照")} ${data.latest_snapshot ? hhmm(data.latest_snapshot.ts_utc) + " UTC" : UNK}`],
     ["距 UTC 日结", toClose, `${tr("估值边界 00:00 UTC，00:05 起结算")}`],
     ["行情新鲜度", `${tkOk ? tr("正常") : tr("陈旧")} · ${tkAge}`, `${tr("最近 ticker")} ${data.last_ticker_utc ? hhmm(data.last_ticker_utc) + " UTC" : UNK}`],
-    ["产品核验", `${data.n_products_verified != null ? data.n_products_verified : "?"} / ${data.n_products != null ? data.n_products : "?"}`, tr("Kraken AssetPairs：online 的 USD 现货对")],
-    ["模型预算", budgetLine, `${tr("模式")} ${esc(cr.agent_mode || "")}`],
-    ["费用模型", `taker ${fee.taker_bps} bps`, `${esc(fee.tier || "")} · ${tr("核对")} ${esc(String(fee.checked_at || "").slice(0, 10))}`],
+    ["交易对仍可交易", `${data.n_products_verified != null ? data.n_products_verified : "?"} / ${data.n_products != null ? data.n_products : "?"}`,
+      tr("每轮向交易所核对一次：下架或暂停的币会被移出，不会拿着失效的代码下单")],
+    ["是否用 AI 模型", budgetLine, `${tr("模式")} ${esc(cr.agent_mode || "")}`],
+    ["每笔手续费", `${fee.taker_bps} bps`, `${tr("按吃单价计，约每 $10,000 收 $")}${((fee.taker_bps || 0) / 10000 * 10000).toFixed(0)}` +
+      ` · ${tr("虚拟成交量不享受任何折扣档")} · ${tr("核对")} ${esc(String(fee.checked_at || "").slice(0, 10))}`],
   ];
   $("crstats").innerHTML = tiles.map(([k, v, sub]) => `<div class="crtile"><div class="k">${tr(k)}</div><div class="v num">${v}</div><div class="s">${sub}</div></div>`).join("");
   const rule = u.rule || {};
   const el_ = rule.eligibility || {};
+  /* The rule used to be one sentence carrying six thresholds, which is a specification and not an explanation.
+     A reader's actual question is "why these coins and not others", and the answer is short: they are the ones
+     that can be bought and sold without moving the price. That goes first; the numbers follow it. */
+  const why = $("crwhy");
+  if (why) {
+    why.innerHTML = (LANG === "en" ? [
+      "<b>These are not picks.</b> Nothing here is a view on which coin will go up - the pool is chosen purely on whether an order can be filled without moving the price.",
+      `A coin joins when all four hold: <b>$${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")}+</b> traded in 24h · spread <b>≤ ${el_.max_spread_bps} bps</b> · <b>$${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")}+</b> of asks within 25 bps · at least <b>${el_.warmup_candles_1h}</b> hourly candles of history.`,
+      `The top <b>${u.active_limit != null ? u.active_limit : "—"}</b> by turnover then spread are tradable; a coin already in keeps its seat until it falls more than <b>${rule.hysteresis_rank_band}</b> places past the line, so the pool does not churn on noise.`,
+      "Return, direction and what the agents would like to buy play no part in it.",
+    ] : [
+      "<b>这不是选币推荐。</b>这里没有任何「哪个币会涨」的判断——入池只看一件事：能不能顺利买进卖出而不把价格推走。",
+      `四个条件同时满足才进池：24 小时成交额 <b>$${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")}</b> 以上 · 买卖价差 <b>≤ ${el_.max_spread_bps} bps</b> · 挂单价上下 25bps 内有 <b>$${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")}</b> 以上的卖单 · 至少有 <b>${el_.warmup_candles_1h}</b> 根小时线的历史。`,
+      `按成交额、再按价差排序，取前 <b>${u.active_limit != null ? u.active_limit : "—"}</b> 名可交易；已经在池里的币要掉出线外 <b>${rule.hysteresis_rank_band}</b> 名才会被换掉，免得池子天天抖动。`,
+      "涨跌、方向、Agent 想买什么，都不参与这个判断。",
+    ]).map(t => `<div>${t}</div>`).join("");
+  }
   $("crrule").textContent = LANG === "en"
     ? `Pool rule ${esc(eff.rule_version || "")}: online USD spot pair · ≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} rolling-24h turnover (median over the sample window) · spread ≤ ${el_.max_spread_bps} bps · ask depth within 25 bps ≥ $${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")} · ≥ ${el_.min_samples} samples · warm-up ${el_.warmup_candles_1h} × 1h and ${el_.warmup_candles_4h} × 4h candles. Ranked by turnover then spread; incumbents keep a seat within ${rule.hysteresis_rank_band} ranks of the limit. Liquidity and data quality only: no return, no direction, no agent preference.`
     : `币池规则 ${esc(eff.rule_version || "")}：online 的 USD 现货对 · 滚动 24h 成交额（采样窗口中位数）≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} · 点差 ≤ ${el_.max_spread_bps} bps · 25bps 内卖盘深度 ≥ $${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")} · 样本 ≥ ${el_.min_samples} · 预热 ${el_.warmup_candles_1h} 根 1h + ${el_.warmup_candles_4h} 根 4h。按成交额、点差排序；在池成员在上限 +${rule.hysteresis_rank_band} 名内保留席位。只看流动性与数据质量：不看收益、不看方向、不看 Agent 偏好。`;
@@ -3123,6 +3155,26 @@ function wireCmpControls() {
 }
 /* New York wall-clock offset, taken from the day's own timestamps: a tick aligned in the reader's timezone would
    be aligned to the wrong hour, and a Date round-trip would relabel a New York chart wherever the reader is. */
+/* The UTC day this crypto board is being scored on, taken from the server's own boundary rather than computed
+   from the reader's clock. `scoring_day_utc` names the day and `next_boundary_utc` is the instant it ends, so the
+   pair is exactly the window the ledger will freeze - no arithmetic on the viewer's timezone anywhere. */
+function cmpUtcDayWindow(s) {
+  const m = s && s.market;
+  if (!m || !m.scoring_day_utc || !m.next_boundary_utc) return null;
+  const b = Date.parse(m.next_boundary_utc);
+  const a = Date.parse(String(m.scoring_day_utc) + "T00:00:00Z");
+  return (isFinite(a) && isFinite(b) && b > a) ? { a, b } : null;
+}
+
+/* Which clock the intraday axis is drawn in. A 24/7 board's day, its scoring, its round settlement and its own
+   range names are all UTC, so labelling its axis in New York made 今日（UTC 日）start at 8:00 PM and end at
+   8:00 PM - a 24-hour window that could not be read as one. The stock board keeps New York, which is the clock
+   its sessions are defined in. Each board is drawn in the clock its day is defined by, and the axis says which. */
+function cmpAxisClock(s) {
+  if (STATE.crypto) return { off: 0, zh: "UTC", utc: true };
+  return { off: cmpNyOffsetMs(s), zh: "ET", utc: false };
+}
+
 function cmpNyOffsetMs(s) {
   const src = (s.market && s.market.clock_ny) || s.ts_ny || "";
   const m = String(src).match(/([+-])(\d{2}):(\d{2})$/);
@@ -3323,6 +3375,9 @@ function renderCompare(s) {
     // zoomed, the axis no longer centres on the principal, so the short line must not keep promising that it does
     const short = [tr(STATE.cmpRange === "today" && STATE.crypto ? "今日（UTC 日）" : (CMP_RANGE_ZH[STATE.cmpRange] || "今日全时段")),
       CMP_BASE_OFF ? tr("纵轴贴合数据（本金线在范围外）") : tr("基准线 = 本金")];
+    // Which clock the axis is in, said rather than inferred. The header clock beside it is ET, so on a board
+    // whose day is UTC the two genuinely differ and a reader comparing them needs to be told which is which.
+    if (CMP_INTRADAY[STATE.cmpRange]) short.splice(1, 0, tr("横轴") + " " + cmpAxisClock(STATE.snap || {}).zh);
     if (STATE.cmpZoom) short.push(tr("已放大"));
     if (coincident.length) short.push(`${coincident.reduce((a, g) => a + g.length, 0)} ${tr("个槽净值相同，已合并")}`);
     if (dead.length) short.push(`${dead.length} ${tr("无数据")}`);
@@ -3378,9 +3433,14 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   // A fixed window beats one that re-scales every minute, so both of these come from the calendar, not the data:
   // 今日 is the whole day the venue trades, 当前时段 is just the session running right now.
   const wholeDay = sess && STATE.cmpRange === "today";
+  // Same idea on a 24/7 board, where there is no session to pad to: 今日 is the whole UTC day, 00:00 to 24:00,
+  // with the part that has not happened yet left empty. Before this the window was whatever the data happened to
+  // span - an hour and a half of chart labelled 今日（UTC 日）.
+  const utcDay = (!sess && STATE.cmpRange === "today") ? cmpUtcDayWindow(STATE.snap || {}) : null;
   const active = STATE.cmpRange === "session" ? cmpActiveWindow(STATE.snap || {}, sess) : null;
   let x0str = null, x1str = null;
   if (wholeDay) { x0 = sess.extOpen; x1 = sess.extClose; x0str = sess.str.extOpen; x1str = sess.str.extClose; }
+  else if (utcDay) { x0 = utcDay.a; x1 = utcDay.b; }
   else if (active) {
     x0 = active.a; x1 = active.b; x0str = active.aStr; x1str = active.bStr;
     // ...but do not pad out to a close that has not happened: an hour of empty chart on the right squeezes the part
@@ -3497,9 +3557,21 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     for (const pt of stamps) if (Math.abs(pt[0] - v) < Math.abs(best[0] - v)) best = pt;
     return best;
   };
+  /* Every time on this chart - ticks, crosshair readout, tooltip header - is drawn in the SAME clock, the one
+     that board's day is defined by. It was not: making the crypto axis UTC left the readout in New York, so the
+     axis said 00:00 .. 24:00 while hovering the leftmost point said "8:21 PM". Both were correct and together
+     they were unreadable, which is worse than either mistake on its own.
+
+     The point's own ISO string carries a New York offset, so for a UTC board the label is computed from the
+     epoch instead of scraped from the string, and the zone is named so nobody has to infer it. */
   const xlabel = pt => {
     if (!pt) return "";
     if (mode === "daily") return String(pt[2]).slice(5);                    // MM-DD
+    const clk = cmpAxisClock(STATE.snap || {});
+    if (clk.utc) {
+      const d = new Date(pt[0]);
+      return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")} UTC`;
+    }
     const m = String(pt[2]).match(/T(\d{2}):(\d{2})/);                      // an axis tick wants the minute
     return m ? ampm(m[1], m[2]) : hhmm(pt[2]);
   };
@@ -3509,7 +3581,8 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
      last one placed. Times are New York wall clock throughout, computed as (t + offset) read with UTC getters so
      the reader's own timezone never reinterprets them. */
   const drawTimeLadder = () => {
-    const off = cmpNyOffsetMs(STATE.snap || {});
+    const clk = cmpAxisClock(STATE.snap || {});
+    const off = clk.off;
     const plot = Math.max(1, w - PL - PR);
     const want = Math.max(3, Math.min(8, Math.round(plot / 120)));
     const rough = (x1 - x0) / want / 60e3;
@@ -3522,9 +3595,12 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
       if (px - lastX < 44) continue;
       lastX = px;
       n++;
-      const d = new Date(t + off);                      // +off then UTC getters == New York wall clock, no guessing
+      const d = new Date(t + off);                      // +off then UTC getters == that board's wall clock
       const hh = String(d.getUTCHours()).padStart(2, "0"), mm2 = String(d.getUTCMinutes()).padStart(2, "0");
-      svg.appendChild(label(px, tickY, ampm(hh, mm2), px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle"));
+      // A UTC day is read 00:00 .. 24:00, not 12:00 AM .. 12:00 AM, and the end of the day is 24:00 rather than
+      // a second midnight that looks like the start of it.
+      const txt = clk.utc ? ((t >= x1 && hh === "00" && mm2 === "00") ? "24:00" : `${hh}:${mm2}`) : ampm(hh, mm2);
+      svg.appendChild(label(px, tickY, txt, px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle"));
     }
     return n;
   };
@@ -4065,6 +4141,72 @@ function wireCmpHover(svg) {
   }, { passive: false });
 }
 
+/* ---- the evolution log, in words a first-time reader can follow ------------------------------------------
+   Everything below turns something the ENGINE wrote for itself into something a person can read, and none of it
+   throws the original away: a code we have no words for is printed as-is rather than swallowed, and the raw
+   text stays in the element's `title`. A log that silently drops what it cannot explain is worse than one that
+   is hard to read, because you cannot tell the difference between "nothing happened" and "I did not translate
+   this". */
+
+const SKIP_WORDS = [
+  [/^day_incomplete$/, () => "当日行情数据不完整，这一轮不进化"],
+  [/^paused$/, () => "进化已被手动暂停"],
+  [/^already_closed$/, () => "这一天已经结算过了"],
+  [/^insufficient_ranked:(\d+)<(\d+)/, m => `能排名的 Agent 只有 ${m[1]} 个，少于需要的 ${m[2]} 个`],
+  [/^unscorable_slots:(.+)$/, m => {
+    const slots = m[1].split(",").map(x => x.trim()).filter(Boolean);
+    const why = [...new Set(slots.map(x => (x.match(/\((.+)\)/) || [])[1]).filter(Boolean))];
+    const wz = why.map(w => SKIP_ONE[w] || w).join("、");
+    return `${slots.length} 个 Agent 当日无法评分${wz ? "（" + wz + "）" : ""}`;
+  }],
+  [/^min_eval_sessions:(\d+)<(\d+)/, m => `这些 Agent 只跑了 ${m[1]} 个交易日，不足规则要求的 ${m[2]} 个`],
+];
+const SKIP_ONE = { day_incomplete: "当日数据不完整", valuation_unknown: "估值未知", no_data: "没有数据",
+                   breaker: "触发熔断", not_active: "当日未在岗" };
+
+function skipWords(reason) {
+  if (!reason) return "";
+  const parts = String(reason).split(";").map(x => x.trim()).filter(Boolean);
+  const out = parts.map(pt => {
+    for (const [re, fn] of SKIP_WORDS) { const m = pt.match(re); if (m) return fn(m); }
+    return pt;                                   // no words for it: show the code rather than hide it
+  });
+  return [...new Set(out)].join("；");
+}
+
+/* A version id is `V-<candidate>-g<generation>-<hash>`. The hash is provenance, not something to read at a
+   glance, so the label is the part a reader can use and the whole id stays in the tooltip. */
+function versionWords(vid) {
+  const m = String(vid || "").match(/^V-([A-Za-z0-9]+)-g(\d+)-/);
+  return m ? `${m[1]} 第 ${m[2]} 代` : String(vid || "");
+}
+
+function paramWord(key) {
+  const lb = (STATE.snap && STATE.snap.param_labels) || {};
+  return lb[key] || key;                         // unlabelled key prints as the key, never as nothing
+}
+
+/* What a round IS, before any of the detail. The log said "每个完整 UTC 日 00:05 UTC 结算一轮", which answers
+   when and leaves what to guesswork - and the thing people most often assume is that a replaced agent's money
+   is taken away, which is the one thing that does not happen. */
+function evoHowItWorks() {
+  const sel = (STATE.snap && STATE.snap.experiment && STATE.snap.experiment.selection) || {};
+  const keep = isNum(sel.keep_top) ? sel.keep_top : 7, rep = isNum(sel.replace_bottom) ? sel.replace_bottom : 3;
+  const when = STATE.crypto ? "每个完整 UTC 日（00:05 UTC）" : "每个完整交易日收盘 10 分钟后";
+  return `${when}结算一次：按当日净值收益给 ${keep + rep} 个 Agent 排名，`
+       + `前 ${rep} 名各复制出一个参数微调的后代，顶替掉后 ${rep} 名，中间的 ${keep - rep} 个原样留任。`
+       + `被顶替的槽位不平仓、不重置本金——后代直接接手那个槽位现有的现金和持仓。`;
+}
+
+/* The one-line story of a round, above the numbers. */
+function roundStory(r) {
+  if (r.outcome === "skipped") return skipWords(r.reason) || "这一轮没有进化";
+  const top = (r.top || []), bot = (r.bottom || []);
+  if (!top.length) return `留下 ${r.n_kept} 个，换掉 ${r.n_replaced} 个`;
+  return `${top.join("、")} 排在前列，各复制出一个微调后代，接手了 ${bot.join("、")} 的槽位`
+       + `（这些槽位的现金和持仓原样留在原地，由后代继续管）`;
+}
+
 function renderRounds(s) {
   const box = $("rounds");
   const rs = s.rounds || [];
@@ -4093,9 +4235,11 @@ function renderRounds(s) {
         ${r.outcome !== "skipped" ? `<span class="muted num">留 ${r.n_kept} · 换 ${r.n_replaced}</span>` : ""}
         ${(r.top || []).length ? `<span class="muted">top ${esc((r.top || []).join(" "))} → bottom ${esc((r.bottom || []).join(" "))}</span>` : ""}
       </div>
-      ${r.reason ? `<div class="reason">${esc(r.reason)}</div>` : ""}
+      <div class="story" ${r.reason ? `title="${esc(r.reason)}"` : ""}>${esc(roundStory(r))}</div>
+      ${/* on a skipped round the story IS the reason in words, so printing both says it twice */ ""}
+      ${(r.reason && r.outcome !== "skipped") ? `<div class="reason" title="${esc(r.reason)}">${esc(skipWords(r.reason))}</div>` : ""}
       ${roundDisclosures(r)}
-      ${muts.length ? `<div class="mut">${muts.map(m => `<div><b>${esc(m.slot)}</b> ← ${esc(m.parent || "")}<span class="arrow">→</span>${esc(m.child || "")}<br>${Object.entries(m.diff || {}).map(([k, v]) => `${esc(k)}: ${esc(v.from)}<span class="arrow">→</span><b>${esc(v.to)}</b>`).join(" · ") || "（无差异）"}</div>`).join("")}</div>` : ""}
+      ${muts.length ? `<div class="mut">${muts.map(m => `<div><b>${esc(m.slot)}</b> <span class="muted" title="${esc((m.parent || "") + " → " + (m.child || ""))}">${esc(versionWords(m.parent))}<span class="arrow">→</span>${esc(versionWords(m.child))}</span><br>${Object.entries(m.diff || {}).map(([k, v]) => `<span title="${esc(k)}">${esc(paramWord(k))}</span>: ${esc(v.from)}<span class="arrow">→</span><b>${esc(v.to)}</b>`).join(" · ") || "（后代与亲代参数相同）"}</div>`).join("")}</div>` : ""}
     </div>`;
   }).join("");
 }
@@ -4138,7 +4282,14 @@ function roundDisclosures(r) {
         (short.length ? ` · 不足的：${esc(short.join(" "))}` : " · 全部达标"));
     }
     if (cov.partial_first_day) bits.push("这是实验的第一个 UTC 日，开始时间晚于 00:00 UTC，按规则记为 PARTIAL、不评分（不是故障）");
-    if (cov.rule) bits.push(`完整性规则：${esc(cov.rule)}`);
+    // The rule was printed as the engine's own English sentence. Rebuild it from the numbers it was built from,
+    // and keep the original in the tooltip so the exact wording is still one hover away.
+    if (cov.rule) {
+      const zh = isNum(need)
+        ? `完整性规则：当天用到的每个币（持有过、成交过，以及 BTC）都要在 24 小时里至少 ${need} 小时有行情记录；实验第一天不足整日，按规则记为 PARTIAL`
+        : `完整性规则：当天用到的每个标的都要有足够的行情记录才算完整`;
+      bits.push(`<span title="${esc(cov.rule)}">${zh}</span>`);
+    }
     const rv = dq.revisions || {};
     if (rv.checked === true) {
       const nr = rv.fills_on_revised_bar, nc = rv.quote_vs_bar;
