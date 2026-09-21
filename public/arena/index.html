@@ -921,7 +921,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-20T22:55:42Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919","stock-research-20260921","stock-frozen-validation-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T01:33:15Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919","stock-research-20260921","stock-frozen-validation-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -3504,8 +3504,11 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     return m ? ampm(m[1], m[2]) : hhmm(pt[2]);
   };
   const tickY = bands.length ? h - 22 : h - 7;   // measured: at h - 20 the tick row touched the band names below it
-  if (zoomed && mode === "intraday") {
-    // zoomed in: a boundary tick is no longer enough, so step through New York wall-clock at a sensible interval
+  /* A ladder of ROUND wall-clock times across the window: 9:00 PM, 1:00 AM, 5:00 AM ... The step is chosen from
+     CMP_TICK_MIN so that about `plot/120` ticks fit, and each one is dropped if it would land within 44px of the
+     last one placed. Times are New York wall clock throughout, computed as (t + offset) read with UTC getters so
+     the reader's own timezone never reinterprets them. */
+  const drawTimeLadder = () => {
     const off = cmpNyOffsetMs(STATE.snap || {});
     const plot = Math.max(1, w - PL - PR);
     const want = Math.max(3, Math.min(8, Math.round(plot / 120)));
@@ -3513,14 +3516,27 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     const stepMin = CMP_TICK_MIN.find(m2 => m2 >= rough) || CMP_TICK_MIN[CMP_TICK_MIN.length - 1];
     const step = stepMin * 60e3;
     const first = Math.ceil((x0 + off) / step) * step - off;
-    let lastX = -1e9;
+    let lastX = -1e9, n = 0;
     for (let t = first; t <= x1; t += step) {
       const px = X(t);
       if (px - lastX < 44) continue;
       lastX = px;
+      n++;
       const d = new Date(t + off);                      // +off then UTC getters == New York wall clock, no guessing
       const hh = String(d.getUTCHours()).padStart(2, "0"), mm2 = String(d.getUTCMinutes()).padStart(2, "0");
       svg.appendChild(label(px, tickY, ampm(hh, mm2), px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle"));
+    }
+    return n;
+  };
+  if (mode === "intraday" && (zoomed || !bands.length)) {
+    /* Zoomed in, a session boundary is no longer enough. And with NO bands at all - which is every crypto view,
+       because a 24/7 venue has no pre/regular/post to hang ticks on - the old code fell through to three raw
+       data timestamps: "8:01 PM · 8:45 PM · 9:25 PM" on the UTC-day range and "9:26 PM · 9:26 AM · 9:25 PM" over
+       24 hours. Those are the first, middle and last POINTS, not an axis: they move every time a point arrives,
+       they are never round, and three of them cannot show where a day boundary falls. Same ladder for both. */
+    if (!drawTimeLadder() && shown.length) {
+      // a window shorter than one tick step still deserves its ends labelled
+      [[x0, "start"], [x1, "end"]].forEach(([v, a]) => svg.appendChild(label(X(v), tickY, xlabel(stampAt(v)), a)));
     }
   } else if (bands.length) {
     /* Ticks on the session boundaries - 07:00 / 09:30 / 16:00 / 20:00 says more than three evenly spaced clock
@@ -3560,6 +3576,8 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     cand.filter(c => c.ok).sort((a, b) => a.t - b.t)
         .forEach(c => svg.appendChild(label(X(c.t), tickY, c.txt, c.a)));
   } else {
+    // daily mode: the labels are dates (MM-DD), so first/middle/last is the right shape - a "round" date is not
+    // a thing, and the by-day series is not dense enough for a ladder to add anything.
     [[x0, "start"], [(x0 + x1) / 2, "middle"], [x1, "end"]].forEach(([v, a]) => {
       svg.appendChild(label(X(v), tickY, xlabel(stampAt(v)), a));
     });
