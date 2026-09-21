@@ -989,7 +989,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T18:32:24Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260919","experiments":["crypto-kraken-20260919","stock-research-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T19:11:01Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260919","experiments":["crypto-kraken-20260919","stock-research-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1393,6 +1393,7 @@ const I18N = {
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
     "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
     "日收盘": "daily closes", "基准线 = 本金": "baseline = principal", "横轴": "x axis", "本 UTC 日": "this UTC day",
+    "未投入市场的现金。仓位数量、当日入场次数和熔断另有各自的显示。": "Cash not in the market. The position count, the daily entry budget and the breakers each have their own readout.",
     "单笔上限": "per-position cap",
     "现金是闲置资金；下面一行是这个槽现在真正能投出去的钱，标签写的就是限制它的那条规则：单笔上限、持仓上限、当日入场次数或熔断": "Cash is money sitting idle. The line below it is what this slot could actually put to work now, and its label names the rule that limits it: the per-position cap, the position limit, the daily entry budget, or a breaker.",
     "可再买": "Can deploy",
@@ -2691,37 +2692,6 @@ function breakerWords(br) {
   return tr("无");
 }
 
-/* What a slot could put to work right now, which is NOT the same as its cash.
-
-   Every slot on both boards is currently holding most of its money in cash and can deploy none of it: the stock
-   arena allows one position per slot and each has one, the crypto arena allows three and each has three. A card
-   showing only 「现金 $8,024」 would invite the reading "so why is it not buying" - the exact question this
-   board should answer rather than provoke.
-
-   Returns {cents, why}. `cents` is null for UNKNOWN - an unreadable cash figure or an unreadable breaker is not
-   a zero - and `why` names the binding limit whenever the answer is zero, because a bare 0 reads as a fault. */
-function buyingPower(a, risk) {
-  const r = risk || {};
-  const cash = a.cash_cents;
-  const br = a.breakers || {};
-  if (br.readable === false) return { cents: null, why: tr("熔断状态未知"), blocked: true };
-  if (br.daily || br.cum) return { cents: 0, why: tr("已熔断"), blocked: true };
-  const maxPos = r.max_positions;
-  const nPos = isNum(a.open_positions) ? a.open_positions : (a.positions || []).length;
-  if (isNum(maxPos) && nPos >= maxPos) return { cents: 0, why: tr("仓位已满"), blocked: true };
-  const maxEntries = isNum(r.max_entries_per_day) ? r.max_entries_per_day : r.max_entries_per_trading_day;
-  if (isNum(maxEntries) && isNum(a.entries_used) && a.entries_used >= maxEntries) {
-    return { cents: 0, why: tr("今日入场已用完"), blocked: true };
-  }
-  if (!isNum(cash)) return { cents: null, why: tr("现金未知"), blocked: true };
-  const cap = r.max_position_notional_cents;
-  /* A slot may hold far more cash than one position is allowed to cost - $10,051 against a $2,500 cap - and the
-     two numbers sitting side by side with no explanation is what prompted "why are these different?". The label
-     names whichever rule is the binding one. */
-  if (isNum(cap) && cash > cap) return { cents: cap, why: tr("单笔上限"), blocked: false };
-  return { cents: cash, why: "", blocked: false };
-}
-
 function renderAgents(s) {
   const wrap = $("agents");
   // a slot that recovered must stop being reported as failed
@@ -2851,18 +2821,12 @@ function renderAgents(s) {
       setNum(n.querySelector(".aeq"), a.live_equity_cents, v => usd(v));
       const cashBox = n.querySelector(".acash");
       if (cashBox) {
-        const bp = buyingPower(a, (s.experiment || {}).risk);
-        const free = bp.cents === null ? UNK : usd(bp.cents, { cents: false });
+        // cash only: the second row explained a per-position cap that no longer exists. Unknown stays 未知 -
+        // an unreadable ledger has no cash figure, and 0 would be a claim about money.
         cashBox.hidden = false;
-        /* The label names whichever rule decided the number - 单笔上限 / 仓位已满 / 今日入场已用完 - so the
-           card answers "why is this not my cash?" without a third row and without a hover. Orange is kept for
-           the cases where nothing can be deployed; a cap is the rule working, not a warning. */
-        const label = bp.why || tr("可再买");
-        cashBox.innerHTML =
-          `<span class="k">${tr("现金")}</span><span class="v num">${isNum(a.cash_cents) ? usd(a.cash_cents, { cents: false }) : UNK}</span>`
-          + `<span class="k${bp.blocked ? " why" : ""}">${label}</span>`
-          + `<span class="v num${bp.cents === 0 ? " zero" : ""}">${free}</span>`;
-        cashBox.title = tr("现金是闲置资金；下面一行是这个槽现在真正能投出去的钱，标签写的就是限制它的那条规则：单笔上限、持仓上限、当日入场次数或熔断");
+        cashBox.innerHTML = `<span class="k">${tr("现金")}</span>`
+          + `<span class="v num">${isNum(a.cash_cents) ? usd(a.cash_cents, { cents: false }) : UNK}</span>`;
+        cashBox.title = tr("未投入市场的现金。仓位数量、当日入场次数和熔断另有各自的显示。");
       }
       const row = n.querySelector(".arow");
       const dayCls = signCls(a.live_day_return_bp);
