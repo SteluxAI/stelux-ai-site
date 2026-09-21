@@ -929,7 +929,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T01:48:13Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919","stock-research-20260921","stock-frozen-validation-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T02:01:47Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"arena-screen-20260918","experiments":["arena-screen-20260918","crypto-kraken-20260919","stock-research-20260921","stock-frozen-validation-20260921"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1310,7 +1310,7 @@ const I18N = {
     "尚无已冻结的日收盘，图上只有今日的实时点": "no daily close has been frozen yet: what is plotted is today's live point",
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
     "这个看板进程还是旧代码，不提供每日记录": "this dashboard process is running an older build that does not send daily records",
-    "日收盘": "daily closes", "基准线 = 本金": "baseline = principal", "横轴": "x axis",
+    "日收盘": "daily closes", "基准线 = 本金": "baseline = principal", "横轴": "x axis", "本 UTC 日": "this UTC day",
     "历史不够": "too little history", "排名靠后": "ranked below the line", "行情过期": "quotes stale", "交易所不可用": "unavailable at the venue", "仍持有但已出池": "held but out of the pool", "交易对仍可交易": "Pairs still tradable", "每轮向交易所核对一次：下架或暂停的币会被移出，不会拿着失效的代码下单": "re-checked with the venue each cycle: a delisted or halted coin leaves the pool rather than being ordered with a dead symbol", "是否用 AI 模型": "Uses an AI model?", "否：全部由固定规则决定": "No - every decision comes from fixed rules", "每笔手续费": "Fee per trade", "按吃单价计，约每 $10,000 收 $": "taker side; about $ per $10,000 traded: ", "虚拟成交量不享受任何折扣档": "virtual volume earns no discount tier",
     "十槽合计": "ten slots combined", "最强基准": "best reference", "超额": "excess",
     "研究状态": "Research status", "无合格候选": "no qualifying candidate",
@@ -3166,12 +3166,17 @@ function cmpUtcDayWindow(s) {
   return (isFinite(a) && isFinite(b) && b > a) ? { a, b } : null;
 }
 
-/* Which clock the intraday axis is drawn in. A 24/7 board's day, its scoring, its round settlement and its own
-   range names are all UTC, so labelling its axis in New York made 今日（UTC 日）start at 8:00 PM and end at
-   8:00 PM - a 24-hour window that could not be read as one. The stock board keeps New York, which is the clock
-   its sessions are defined in. Each board is drawn in the clock its day is defined by, and the axis says which. */
+/* Which clock the intraday axis is drawn in: the READER'S, on every board.
+
+   This was UTC on the crypto board for about an hour, on the reasoning that a board whose day and scoring are
+   UTC should be drawn in UTC. That reasoning was about the ledger and the person looking at the chart does not
+   live in the ledger. Drawn in UTC, the axis began at 00:00 with no data under it, because 00:00 UTC is 8 PM
+   where the reader is and the day had not started for them yet - so a correct axis read as a broken one.
+
+   The WINDOW is still the UTC scoring day, because that is the day the ledger freezes and the day the percentage
+   beside the chart is computed over. Only the labels changed, and the subtitle now states that window in the
+   reader's own clock so the two can be reconciled instead of guessed at. */
 function cmpAxisClock(s) {
-  if (STATE.crypto) return { off: 0, zh: "UTC", utc: true };
   return { off: cmpNyOffsetMs(s), zh: "ET", utc: false };
 }
 
@@ -3378,6 +3383,15 @@ function renderCompare(s) {
     // Which clock the axis is in, said rather than inferred. The header clock beside it is ET, so on a board
     // whose day is UTC the two genuinely differ and a reader comparing them needs to be told which is which.
     if (CMP_INTRADAY[STATE.cmpRange]) short.splice(1, 0, tr("横轴") + " " + cmpAxisClock(STATE.snap || {}).zh);
+    // A UTC day does not start at the reader's midnight, and the chart should not make them work that out. When
+    // 今日 is a UTC day, say when it begins and ends on the clock the axis is drawn in.
+    if (STATE.crypto && STATE.cmpRange === "today") {
+      const w = cmpUtcDayWindow(STATE.snap || {});
+      const off = cmpNyOffsetMs(STATE.snap || {});
+      const et = ms => { const d = new Date(ms + off);
+        return ampm(String(d.getUTCHours()).padStart(2, "0"), String(d.getUTCMinutes()).padStart(2, "0")); };
+      if (w) short.splice(1, 0, `${tr("本 UTC 日")} ${et(w.a)} → ${et(w.b)} ET`);
+    }
     if (STATE.cmpZoom) short.push(tr("已放大"));
     if (coincident.length) short.push(`${coincident.reduce((a, g) => a + g.length, 0)} ${tr("个槽净值相同，已合并")}`);
     if (dead.length) short.push(`${dead.length} ${tr("无数据")}`);
@@ -3557,21 +3571,13 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     for (const pt of stamps) if (Math.abs(pt[0] - v) < Math.abs(best[0] - v)) best = pt;
     return best;
   };
-  /* Every time on this chart - ticks, crosshair readout, tooltip header - is drawn in the SAME clock, the one
-     that board's day is defined by. It was not: making the crypto axis UTC left the readout in New York, so the
-     axis said 00:00 .. 24:00 while hovering the leftmost point said "8:21 PM". Both were correct and together
-     they were unreadable, which is worse than either mistake on its own.
-
-     The point's own ISO string carries a New York offset, so for a UTC board the label is computed from the
-     epoch instead of scraped from the string, and the zone is named so nobody has to infer it. */
+  /* Ticks, crosshair and tooltip are all in the same clock - the reader's - and the point's own ISO string is
+     already in it, so the label is read straight off the string. When the axis was briefly UTC and this was
+     not, the axis said 00:00..24:00 while its leftmost point said "8:21 PM": both correct, and together
+     unreadable. One clock, stated in the subtitle, is the whole fix. */
   const xlabel = pt => {
     if (!pt) return "";
     if (mode === "daily") return String(pt[2]).slice(5);                    // MM-DD
-    const clk = cmpAxisClock(STATE.snap || {});
-    if (clk.utc) {
-      const d = new Date(pt[0]);
-      return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")} UTC`;
-    }
     const m = String(pt[2]).match(/T(\d{2}):(\d{2})/);                      // an axis tick wants the minute
     return m ? ampm(m[1], m[2]) : hhmm(pt[2]);
   };
@@ -3581,8 +3587,7 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
      last one placed. Times are New York wall clock throughout, computed as (t + offset) read with UTC getters so
      the reader's own timezone never reinterprets them. */
   const drawTimeLadder = () => {
-    const clk = cmpAxisClock(STATE.snap || {});
-    const off = clk.off;
+    const off = cmpAxisClock(STATE.snap || {}).off;
     const plot = Math.max(1, w - PL - PR);
     const want = Math.max(3, Math.min(8, Math.round(plot / 120)));
     const rough = (x1 - x0) / want / 60e3;
@@ -3597,9 +3602,7 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
       n++;
       const d = new Date(t + off);                      // +off then UTC getters == that board's wall clock
       const hh = String(d.getUTCHours()).padStart(2, "0"), mm2 = String(d.getUTCMinutes()).padStart(2, "0");
-      // A UTC day is read 00:00 .. 24:00, not 12:00 AM .. 12:00 AM, and the end of the day is 24:00 rather than
-      // a second midnight that looks like the start of it.
-      const txt = clk.utc ? ((t >= x1 && hh === "00" && mm2 === "00") ? "24:00" : `${hh}:${mm2}`) : ampm(hh, mm2);
+      const txt = ampm(hh, mm2);
       svg.appendChild(label(px, tickY, txt, px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle"));
     }
     return n;
