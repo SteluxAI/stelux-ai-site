@@ -1034,7 +1034,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T22:51:23Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260923b","experiments":["stock-research-20260923b","crypto-kraken-20260922c"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T23:32:06Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260923c","experiments":["stock-research-20260923c","crypto-kraken-20260922c"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1426,7 +1426,7 @@ const I18N = {
     "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
     "当前时段": "Current session", "今日全时段": "Today (all sessions)",
     "已放大": "zoomed",
-    "24/7 现货 · 每个整点评估一次，出场随时": "24/7 spot · evaluated every hour on the hour, exits any time",
+    "24/7 现货 · 每个整点评估一次入场与出场（止损/止盈也按整点检查）": "24/7 spot · entries and exits evaluated every hour on the hour (stops and targets too)",
     "加密现货 24/7：每个决策周期（默认整点 +90s）在同一份快照上评估全部活跃币；下单后在下一份订单簿观测上按 taker 成交；按 UTC 日计分，00:00 UTC 为估值边界。":
       "Crypto spot, 24/7: every decision cycle (default: on the hour + 90s) evaluates the whole active pool on one shared snapshot; orders fill as a taker on the next observed order book; scored per UTC day with the valuation boundary at 00:00 UTC.",
     "持续运行": "open-ended", "现货": "spot", "活跃池": "active pool", "余尘": "dust",
@@ -2325,7 +2325,10 @@ function renderChips(s) {
 }
 
 const SESSION_CAN = {
-  crypto_24_7: ["go", "24/7 现货 · 每个整点评估一次，出场随时"],
+  // stops and targets are checked in the same hourly decision as entries (crypto/strategies.evaluate) - the loop
+  // between decisions only fills pending orders - so "exits any time" was not true, and it hid why a 3% stop
+  // can fill several points beyond 3%
+  crypto_24_7: ["go", "24/7 现货 · 每个整点评估一次入场与出场（止损/止盈也按整点检查）"],
   pre: ["exit", "盘前 · 只处理出场与估值，不评估入场"],
   regular: ["go", "常规盘 · 09:45–15:30 评估入场，全时段可出场"],
   post: ["exit", "盘后 · 只处理出场与估值，不评估入场"],
