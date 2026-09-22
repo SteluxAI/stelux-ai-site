@@ -1034,7 +1034,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T22:36:16Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260923","experiments":["stock-research-20260923","crypto-kraken-20260922c"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T22:51:23Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260923b","experiments":["stock-research-20260923b","crypto-kraken-20260922c"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1373,6 +1373,16 @@ const I18N = {
     "24 小时市场：周一至周四持仓可跨收盘持有，夜盘照常盯止损/止盈；周五、节假日前和最后一天收盘前平仓":
       "24-hour market: Monday to Thursday a position may be held across the close, with its stop and target watched overnight; flattened before the close on Fridays, before holidays and on the last day",
     "每周": "weekly",
+    "美股 24/5": "US stocks 24/5",
+    "盘前 · 24 小时交易：评估入场与出场": "Pre-market · 24-hour trading: entries and exits evaluated",
+    "盘后 · 24 小时交易：评估入场与出场": "After-hours · 24-hour trading: entries and exits evaluated",
+    "夜盘 · 24 小时交易：评估入场与出场": "Overnight · 24-hour trading: entries and exits evaluated",
+    "24 小时交易：每个时段都评估入场与出场。常规盘 09:45–15:30；盘前、盘后、夜盘按各自开盘后 15 分钟到收盘前 30 分钟，每个策略的开盘区间、VWAP 和涨跌幅都从该时段开盘算起。周一至周四持仓可跨收盘持有，周五、节假日前和最后一天收盘前平仓，平仓后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%，非常规时段成交量小，仓位会小、也常成交不了。":
+      "24-hour trading: entries and exits are evaluated in every session. Regular 09:45–15:30; pre-market, after-hours and overnight from 15 minutes after each session opens to 30 minutes before it closes, with every strategy's opening range, VWAP and returns measured from that session's open. Monday to Thursday a position may be held across the close; it is flattened before the close on Fridays, before holidays and on the last day, with no new position after that. Each fill is capped at 1% of the 5-minute bar's volume; outside regular hours volume is thin, so positions are small and often do not fill.",
+    "24 小时交易": "24-hour trading",
+    "所有时段入场与出场": "entries and exits in every session",
+    "Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票在盘前、常规盘、盘后和夜盘都会评估入场与出场：三个策略的规则不变，只是开盘区间、VWAP 和涨跌幅从所在时段的开盘算起。周一至周四持仓可跨收盘持有；周五、节假日前和最后一天收盘前平仓，之后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%，所以非常规时段的仓位小、也常成交不了。":
+      "Robinhood's 24-hour market (Sunday 20:00 to Friday 20:00 ET). For the listed stocks, entries and exits are evaluated in pre-market, regular, after-hours and overnight: the three strategies' rules are unchanged, with the opening range, VWAP and returns measured from the open of the session they are in. Monday to Thursday a position may be held across the close; it is flattened before the close on Fridays, before holidays and on the last day, with no new position after that. Each fill is capped at 1% of the 5-minute bar's volume; the share of bars that can take a whole position is 97.7% regular, 24.4% pre-market, 13.0% after-hours and 2.9% overnight, so positions outside regular hours are small and often do not fill.",
     "每周进化一次：今天不是本周最后一个交易日，只记录当日得分":
       "Evolution runs weekly: today is not the last trading day of the week, so only today's scores are recorded",
     "交易时段": "Trading hours",
@@ -2034,7 +2044,9 @@ function renderHeader(s) {
   const p = $("sesspill");
   const open = m.is_open === true;
   p.className = "pill " + (m.is_regular ? "live" : open ? "ext" : "");
-  $("sesstxt").textContent = tr(m.session_zh || UNK) + " · " + (m.clock_ny ? hhmm(m.clock_ny) : tr(UNK)) + " ET";
+  // a stock board on Robinhood's 24h market says so first, the way the crypto board leads with 24/7
+  const hrs = (!STATE.crypto && (s.experiment || {}).trading_hours) ? "24/5 · " : "";
+  $("sesstxt").textContent = hrs + tr(m.session_zh || UNK) + " · " + (m.clock_ny ? hhmm(m.clock_ny) : tr(UNK)) + " ET";
   /* The picker lists what THIS BUILD can show, not the intersection of that with whatever the snapshot
      happens to describe. Those two disagree for the whole CDN cache window after an experiment is replaced -
      the published snapshot still names the old ids, none of them are in the build's list, and the intersection
@@ -2053,7 +2065,8 @@ function renderHeader(s) {
     exps.forEach(e => {
       // board first: the id is 24 characters and the select is capped, so "stock" / "Crypto" led the truncated
       // text rather than trailing off the end of it. An unknown field is simply omitted, never guessed.
-      const board = e.asset_class === "crypto_spot" ? "Crypto 24/7" : e.asset_class ? tr("美股") : null;
+      const board = e.asset_class === "crypto_spot" ? "Crypto 24/7"
+        : e.asset_class ? (e.hours === "24/5" ? tr("美股 24/5") : tr("美股")) : null;
       const kind = e.data_kind ? (e.data_kind === "realtime_paper" ? tr("实时") : tr("回放")) : null;
       const o = el("option", null, [board, e.experiment_id, kind].filter(Boolean).join(" · "));
       o.value = e.experiment_id; sel.appendChild(o);
@@ -2319,6 +2332,10 @@ const SESSION_CAN = {
   overnight: ["stop", "夜盘 · 不可执行，持仓原样保留"],
   // only when the experiment froze the 24h policy; v1 experiments keep the line above
   overnight_24h: ["exit", "夜盘 · 24 小时市场：持仓照常盯止损/止盈，出场可成交，不评估入场"],
+  // v2 of the policy: the strategies ENTER in every session too, each anchored to that session's open
+  pre_24h_all: ["go", "盘前 · 24 小时交易：评估入场与出场"],
+  post_24h_all: ["go", "盘后 · 24 小时交易：评估入场与出场"],
+  overnight_24h_all: ["go", "夜盘 · 24 小时交易：评估入场与出场"],
   closed: ["stop", "休市 · 不可执行，Agent 无法交易"],
 };
 
@@ -2400,7 +2417,10 @@ function renderTicker(s, keep) {
   const sess = m.session || "closed";
   wrap.dataset.session = sess;
   const is24 = !STATE.crypto && !!ex.trading_hours;
-  const [cls, text0] = SESSION_CAN[sess === "overnight" && is24 ? "overnight_24h" : sess] || ["stop", "未知时段"];
+  const all24 = is24 && ex.trading_hours.entries === "all_sessions";
+  const key = (all24 && SESSION_CAN[sess + "_24h_all"]) ? sess + "_24h_all"
+    : (sess === "overnight" && is24 ? "overnight_24h" : sess);
+  const [cls, text0] = SESSION_CAN[key] || ["stop", "未知时段"];
   const text = tr(text0);
   const chip = $("canchip");
   if (chip) {
@@ -2411,6 +2431,8 @@ function renderTicker(s, keep) {
     chip.textContent = sess === "regular" && !inWindow ? tr("常规盘 · 已过入场窗口，只出场") : text;
     chip.title = STATE.crypto
       ? tr("加密现货 24/7：每个决策周期（默认整点 +90s）在同一份快照上评估全部活跃币；下单后在下一份订单簿观测上按 taker 成交；按 UTC 日计分，00:00 UTC 为估值边界。")
+      : all24
+        ? tr("24 小时交易：每个时段都评估入场与出场。常规盘 09:45–15:30；盘前、盘后、夜盘按各自开盘后 15 分钟到收盘前 30 分钟，每个策略的开盘区间、VWAP 和涨跌幅都从该时段开盘算起。周一至周四持仓可跨收盘持有，周五、节假日前和最后一天收盘前平仓，平仓后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%，非常规时段成交量小，仓位会小、也常成交不了。")
       : is24
         ? tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈）：盘前、常规盘、盘后，以及 Robinhood 24 小时市场的夜盘；周一至周四持仓可跨收盘持有，周五、节假日前和最后一天收盘前平仓。每笔成交不超过该 5 分钟 K 线成交量的 1%，夜盘成交量小，多数出场会等到盘前或开盘。")
         : tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈/收盘前平仓）：盘前、常规盘、盘后。夜盘与休市一律不可执行。");
@@ -3285,9 +3307,14 @@ function experimentBrief(s) {
   // the two rules a reader needs before reading any curve: when the agents may trade, and how often they evolve
   const th = ex.trading_hours;
   if (!STATE.crypto && th) {
+    const allS = th.entries === "all_sessions";
     out.push({ k: tr("交易时段"),
-               v: `${tr("24 小时市场")} ${th.n_all_day}/${th.n_universe} · ${tr("入场 09:45–15:30")} · ${tr("夜盘可出场")}`,
-               tip: tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。") });
+               v: allS
+                 ? `${tr("24 小时交易")} ${th.n_all_day}/${th.n_universe} · ${tr("所有时段入场与出场")}`
+                 : `${tr("24 小时市场")} ${th.n_all_day}/${th.n_universe} · ${tr("入场 09:45–15:30")} · ${tr("夜盘可出场")}`,
+               tip: allS
+                 ? tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票在盘前、常规盘、盘后和夜盘都会评估入场与出场：三个策略的规则不变，只是开盘区间、VWAP 和涨跌幅从所在时段的开盘算起。周一至周四持仓可跨收盘持有；周五、节假日前和最后一天收盘前平仓，之后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%，所以非常规时段的仓位小、也常成交不了。")
+                 : tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。") });
   }
   if (ex.round_cadence === "weekly") {
     out.push({ k: tr("进化节奏"),
