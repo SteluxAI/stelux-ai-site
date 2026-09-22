@@ -1026,7 +1026,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T02:49:57Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922b","experiments":["crypto-kraken-20260922b","stock-research-20260922d"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T02:57:37Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922b","experiments":["crypto-kraken-20260922b","stock-research-20260922d"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -3714,7 +3714,10 @@ function cmpBenchSeries(s, mode) {
     if (!isNaN(t) && keep(t, p[1], p[0])) { if (t < t0) t0 = t; if (t > t1) t1 = t; }
   }));
   const framed = t1 > t0;
-  return bs.filter(b => (b.curve || []).length).map((b, bi) => {
+  // NOT filtered on having a curve: that is exactly the row that has to survive, so it can get the same
+  // 「无数据」 chip a slot in the same state gets. The map below short-circuits it to pts: [] and the legend's
+  // `dead` branch takes it from there. Keeping the filter here undid the whole fix one line earlier than it.
+  return bs.map((b, bi) => {
     const k = (isNum(slotP) && isNum(b.principal_cents) && b.principal_cents) ? slotP / b.principal_cents : 1;
     const vals = b.curve.map(p => p[1]).filter(isNum);
     /* Flat because the server SAYS so - USD_CASH ships `weights: {}`, a portfolio holding nothing - never
@@ -3996,11 +3999,19 @@ function renderCompare(s) {
      nothing looks exactly like the reader having switched them off in the legend. */
   const bn = $("bmkgone");
   if (bn) {
-    const nb = benchCurves(s).length;
+    /* DRAWABLE curves, not rows. A reference the server could not price is kept in the payload - that is how
+       it gets its 「无数据」 chip instead of vanishing - so counting rows made this note believe everything was
+       fine while the chart had nothing on it. Measured tonight: three rows, zero points, no note. */
+    const all = benchCurves(s);
+    const nb = all.filter(b => (b.curve || []).length).length;
+    const why = [...new Set(all.map(b => b.unavailable).filter(Boolean))];
     const declared = ((s.experiment || {}).benchmarks) || [];
     let msg = "";
     if (mode !== "intraday" && nb) msg = tr("参照组合只有分钟级曲线，按日的区间里不画") + par(nb);
-    else if (!nb && declared.length) msg = tr("基准") + " " + declared.join(" / ") + " " + tr("暂无对照曲线");
+    else if (!nb && (declared.length || all.length)) {
+      const names = declared.length ? declared.join(" / ") : all.map(b => benchName(b)).join(" / ");
+      msg = tr("基准") + " " + names + " " + tr("暂无对照曲线") + (why.length ? par(esc(why.join(" / "))) : "");
+    }
     bn.textContent = msg;
     bn.style.display = msg ? "" : "none";
   }
@@ -4046,8 +4057,8 @@ function renderCompare(s) {
         b.appendChild(el("span", "muted", tr("无数据")));
         b.disabled = true;
         b.title = x.bench
-          ? tr("这个参照组合在所选范围内没有可画的点") + (x.unavailable ? `（${esc(x.unavailable)}）` : "")
-            + "：" + tr("不画线，也不画成 0")
+          ? tr("这个参照组合在所选范围内没有可画的点") + (x.unavailable ? par(esc(x.unavailable)) : "")
+            + col() + tr("不画线，也不画成 0")
           : tr("这个资金槽在所选范围内没有可画的净值点：不画线，也不画成 0");
       } else {
         b.setAttribute("aria-pressed", String(!off));
