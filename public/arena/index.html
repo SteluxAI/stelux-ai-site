@@ -351,8 +351,8 @@ tr.tape-in{animation:slidein .6s var(--ease-out)}
 .sesdot.post{background:var(--purple)} .sesdot.overnight{background:var(--blue)} .sesdot.closed{background:var(--ink3)}
 
 /* can the agents act right now? Entries are regular-session only and inside 09:45-15:30; exits run in
-   pre/regular/post; overnight and closed are never executable. Say which, rather than leaving the
-   reader to infer it from an empty tape. */
+   pre/regular/post, and overnight too when the experiment froze Robinhood's 24h policy (ex.trading_hours) - never
+   otherwise. Closed is never executable. Say which, rather than leaving the reader to infer it from an empty tape. */
 .canchip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;
   font-size:12px;font-weight:550;white-space:nowrap}
 .canchip.go{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green-ink)}
@@ -1034,7 +1034,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T17:41:28Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922c","experiments":["crypto-kraken-20260922c","stock-research-20260922g"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T22:15:56Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922c","experiments":["crypto-kraken-20260922c","stock-research-20260923"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1366,6 +1366,25 @@ const I18N = {
     "常规盘 · 09:45–15:30 评估入场，全时段可出场": "Regular · entries evaluated 09:45–15:30, exits any time",
     "盘后 · 只处理出场与估值，不评估入场": "After-hours · exits and valuation only, no entries evaluated",
     "夜盘 · 不可执行，持仓原样保留": "Overnight · nothing executable, positions kept as they are",
+    "夜盘 · 24 小时市场：持仓照常盯止损/止盈，出场可成交，不评估入场":
+      "Overnight · 24-hour market: held positions keep their stop and target, exits can fill, no entries evaluated",
+    "入场：仅常规盘 09:45–15:30。出场（止损/止盈）：盘前、常规盘、盘后，以及 Robinhood 24 小时市场的夜盘；周一至周四持仓可跨收盘持有，周五、节假日前和最后一天收盘前平仓。每笔成交不超过该 5 分钟 K 线成交量的 1%，夜盘成交量小，多数出场会等到盘前或开盘。":
+      "Entries: regular session 09:45–15:30 only. Exits (stop / target): pre-market, regular, after-hours, and overnight in Robinhood's 24-hour market. Monday to Thursday a position may be held across the close; it is flattened before the close on Fridays, before holidays and on the last day. Each fill is capped at 1% of that 5-minute bar's volume; overnight volume is thin, so most exits wait for the pre-market or the open.",
+    "24 小时市场：周一至周四持仓可跨收盘持有，夜盘照常盯止损/止盈；周五、节假日前和最后一天收盘前平仓":
+      "24-hour market: Monday to Thursday a position may be held across the close, with its stop and target watched overnight; flattened before the close on Fridays, before holidays and on the last day",
+    "每周": "weekly",
+    "每周进化一次：今天不是本周最后一个交易日，只记录当日得分":
+      "Evolution runs weekly: today is not the last trading day of the week, so only today's scores are recorded",
+    "交易时段": "Trading hours",
+    "24 小时市场": "24-hour market",
+    "入场 09:45–15:30": "entries 09:45–15:30",
+    "夜盘可出场": "exits overnight",
+    "Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。":
+      "Robinhood's 24-hour market (Sunday 20:00 to Friday 20:00 ET). For the listed stocks, stop and target exits can also fill overnight, and Monday to Thursday a position may be held past the 16:00 close; it is flattened before the close on Fridays, before holidays and on the last day. Entries remain 09:45–15:30 only - that is the strategy's own rule. Each fill is capped at 1% of the 5-minute bar's volume; the share of bars that can take a whole position is 97.7% regular, 24.4% pre-market, 13.0% after-hours, 2.9% overnight.",
+    "进化节奏": "Evolution cadence",
+    "每周一次": "once a week",
+    "只在每周最后一个交易日进行一轮进化，其余交易日只记录当日得分。所有 Agent 都按同样长度的最近窗口比较——得分是日收益之和，窗口长短不一就不公平。周五新繁殖的子代，到下周五正好有一周的记录。":
+      "A round runs only on the last trading day of each week; every other day just records its scores. Every agent is judged on a window of the same length - the score is a sum of daily returns, so unequal windows would not be fair. A child bred on Friday has exactly one week of record by the next Friday.",
     "休市 · 不可执行，Agent 无法交易": "Closed · nothing executable, agents cannot trade",
     "常规盘 · 已过入场窗口，只出场": "Regular · past the entry window, exits only",
     "入场：仅常规盘 09:45–15:30。出场（止损/止盈/收盘前平仓）：盘前、常规盘、盘后。夜盘与休市一律不可执行。":
@@ -2253,7 +2272,9 @@ function renderHero(s) {
       + `<div class="bk">${esc(tr(r.k))}</div><div class="bv">${r.v}</div></div>`).join("");
   }
   $("mMetric").textContent = tr(ex.metric_zh || UNK);
-  $("mRule").textContent = (ex.keep_top != null) ? `${tr("留")} ${ex.keep_top} / ${tr("换")} ${ex.replace_bottom}` : tr(UNK);
+  $("mRule").textContent = (ex.keep_top != null)
+    ? `${ex.round_cadence === "weekly" ? `${tr("每周")} · ` : ""}${tr("留")} ${ex.keep_top} / ${tr("换")} ${ex.replace_bottom}`
+    : tr(UNK);
   // Either spelling. The stock layer expands these counters to total/completed and the crypto layer used to
   // pass them through as t/c, so the panel read 未知 on every crypto experiment while the numbers were present.
   // The server now agrees; the page reads both, because a readout must not go blank over a key name.
@@ -2296,6 +2317,8 @@ const SESSION_CAN = {
   regular: ["go", "常规盘 · 09:45–15:30 评估入场，全时段可出场"],
   post: ["exit", "盘后 · 只处理出场与估值，不评估入场"],
   overnight: ["stop", "夜盘 · 不可执行，持仓原样保留"],
+  // only when the experiment froze the 24h policy; v1 experiments keep the line above
+  overnight_24h: ["exit", "夜盘 · 24 小时市场：持仓照常盯止损/止盈，出场可成交，不评估入场"],
   closed: ["stop", "休市 · 不可执行，Agent 无法交易"],
 };
 
@@ -2376,7 +2399,8 @@ function renderTicker(s, keep) {
   const m = s.market || {};
   const sess = m.session || "closed";
   wrap.dataset.session = sess;
-  const [cls, text0] = SESSION_CAN[sess] || ["stop", "未知时段"];
+  const is24 = !STATE.crypto && !!ex.trading_hours;
+  const [cls, text0] = SESSION_CAN[sess === "overnight" && is24 ? "overnight_24h" : sess] || ["stop", "未知时段"];
   const text = tr(text0);
   const chip = $("canchip");
   if (chip) {
@@ -2387,7 +2411,9 @@ function renderTicker(s, keep) {
     chip.textContent = sess === "regular" && !inWindow ? tr("常规盘 · 已过入场窗口，只出场") : text;
     chip.title = STATE.crypto
       ? tr("加密现货 24/7：每个决策周期（默认整点 +90s）在同一份快照上评估全部活跃币；下单后在下一份订单簿观测上按 taker 成交；按 UTC 日计分，00:00 UTC 为估值边界。")
-      : tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈/收盘前平仓）：盘前、常规盘、盘后。夜盘与休市一律不可执行。");
+      : is24
+        ? tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈）：盘前、常规盘、盘后，以及 Robinhood 24 小时市场的夜盘；周一至周四持仓可跨收盘持有，周五、节假日前和最后一天收盘前平仓。每笔成交不超过该 5 分钟 K 线成交量的 1%，夜盘成交量小，多数出场会等到盘前或开盘。")
+        : tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈/收盘前平仓）：盘前、常规盘、盘后。夜盘与休市一律不可执行。");
     // on a phone an empty tape outside the entry window reads as "the agents did nothing" -- the exact misreading
     // this chip exists to prevent, and until now the rule behind it was reachable only by hovering
     if (!chip.dataset.wired) {
@@ -2928,10 +2954,15 @@ function renderAgents(s) {
         : (LANG === "en"
             ? `Generation ${gen} produced by evolution: each generation randomly changes 1–2 whitelisted parameters of its parent`
             : `进化产生的第 ${gen} 代：每一代在上一代基础上随机改动 1–2 个白名单参数`);
-      const overnight = (a.params || {}).eod_cleanup === false;
+      // Two different reasons a version may hold overnight: its own eod_cleanup=false, or the experiment's 24h
+      // policy, under which every version carries a position across the close on weekdays. Say which.
+      const ownNight = (a.params || {}).eod_cleanup === false;
+      const exNight = !STATE.crypto && !!((s.experiment || {}).trading_hours);
       const nt = n.querySelector(".gen.night");
-      nt.style.display = overnight ? "" : "none";
-      nt.title = tr("该版本参数 eod_cleanup=false：收盘前不清仓，允许把持仓留到第二天");
+      nt.style.display = (ownNight || exNight) ? "" : "none";
+      nt.title = ownNight
+        ? tr("该版本参数 eod_cleanup=false：收盘前不清仓，允许把持仓留到第二天")
+        : tr("24 小时市场：周一至周四持仓可跨收盘持有，夜盘照常盯止损/止盈；周五、节假日前和最后一天收盘前平仓");
       const tag = n.querySelector(".tag");
       tag.textContent = tr(({ new: "新生", kept: "保留", init: "初代" })[a.round_status] || "");
       tag.className = "tag " + (a.round_status || "");
@@ -3250,6 +3281,22 @@ function experimentBrief(s) {
   if (isNum(vTot)) prog.push(`${vTot} ${tr("个版本")}${isNum(vAct) ? `${LANG === "en" ? ", " : "，"}${tr("在岗")} ${vAct}` : ""}`);
   if (prog.length) out.push({ k: tr("进展"), v: prog.join(" · "),
                               tip: tr("已进行的天数 / 计划天数 · 已结算的进化轮数（括号内为数据不完整、未进化的轮次） · 出现过的策略版本总数与当前在岗数") });
+
+  // the two rules a reader needs before reading any curve: when the agents may trade, and how often they evolve
+  const th = ex.trading_hours;
+  if (!STATE.crypto && th) {
+    out.push({ k: tr("交易时段"),
+               v: `${tr("24 小时市场")} ${th.n_all_day}/${th.n_universe} · ${tr("入场 09:45–15:30")} · ${tr("夜盘可出场")}`,
+               tip: tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。") });
+  }
+  if (ex.round_cadence === "weekly") {
+    out.push({ k: tr("进化节奏"),
+               // one sentence per language: "按最近 N 个交易日比较" does not split into pieces that translate alone
+               v: (() => { const nw = isNum(ex.rolling_window_sessions) ? ex.rolling_window_sessions : "?";
+                           return LANG === "en" ? `once a week · judged on the last ${nw} trading ${nw === 1 ? "day" : "days"}`
+                                                : `每周一次 · 按最近 ${nw} 个交易日比较`; })(),
+               tip: tr("只在每周最后一个交易日进行一轮进化，其余交易日只记录当日得分。所有 Agent 都按同样长度的最近窗口比较——得分是日收益之和，窗口长短不一就不公平。周五新繁殖的子代，到下周五正好有一周的记录。") });
+  }
 
   // ...and WHAT it changed, which the counts above do not say
   const drift = evolutionDriftLine(s);
@@ -5169,10 +5216,17 @@ const SKIP_WORDS = [
   [/^unscorable_slots:(.+)$/, m => {
     const slots = m[1].split(",").map(x => x.trim()).filter(Boolean);
     const why = [...new Set(slots.map(x => (x.match(/\((.+)\)/) || [])[1]).filter(Boolean))];
-    const wz = why.map(w => tr(SKIP_ONE[w] || w)).join(LANG === "en" ? ", " : "、");
+    const wz = why.map(w => {
+      // scoring writes "sessions<5" when a version has run fewer sessions than the rule requires; weekly rounds
+      // show it on every first round and whenever a child is younger than a week
+      const ms = String(w).match(/^sessions<(\d+)$/);
+      if (ms) return LANG === "en" ? `fewer than ${ms[1]} sessions observed` : `观察不足 ${ms[1]} 个交易日`;
+      return tr(SKIP_ONE[w] || w);
+    }).join(LANG === "en" ? ", " : "、");
     return (LANG === "en" ? `${slots.length} agents could not be scored that day` : `${slots.length} 个 Agent 当日无法评分`)
          + (wz ? par(wz) : "");
   }],
+  [/^cadence:weekly/, () => tr("每周进化一次：今天不是本周最后一个交易日，只记录当日得分")],
   [/^min_eval_sessions:(\d+)<(\d+)/, m => (LANG === "en"
     ? `these agents have run only ${m[1]} sessions, short of the ${m[2]} the rule requires`
     : `这些 Agent 只跑了 ${m[1]} 个交易日，不足规则要求的 ${m[2]} 个`)],
