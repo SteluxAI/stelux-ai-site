@@ -1034,7 +1034,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T04:24:23Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922b","experiments":["crypto-kraken-20260922b","stock-research-20260922g"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T12:35:15Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922b","experiments":["crypto-kraken-20260922b","stock-research-20260922g"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -4611,7 +4611,23 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
      short, and they were kept apart by a test on the name's width that could fail: when it did, the whole set
      was spread as one column anyway. So it is always one column - and then a name can never reach into the
      other one, because there is no other one. */
-  const benchX = w - PR + LEAD_RUN, slotX = benchX;
+  /* The column sits just past where the DATA ends, not hard against the plot's right edge.
+
+     A range like "Today (UTC day)" draws the WHOLE day, and at 08:30 ET two thirds of that plot is a future
+     that has not happened yet. With the column pinned to the right edge, every label's leader was drawn from
+     the series' last point ACROSS that empty future: measured on the live page at viewBox 1173x300, the data
+     ended at x=419 and the leaders ran 670px, 66% of the plot's width, each one in its own series' colour and
+     only 0.7px thinner than the series itself. It reads exactly like ten equity curves that went flat - a user
+     looking at it concluded the agents had bought and then stopped trading, which the fills disprove.
+     ("Last 8 hours" clamps its domain to now, so there the same code produced a 15px leader and looked fine.)
+
+     So the column follows the data. The clamp keeps the old position whenever the series reach the edge, and
+     moving LEFT can never overflow: `PR` was measured so that (w - PR + LEAD_RUN) + label width + 2 <= w, and
+     a smaller x only leaves more room to the right. Labels carry a halo (`paint-order:stroke fill`), so the
+     ones that now sit over the empty plot stay readable across a grid line. */
+  const dataEndX = tags.reduce((m, t) => (isNum(t.x0) && t.x0 > m ? t.x0 : m), PL);
+  const colX = Math.min(w - PR + LEAD_RUN, Math.max(PL + 24, dataEndX + LEAD_RUN));
+  const benchX = colX, slotX = colX;
 
   /* ---- how TALL one label's box is decides how close two of them may sit, and it is not knowable from the
      source: it depends on the font and the language. Guessing it as 12 against a real 14.7 made every pair
