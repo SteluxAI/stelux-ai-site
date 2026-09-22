@@ -442,10 +442,28 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .cmp text{font-size:11px;fill:var(--ink3);font-variant-numeric:tabular-nums}
 /* the leader joining a displaced name back to the point its line ends at; under the text, and quiet enough
    that a cluster of them reads as a fan rather than a wall */
-.cmp .leadln{stroke-width:1.1;opacity:.55;fill:none;stroke-linejoin:round;shape-rendering:geometricPrecision}
-.cmp text.slotlbl{font-weight:650}
+/* .55 was below the line: blended against the chart's own surface it came out at 2.55:1, where 3:1 is the
+   floor for a graphical object. A leader is already secondary at 1.1px against a 1.6px series; it does not
+   need to be half-invisible as well. */
+.cmp .leadln{stroke-width:1.1;opacity:.85;fill:none;stroke-linejoin:round;shape-rendering:geometricPrecision}
+/* A halo in the SAME solid the end dot already rings itself with. The leader now stops short of its own name,
+   but at phone width a long reference name ("BTC/ETH 各半" is 66px in a 62px gutter) gets pulled left by
+   fitEndLabels until its box reaches back into the fan, and then SOMEONE ELSE's leader runs behind it. No
+   arrangement of a 66px name in a 44px column avoids that, so the text is given the background to sit on and
+   the line breaks around it. paint-order puts the stroke under the fill, or the halo would eat the glyphs. */
+.cmp text.slotlbl{font-weight:650;paint-order:stroke fill;stroke-width:2.6px;
+  stroke-linejoin:round;stroke-linecap:round;
+  /* the surface the chart actually sits on, COMPOSITED: .cmpwrap is .card, which is var(--card-solid) at 72%
+     over var(--bg). Painting the halo in the raw token instead leaves it 8/255 lighter than its own background
+     in dark mode - a faint box around every name, which is what it was added to avoid. Measured behind the
+     chart: rgb(20,20,22) dark, rgb(252,252,253) light; this expression reproduces both. */
+  stroke:color-mix(in srgb, var(--card-solid) 72%, var(--bg))}
 /* the reference portfolios: the backdrop a result is judged against, never a competitor on it */
-.cmp .ln.bench{stroke-dasharray:5 4;stroke-width:1.4;opacity:.62}
+/* No opacity. .62 of --ink3 measured 2.93:1 against the chart surface in dark and worse in light - under the
+   3:1 floor for a line, i.e. a reference a reader with ordinary eyesight cannot reliably follow. What makes
+   these read as backdrop rather than competitor is the DASH and the 1.4px weight, which cost no contrast;
+   fading them was buying quietness with legibility. Full --ink3 measures ~5.6:1 dark and ~4.9:1 light. */
+.cmp .ln.bench{stroke-dasharray:5 4;stroke-width:1.4}
 .cmp text.slotlbl.bench{font-weight:600;font-size:10.5px}
 /* a reference chip is not a competitor: dashed edge, quieter, and it never carries a rank */
 .shelves{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:10px 0 18px}
@@ -460,8 +478,16 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .shelf.empty .n{color:var(--ink3)}
 .shelf.evidence_supported{border-color:var(--green)}
 .shelf.evidence_insufficient{border-style:dashed}
-.cmpchip.bench{border-style:dashed;color:var(--ink3)}
+/* `border-style` alone against `.cmpchip{border:0}` is a width of zero: the dashed ring that says "this one is
+   a reference, not a competitor" has never been painted. Same shape as the shelves losing their border to an
+   undefined var(--line) - a declaration that reads as present and draws nothing. box-sizing is border-box
+   globally, so the 1px does not change the chip's height. */
+.cmpchip.bench{border:1px dashed var(--ink3);color:var(--ink3)}
 .cmpchip.bench i{border-radius:1px}
+/* a reference's swatch is a 18px run of its own dash, painted in the chip's own colour via currentColor */
+.cmpchip.bench i.bd{width:18px;height:2px;border-radius:0;background-color:transparent;background-repeat:repeat-x}
+#cmptip .tiprow i.bd{width:18px;height:2px;border-radius:0;background-color:transparent;background-repeat:repeat-x;
+  color:var(--ink3)}
 .cmp .grid{stroke:var(--hair2);stroke-width:1;opacity:.7}
 .cmp .base{stroke:var(--ink3);stroke-width:1;stroke-dasharray:4 4;opacity:.8}
 .cmp .baselbl{fill:var(--ink2);font-weight:650}
@@ -587,6 +613,17 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .banner{margin:18px 0 0;padding:13px 17px;border-radius:var(--r-lg);font-size:13px;display:flex;gap:9px;align-items:flex-start;
   background:color-mix(in srgb,var(--orange) 11%,transparent);border:1px solid color-mix(in srgb,var(--orange) 26%,transparent);color:var(--ink)}
 .banner.err{background:color-mix(in srgb,var(--red) 11%,transparent);border-color:color-mix(in srgb,var(--red) 28%,transparent)}
+/* recorded and over. The base banner is amber because it is an alarm; this one is a statement of history, and
+   an amber box that cannot be cleared trains the reader to stop reading banners. */
+.banner.ok{background:color-mix(in srgb,var(--green) 9%,transparent);border-color:color-mix(in srgb,var(--green) 24%,transparent)}
+/* the dismiss control. `margin-left:auto` rather than a width on the text, so it sits at the right edge
+   whatever the sentence turns out to be in either language. */
+.banner .bx{margin-left:auto;flex:none;align-self:center;border:0;background:transparent;color:var(--ink3);
+  font-size:18px;line-height:1;padding:2px 4px;border-radius:var(--r-sm);cursor:pointer}
+/* guarded: on a touch screen :hover latches after a tap and the control stays lit until something else is
+   tapped, which reads as "still pressed" */
+@media(hover:hover) and (pointer:fine){.banner .bx:hover{color:var(--ink);background:var(--hair2)}}
+.banner .bx:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .offbanner{align-items:center}
 .offbanner .grpbtn{margin-left:10px;vertical-align:middle}
 footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-size:var(--fs-note);color:var(--ink3);line-height:1.65}
@@ -989,7 +1026,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-21T22:48:48Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922","experiments":["crypto-kraken-20260922","stock-research-20260922"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T02:09:54Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922","experiments":["crypto-kraken-20260922","stock-research-20260922"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1041,15 +1078,18 @@ function ampm(hh, mm, ss) {
 }
 function hhmm(iso) { if (!iso) return "—"; const m = String(iso).match(/T(\d{2}):(\d{2}):(\d{2})/); return m ? ampm(m[1], m[2], m[3]) : String(iso).slice(0, 16); }
 function mdhm(iso) { if (!iso) return "—"; const m = String(iso).match(/(\d{2})-(\d{2})T(\d{2}):(\d{2})/); return m ? `${m[1]}-${m[2]} ${ampm(m[3], m[4])}` : String(iso).slice(0, 16); }
-const AGO_UNITS = { zh: [" 秒前", " 分钟前", " 小时前", " 天前"], en: ["s ago", "m ago", "h ago", "d ago"] };
-function ago(s) {
+const DUR_UNITS = { zh: [" 秒", " 分钟", " 小时", " 天"], en: ["s", "m", "h", "d"] };
+/* A length of time. `ago` is this plus a suffix, and they were one function until something needed to say how
+   long a thing has been TRUE rather than how long ago it happened. */
+function dur(s) {
   if (!isNum(s)) return UNK;
-  const u = AGO_UNITS[LANG === "en" ? "en" : "zh"];
+  const u = DUR_UNITS[LANG === "en" ? "en" : "zh"];
   if (s < 60) return Math.round(s) + u[0];
   if (s < 3600) return Math.round(s / 60) + u[1];
   if (s < 86400) return Math.round(s / 3600) + u[2];
   return Math.round(s / 86400) + u[3];
 }
+function ago(s) { return isNum(s) ? dur(s) + (LANG === "en" ? " ago" : "前") : UNK; }
 
 /* animated number: tween the DOM text between two values */
 const TWEEN = new WeakMap();
@@ -1246,7 +1286,13 @@ const I18N = {
     // ---- quote strip
     "实时行情": "Live quotes", "公开只读报价 · 非交易所逐笔": "Public read-only quotes · not exchange tape",
     "左右滑动": "scroll", "全部名单": "Full list", "只看在交易的": "Only what is traded",
-    "持仓": "Holding", "今日交易": "Traded today", "最近交易": "Traded recently", "基准": "Benchmark", 
+    "持仓": "holding", "今日交易": "traded today", "最近交易": "traded recently", "基准": "benchmark",
+    "暂无对照曲线": "have no comparison curve here yet", "参照组合": "Reference portfolios",
+    "已恢复": "recovered", "知道了，收起": "Got it - hide this", "是否已恢复：未知": "whether it has recovered: unknown",
+    "这个参照组合在所选范围内没有可画的点": "this reference portfolio has no drawable point in the selected range",
+    "不画线，也不画成 0": "no line is drawn, and it is not drawn as 0",
+    "每个完整 UTC 日在 00:05 UTC 结算一轮；实验开始当天晚于 00:00 UTC 起跑，按规则记为 PARTIAL、不评分":
+      "one round settles per complete UTC day, at 00:05 UTC. The first day started after 00:00 UTC, so the rule records it as PARTIAL and does not score it.", 
     "陈旧": "stale", "停牌": "halted", "无报价": "no quote",
     "默认只显示这些 Agent 正在持仓、今日成交或最近成交的股票（外加基准）。点开显示全部可交易名单。":
       "Shows only what these agents hold, traded today or traded recently, plus the benchmarks. Open it for the full tradable list.",
@@ -1337,7 +1383,7 @@ const I18N = {
     "十个 Agent 的净值对比曲线": "equity of the ten agents compared",
     "选择要显示的 Agent": "choose which agents to show",
     "选择时间范围": "choose a time range", "起始日": "from", "结束日": "to",
-    "最近 7 个交易日": "last 7 sessions", "最近 30 个交易日": "last 30 sessions", "自定义": "custom",
+    "最近 7 个交易日": "Last 7 trading days", "最近 30 个交易日": "Last 30 trading days", "自定义": "Custom",
     "今日分钟级净值": "today, minute by minute", "每日收盘冻结净值": "frozen daily closes",
     "当前时段": "Current session", "今日全时段": "Today (all sessions)",
     "已放大": "zoomed",
@@ -1350,7 +1396,7 @@ const I18N = {
     "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
     "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
     "按名次": "By rank", "按槽位": "By slot", "末位 · 待替换": "Bottom · to be replaced", "暂不淘汰": "Not this round",
-    "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "即将": "any moment",
+    "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "共计": "A total of", "即将": "any moment",
     "十个 Agent 共用这一个可交易币池": "all ten agents trade from this one pool", "行情陈旧": "market data stale", "有新版本待生效": "a new version is pending", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
     "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
     "币池版本": "Pool version", "生效": "effective", "下次决策": "Next decision", "每": "every", "分钟": "min", "上次快照": "last snapshot",
@@ -1449,7 +1495,7 @@ const I18N = {
     "只看": "only",
     "的成交": "fills",
     "当日行情数据不完整，这一轮不进化": "the day's market data was incomplete, so nothing evolved this round", "进化已被手动暂停": "evolution has been paused by hand", "这一天已经结算过了": "this day had already been settled", "这一轮没有进化": "nothing evolved this round", "当日数据不完整": "incomplete data that day", "估值未知": "valuation unknown", "没有数据": "no data", "触发熔断": "a breaker tripped", "当日未在岗": "not in service that day",
-    " 秒前": " s ago", " 分钟前": " min ago", " 小时前": " h ago", " 天前": " d ago", "多日顺势": "multi-day trend", "顺势延续": "trend continuation", "顺势回调": "trend pullback", "趋势中回调": "pullback within a trend", "区间均值回归": "range mean-reversion", "条件均值回归": "conditional mean-reversion", "波动突破": "volatility breakout", "盘整突破": "consolidation breakout", "强弱轮动": "relative-strength rotation", "低换手强弱轮动": "low-turnover relative-strength rotation",
+    " 秒": " s", " 分钟": " m", " 小时": " h", " 天": " d", " 秒前": " s ago", " 分钟前": " min ago", " 小时前": " h ago", " 天前": " d ago", "多日顺势": "multi-day trend", "顺势延续": "trend continuation", "顺势回调": "trend pullback", "趋势中回调": "pullback within a trend", "区间均值回归": "range mean-reversion", "条件均值回归": "conditional mean-reversion", "波动突破": "volatility breakout", "盘整突破": "consolidation breakout", "强弱轮动": "relative-strength rotation", "低换手强弱轮动": "low-turnover relative-strength rotation",
     "① 今天谁领先": "① Who is ahead today",
     "② 正在试的想法": "② Ideas being tried",
     "③ 冻结检验中": "③ In frozen validation",
@@ -1462,7 +1508,7 @@ const I18N = {
     "要么数据还不够，要么没通过。这是正常结论，不是失败垃圾桶：大多数想法本来就到不了第四格。": "Either there is not enough data yet, or it did not pass. That is an ordinary outcome, not a bin for failures: most ideas were never going to reach box ④.",
     "仅观察": "watch only", "数据预热": "warming up", "受限": "restricted", "持有但已出池": "held, no longer in the pool", "淘汰": "eliminated", "当日净资产收益率（默认：今日谁表现最好）": "daily net equity return (default: who did best today)", "滚动共同窗口净收益（稳健实验，需最小观察期）": "net return over a rolling common window (the robust arena; needs a minimum observation period)", "累计净资产收益率（资金槽历史排名，继任策略继承旧槽负担）": "cumulative net equity return (ranks the slot's whole history; a successor inherits its predecessor's P&L)", "滚动窗口净收益": "net return over a rolling window", "Paper 实盘观察到": "observed in live paper", "已实现（代码在，未跑过）": "implemented (the code exists; it has not been run)", "离线测试过（历史/回放）": "tested offline (history / replay)", "被阻断（缺授权、预算或数据）": "blocked (missing authorisation, budget or data)", "24/7 现货": "24/7 spot", "按名单顺序（旧行为对照）": "in list order (the old behaviour, as a control)", "按最窄止损": "by tightest stop", "按相对大盘强度": "by strength against the market", "按相对成交量": "by relative volume", "按风险回报比": "by risk/reward ratio", "参考阈值": "reference threshold", "更高成交量门槛": "higher volume floor", "策略": "Strategy",
     "持续": "open-ended", "轮数据不全": "rounds had incomplete data", "个版本": "versions", "在岗": "active", "已进行的天数 / 计划天数 · 已结算的进化轮数（括号内为数据不完整、未进化的轮次） · 出现过的策略版本总数与当前在岗数": "days run / days planned · evolution rounds settled (in brackets: rounds whose data was incomplete, so nothing evolved) · strategy versions seen in total, and how many are active now",
-    "目的": "Purpose", "进展": "Progress", "进化改了": "Evolved", "今天": "Today", "注意": "Note", "还没进化，十个都是初始版本": "no evolution yet; all ten are their original versions", "只列被改过的参数，没列出的至今没被动过": "only parameters that changed are listed; the rest are untouched", "模拟盘。领先 ≠ 有效——有效与否看「研究状态」第 ④ 格。": "Paper trading. Leading ≠ working - box ② of the Research status panel answers that.", "每天淘汰后三名，前三名各留一个微调后代。看互相淘汰能不能长出更好的策略。": "The bottom three are replaced daily by tweaked offspring of the top three. Does mutual elimination grow anything better?", "十个策略全程不进化的对照组。回答：进化有没有比不动更好。": "Ten strategies that never evolve, as the control: did evolving beat standing still?", "每日进化，但评估日不够就不许淘汰，免得一两天的运气定去留。": "Daily evolution, but no elimination until enough days are scored - luck should not decide who stays.", "开发区：随便试，失败也留着。产出只是候选，永远不能自称成功。": "The workshop: try anything, keep the failures. Its output is a candidate, never a success.", "版本锁死，只用锁死之后的新数据检验。唯一能产生「被证明」的地方。": "Versions locked, tested only on data produced after the lock. The only place a proven verdict comes from.", "只收事前登记规则判定 PASS 的版本。空着就是结论。": "Admits only a version a pre-registered rule passed. Empty is the conclusion.",
+    "目的": "Purpose", "进展": "Progress", "进化改了": "Evolved", "今天": "Today", "注意": "Note", "还没进化，十个都是初始版本": "no evolution yet; all ten are their original versions", "只列被改过的参数，没列出的至今没被动过": "only parameters that changed are listed; the rest are untouched", "模拟盘。领先 ≠ 有效——有效与否看「研究状态」第 ④ 格。": "Paper trading. Leading ≠ working - box ④ of the Research status panel answers that.", "每天淘汰后三名，前三名各留一个微调后代。看互相淘汰能不能长出更好的策略。": "The bottom three are replaced daily by tweaked offspring of the top three. Does mutual elimination grow anything better?", "十个策略全程不进化的对照组。回答：进化有没有比不动更好。": "Ten strategies that never evolve, as the control: did evolving beat standing still?", "每日进化，但评估日不够就不许淘汰，免得一两天的运气定去留。": "Daily evolution, but no elimination until enough days are scored - luck should not decide who stays.", "开发区：随便试，失败也留着。产出只是候选，永远不能自称成功。": "The workshop: try anything, keep the failures. Its output is a candidate, never a success.", "版本锁死，只用锁死之后的新数据检验。唯一能产生「被证明」的地方。": "Versions locked, tested only on data produced after the lock. The only place a proven verdict comes from.", "只收事前登记规则判定 PASS 的版本。空着就是结论。": "Admits only a version a pre-registered rule passed. Empty is the conclusion.",
     "今日 = 你这一天，00:00 到 24:00（ET）": "today = your day, 00:00 to 24:00 (ET)", "盘前 04:00、常规盘 09:30–16:00、盘后到 20:00 用底色标出；其余时间没有交易": "pre-market 04:00, regular 09:30-16:00 and post to 20:00 are shaded; nothing trades outside them", "计分按交易日": "scored on trading day",
     "日亏熔断已触发": "daily-loss breaker tripped", "累计/回撤熔断已触发": "cumulative / drawdown breaker tripped", "熔断状态读不到：未知": "breaker state could not be read: unknown", "实时估值未知（缺报价）": "live valuation unknown (no quote)", "账本读不到（文件缺失/损坏）": "ledger unreadable (missing or corrupt file)", "熔断状态读取失败：未知，不代表没有触发": "the breaker state could not be read: unknown, which is not the same as nothing having tripped", "日亏": "daily loss",
     "…共": "…", "个并列": "tied in all",
@@ -1486,7 +1532,7 @@ const I18N = {
     "证据不足或未通过。这是合法结论，不是失败的占位符。":
       "insufficient evidence, or failed. A legitimate conclusion, not a placeholder for failure.",
     "参照组合只有分钟级曲线，按日的区间里不画": "reference portfolios are minute curves; the by-day ranges do not draw them",
-    "最近 7 个 UTC 日": "last 7 UTC days", "最近 30 个 UTC 日": "last 30 UTC days", "全部 UTC 日": "all UTC days",
+    "最近 7 个 UTC 日": "Last 7 UTC days", "最近 30 个 UTC 日": "Last 30 UTC days", "全部 UTC 日": "All UTC days",
     "每个完整 UTC 日 00:05 UTC 结算一轮": "one round per complete UTC day, settled at 00:05 UTC",
     "每个完整交易日收盘后一轮": "one round after each complete trading day's close",
     "还没有进化轮次": "no evolution round yet",
@@ -1504,7 +1550,7 @@ const I18N = {
     "左右滑动查看全部 Agent": "scroll sideways for every agent",
     "· 十个隔离虚拟子账本（每槽 $10,000，合计 $100,000），不连接任何券商账户、不发出真实委托、不使用任何凭证。本页只读。":
       "· Ten isolated virtual sub-ledgers ($10,000 per slot, $100,000 in total). No brokerage account, no real orders, no credentials. This page is read-only.",
-    "笔": "fills", "全部交易日": "all trading days",
+    "笔": "fills", "全部交易日": "All trading days",
     "留": "keep", "换": "replace", "回放": "replay", "非实时": "not live",
     // ---- the ten strategy personalities (config/arena_population.v1.json label_zh)
     "原策略参考版本": "Reference version of the original strategy",
@@ -1809,7 +1855,10 @@ function connect() {
       if ("runner" in q) s.runner = q.runner;
       if (q.quotes) s.quotes = q.quotes;
       // the reference lines move with prices and arrive here, not in a board push
-      if (q.benchmark_curves && s.crypto) s.crypto.benchmark_curves = q.benchmark_curves;
+      // whichever slot this board keeps them in; writing only into s.crypto froze the stock curves at
+      // whatever the last full push carried while the agents' lines kept ticking
+      if (q.benchmark_curves) { if (s.crypto) s.crypto.benchmark_curves = q.benchmark_curves;
+                                else s.benchmark_curves = q.benchmark_curves; }
       applyCryptoTick(q);                        // the clocks the change key deliberately ignores
       const by = {};
       (s.slots || []).forEach(a => { by[a.slot_id] = a; });
@@ -1991,6 +2040,17 @@ function renderHeader(s) {
 /* The registry's event log is the authoritative fault record: it is written by every build, whereas state.json only
    carries whatever fields the RUNNING runner happens to write. A field the running build never writes is unknown, and
    unknown must not render as "nothing wrong" — the same rule the ledger already follows for valuations. */
+/* Dismissing a RECOVERED fault notice, and only a recovered one. A live warning has to stay: the point of
+   it is that something is wrong now. What gets remembered is the exact thing that was dismissed - the count
+   and the newest fault's timestamp - so one more fault, or a count that grows, brings it straight back
+   instead of being silenced for ever by a click made hours earlier. Per experiment, because the boards have
+   separate histories. localStorage can throw (private window, blocked site data); a dismissal that cannot be
+   stored just does not persist, and the notice is honest either way. */
+function faultAckKey(s) { return "arena.faultack." + (((s || {}).experiment_id) || ""); }
+function faultAcked(s, sig) {
+  try { return localStorage.getItem(faultAckKey(s)) === sig; } catch (e) { return false; }
+}
+
 function faultBanner(s, add) {
   const f = s.faults;
   if (!f) return;
@@ -2008,8 +2068,29 @@ function faultBanner(s, add) {
     const head = Object.keys(by).map(k => `${tr(zh[k] || k)} ${by[k]}`).join(" · ");
     const last = recent[0];
     const nFault = `${f.total}${f.truncated ? "+" : ""}`;
-    const detail = esc(last.detail || tr(zh[last.kind] || last.kind));
-    add("warn", `<span>⚠️</span><span><b>${tr("记录到")} ${nFault} ${plu(f.truncated ? 2 : f.total, tr("条故障"), "fault")}</b>${par(esc(head))}${col()}${tr("最近一条")} ${esc(mdhm(last.ts_ny) || "")}${last.slot_id ? " · " + esc(last.slot_id) : ""} ${detail}</span>`);
+    // `detail` is assembled by the server and never passed through tr(), so it needs its own English form
+    const detail = esc((LANG === "en" && last.detail_en) || last.detail || tr(zh[last.kind] || last.kind));
+    const body = `<b>${tr("记录到")} ${nFault} ${plu(f.truncated ? 2 : f.total, tr("条故障"), "fault")}</b>`
+      + `${par(esc(head))}${col()}${tr("最近一条")} ${esc(mdhm(last.ts_ny) || "")}`
+      + `${last.slot_id ? " · " + esc(last.slot_id) : ""} ${detail}`;
+    /* The log never forgets - that is what it is for - and the banner read it as a live alarm, so a twenty
+       minute outage was still flying a ⚠️ for the rest of the experiment: measured 2026-09-21, the stock feed
+       had been healthy for 74 minutes and the banner still read 记录到 7 条故障 with no hint it was over.
+       Nothing is hidden and no count changes; what changes is the CLAIM. `live === null` is unknown - an older
+       runner writes no counters, and a runner we cannot read cannot tell us it recovered - and unknown keeps
+       the warning, because unknown is not "fine". */
+    if (f.live === false) {
+      const clean = LANG === "en" ? `no recurrence in ${dur(f.age_s)}`
+                                  : `此后 ${dur(f.age_s)} 没有再发生`;
+      const sig = `${f.total}|${last.ts_ny || ""}`;
+      if (faultAcked(s, sig)) return;            // dismissed, and nothing has happened since
+      add("ok", `<span>✅</span><span>${body} · <b>${tr("已恢复")}</b>${par(esc(clean))}</span>`
+        + `<button type="button" class="bx" data-ack="${esc(sig)}" title="${esc(tr("知道了，收起"))}"`
+        + ` aria-label="${esc(tr("知道了，收起"))}">×</button>`);
+    } else {
+      add("warn", `<span>⚠️</span><span>${body}`
+        + `${f.live === null ? " · " + tr("是否已恢复：未知") : ""}</span>`);
+    }
   }
   const r = s.runner;
   if (r && r.fault_fields_written === false) {
@@ -2019,6 +2100,17 @@ function faultBanner(s, add) {
 
 function renderBanners(s) {
   const b = $("banners");
+  // delegated, and wired once: paint() rewrites innerHTML, so a handler bound to the button would be thrown
+  // away on the next tick
+  if (b && !b.dataset.wired) {
+    b.dataset.wired = "1";
+    b.addEventListener("click", ev => {
+      const btn = ev.target.closest && ev.target.closest("button[data-ack]");
+      if (!btn) return;
+      try { localStorage.setItem(faultAckKey(STATE.snap || {}), btn.getAttribute("data-ack")); } catch (e) { }
+      renderBanners(STATE.snap || {});
+    });
+  }
   // Collect first, paint only on a real change. The tick path calls this every second, and the
   // runner-down banner exists to hand the user a command to COPY -- rebuilding the node ~1x/s wipes
   // any text selection inside it, so the command can never actually be selected.
@@ -2434,7 +2526,7 @@ function renderStockPool(s) {
 
   $("stwhy").innerHTML =
     `<div><b>${tr("这不是选股推荐。")}</b>${tr("名单是实验开始前用机械规则筛一次定下来的，之后不再变动——不会因为哪只涨了就加进来，也不会因为哪只跌了就踢出去。")}</div>
-     <div>${tr("共")} <b>${syms.length}</b> ${tr("只可交易")}${bm.length ? ` · ${tr("另有基准")} <b>${esc(bm.join(sep))}</b>${tr("，只用来判断大盘方向，永远不可买卖")}` : ""}${stop}</div>
+     <div>${tr("共计")} <b>${syms.length}</b> ${tr("只可交易")}${bm.length ? ` · ${tr("另有基准")} <b>${esc(bm.join(sep))}</b>${tr("，只用来判断大盘方向，永远不可买卖")}` : ""}${stop}</div>
      <div>${tr("冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。")}</div>`;
   $("stsyms").innerHTML = syms.map(x => `<span>${esc(x)}</span>`).join("");
 
@@ -2898,7 +2990,7 @@ function renderAgents(s) {
   const daily = (ex.metric || "daily_net_equity_return") === "daily_net_equity_return";
   // The excess over the best reference portfolio, in percentage POINTS. "up 0.87%" answers nothing on its own;
   // "+2.01 pp better than simply holding BTC" is the question the arena exists to settle.
-  const bench = ((s.crypto || {}).benchmark_curves || []).filter(b => isNum(b.return_bp));
+  const bench = benchCurves(s).filter(b => isNum(b.return_bp));
   const sysBp = ((s.system || {}).live_return_bp);
   const bnote = $("bmknote");
   if (bnote) {
@@ -2906,7 +2998,7 @@ function renderAgents(s) {
       const top = bench.reduce((a, b) => (b.return_bp > a.return_bp ? b : a));
       const ex = (sysBp - top.return_bp) / 100;
       bnote.innerHTML = `${tr("十槽合计")} <b class="num ${sysBp > 0 ? "up" : sysBp < 0 ? "dn" : "flat"}">${esc(bpPct(sysBp, 2))}</b>`
-        + ` · ${tr("最强基准")} ${esc(tr(top.label_zh || top.id))} <b class="num ${top.return_bp > 0 ? "up" : top.return_bp < 0 ? "dn" : "flat"}">${esc(bpPct(top.return_bp, 2))}</b>`
+        + ` · ${tr("最强基准")}${LANG === "en" ? ": " : " "}${esc(benchName(top))} <b class="num ${top.return_bp > 0 ? "up" : top.return_bp < 0 ? "dn" : "flat"}">${esc(bpPct(top.return_bp, 2))}</b>`
         + ` · ${tr("超额")} <b class="num ${ex > 0 ? "up" : ex < 0 ? "dn" : "flat"}">${(ex > 0 ? "+" : "") + ex.toFixed(2)} pp</b>`;
       bnote.style.display = "";
     } else { bnote.style.display = "none"; }
@@ -3506,9 +3598,103 @@ function cmpLocalDayWindow(s) {
 /* The declared reference portfolios as chart series. They are the backdrop, not competitors: never ranked,
    never eliminated, never part of the ten-slot total - so they are drawn dashed and unsaturated, and they are
    skipped by the legend's scoreboard. Only the intraday modes have their minute curves. */
+/* All four reference portfolios were drawn in ONE colour - cssVar("--ink3") below, for every one of them -
+   with one dash pattern, so the chart showed three identical grey dashed lines and the only way to tell BTC
+   from ETH from the 50/50 of the two was to follow a line 900px to its name. The colour stays: a reference is
+   backdrop, and ten saturated agent lines are already competing for attention. The DASH carries the identity
+   instead, and 各半 gets literally BTC's dash followed by ETH's dot, so the mixture looks like its ingredients.
+   Keyed by id, not by position, so a portfolio keeps its pattern when another one is added or goes missing. */
+const BENCH_DASH = { BTC_HOLD: "9 4", ETH_HOLD: "2 3", BTC_ETH_5050_HOLD: "9 3 2 3",
+                     USD_CASH: "1 3", CASH: "1 3", SPY_HOLD: "9 4", QQQ_HOLD: "2 3" };
+const BENCH_DASH_FALLBACK = ["6 3", "3 3", "10 3 2 3", "1 4", "8 2 2 2"];
+
+/* What a reference is called when the full name would cost the chart more of its width than the gutter may
+   have. Only the end label shortens: the legend chip, the hover card and the note keep the full name, so the
+   short form is always one tap from being spelled out. */
+const BENCH_SHORT = { BTC_HOLD: "BTC", ETH_HOLD: "ETH", BTC_ETH_5050_HOLD: "BTC/ETH",
+                      USD_CASH: "现金", CASH: "现金", SPY_HOLD: "SPY", QQQ_HOLD: "QQQ" };
+
+/* The same pattern as a CSS background, so the legend chip is a KEY and not four identical grey squares.
+   An odd-length dasharray alternates on the second pass in SVG (1 3 5 -> on 1, off 3, on 5, off 1, ...), so it
+   is doubled here rather than approximated. */
+function dashGradient(dash) {
+  const n = String(dash || "").trim().split(/\s+/).map(Number).filter(v => isFinite(v) && v >= 0);
+  if (!n.length) return "";
+  const seq = (n.length % 2) ? n.concat(n) : n;
+  let pos = 0;
+  const stops = seq.map((v, i) => {
+    const a = pos, b = pos + v;
+    pos = b;
+    return `${i % 2 ? "transparent" : "currentColor"} ${a.toFixed(2)}px ${b.toFixed(2)}px`;
+  });
+  return `repeating-linear-gradient(90deg,${stops.join(",")})`;
+}
+
+/* An epoch as the New York ISO string the server would have sent. Used for points the page synthesizes
+   itself, so a label built from the string cannot disagree with one built from the timestamp. */
+function nyIso(ms) {
+  const off = cmpNyOffsetMs(STATE.snap || {});
+  const d = new Date(ms + off);
+  const p2 = n => String(n).padStart(2, "0");
+  const sign = off < 0 ? "-" : "+";
+  const a = Math.abs(off) / 60000;
+  return `${d.getUTCFullYear()}-${p2(d.getUTCMonth() + 1)}-${p2(d.getUTCDate())}T`
+       + `${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())}`
+       + `${sign}${p2(Math.floor(a / 60))}:${p2(a % 60)}`;
+}
+
+/* Where the reference portfolios live. The crypto board keeps them under its own node; the stock board has no
+   such node and keeps them at the top level. Three separate call sites each reached into `s.crypto` directly,
+   so adding the stock curves to the payload would have lit up the chart and left the excess-over-benchmark
+   note and the "not drawn here" note dark, each for its own copy of the same missing check. */
+/* A reference's name, built rather than looked up. The crypto board has four fixed portfolios and a table
+   of four translations was enough; the stock board names one per DECLARED benchmark symbol, so "持有 QQQ" is
+   composed at runtime and can never be a key - it went straight onto the English page as Chinese. The weights
+   the server already sends say what the portfolio holds, which is all the name ever was. */
+function benchName(b) {
+  const w = (b || {}).weights;
+  if (w && typeof w === "object") {
+    const ks = Object.keys(w);
+    if (!ks.length) return tr("持有现金");
+    if (ks.length === 1 && Number(w[ks[0]]) === 1) {
+      // the whole name first, so the curated 持有 BTC / 持有 ETH entries keep theirs; composed only when the
+      // table has nothing, because a stock board names one per declared symbol and no table can hold those
+      const zh = "持有 " + ks[0], t = tr(zh);
+      return t !== zh ? t : (LANG === "en" ? "hold " + ks[0] : zh);
+    }
+  }
+  return tr((b || {}).label_zh || (b || {}).id || "");
+}
+
+function benchCurves(s) {
+  const o = s || {};
+  return (o.benchmark_curves || ((o.crypto || {}).benchmark_curves) || []);
+}
+
+/* A reference portfolio is bought ONCE at the first stored observation and held, paying the same taker fee a
+   slot pays - so its printed return is NET of that fee, and at 80 bp the number is 0.80 pp below what the asset
+   itself did. Measured on crypto-kraken-20260922: BTC moved -11.77 bp and BTC_HOLD reports -92. That is the
+   right model (a slot could not have bought for free either) and it has to be SAID, or the reader compares a
+   net number against a gross one they looked up elsewhere. */
+function benchFeeLine(s) {
+  const o = s || {};
+  // the two boards pay different things: a crypto slot pays a taker fee, a stock slot pays slippage on the fill
+  const taker = ((o.crypto || {}).fees || {}).taker_bps;
+  const slip = ((o.experiment || {}).fees || {}).slippage_bps;
+  const bps = isNum(taker) ? taker : (isNum(slip) ? slip : null);
+  const what = isNum(taker) ? (LANG === "en" ? "taker fee" : "吃单费") : (LANG === "en" ? "slippage" : "滑点");
+  return isNum(bps)
+    ? (LANG === "en" ? `bought once and held, net of the same ${bps} bp ${what} a slot pays`
+                     : `一次性买入后持有，已扣与 Agent 相同的 ${bps} bps ${what}`)
+    : (LANG === "en" ? "bought once and held, net of the same cost a slot pays"
+                     : "一次性买入后持有，已扣与 Agent 相同的成本");
+}
+
 function cmpBenchSeries(s, mode) {
   if (mode !== "intraday") return [];
-  const bs = ((s.crypto || {}).benchmark_curves) || [];
+  // including the ones the SERVER marked unavailable: they carry no curve, and they still have to be named
+  const bs = benchCurves(s).map(b => (
+    (b.curve || []).length ? b : { ...b, curve: [], unavailable: b.unavailable || "no_observation" }));
   // The SAME window the agent curves get. Without it a reference line ran the whole experiment while the agents
   // were clipped to the chosen range, so "today (UTC day)" drew an axis starting at 4:07 PM the day before and
   // the agents occupied the right third of it. A backdrop that does not share the frame is not a backdrop.
@@ -3527,19 +3713,34 @@ function cmpBenchSeries(s, mode) {
     if (!isNaN(t) && keep(t, p[1], p[0])) { if (t < t0) t0 = t; if (t > t1) t1 = t; }
   }));
   const framed = t1 > t0;
-  return bs.filter(b => (b.curve || []).length).map(b => {
+  return bs.filter(b => (b.curve || []).length).map((b, bi) => {
     const k = (isNum(slotP) && isNum(b.principal_cents) && b.principal_cents) ? slotP / b.principal_cents : 1;
     const vals = b.curve.map(p => p[1]).filter(isNum);
-    const flat = vals.length && vals.every(v => v === vals[0]);
-    const base = { id: b.id, bench: true, label: tr(b.label_zh || b.id), color: cssVar("--ink3"),
+    /* Flat because the server SAYS so - USD_CASH ships `weights: {}`, a portfolio holding nothing - never
+       because the values happen to be equal. `every()` is trivially true for one element, so a benchmark with a
+       single stored observation took the branch meant for cash and was re-emitted as two points spanning the
+       whole frame: one observation drawn as a confident horizontal line. There is a window at every experiment
+       start where exactly that is true, because the slots' curve begins ~20 s before the first ticker row. */
+    const flat = (b.weights && typeof b.weights === "object" && !Object.keys(b.weights).length) || b.id === "USD_CASH";
+    const base = { id: b.id, bench: true, label: benchName(b), color: cssVar("--ink3"),
+                   dash: BENCH_DASH[b.id] || BENCH_DASH_FALLBACK[bi % BENCH_DASH_FALLBACK.length],
                    principal: isNum(slotP) ? slotP : b.principal_cents, rescaled: k !== 1, flat };
-    if (flat && framed) {
+    if (!(b.curve || []).length) return { ...base, pts: [], unavailable: b.unavailable || "no_observation" };
+    if (flat && framed && vals.length) {
       const v = Math.round(vals[0] * k);
-      return { ...base, pts: [[t0, v, new Date(t0).toISOString()], [t1, v, new Date(t1).toISOString()]] };
+      // ...and they speak the same clock as every other point. `toISOString()` is UTC while the server's points
+      // carry the New York string, and the axis label reads the STRING - so the cash line's own endpoints
+      // labelled themselves four hours late on a board whose axis is ET.
+      return { ...base, pts: [[t0, v, nyIso(t0)], [t1, v, nyIso(t1)]] };
     }
     return { ...base, pts: b.curve.map(p => [Date.parse(p[0]), Math.round(p[1] * k), p[0]])
                                   .filter(p => !isNaN(p[0]) && isNum(p[1]) && keep(p[0], p[1], p[2])) };
-  }).filter(b => b.pts.length >= 2);
+  /* A reference that cannot be drawn is KEPT, with no points. It used to be filtered out of existence - gone
+     from the chart, gone from the legend, gone from every note - while a slot in the same state gets a 「无数据」
+     chip and says so. Silence is the one thing a missing reference must not do: a reader cannot tell it apart
+     from having switched it off themselves. With pts: [] it falls into the same `dead` branch the slots use. */
+  }).map(b => (b.pts.length >= 2 ? b
+    : { ...b, pts: [], unavailable: b.unavailable || (b.pts.length ? "one_observation" : "no_point_in_range") }));
 }
 
 /* The intraday window rule, in one place. Every series drawn on the comparison chart - the ten agents and the
@@ -3785,15 +3986,22 @@ function renderCompare(s) {
   // disappearing without a word reads as a fault; a note reads as a boundary.
   // its OWN element: this note and the excess-over-benchmark line are unrelated statements that were both
   // written into #bmknote, so whichever function rendered last silently erased the other.
+  /* One line about the reference portfolios, and it is CLEARED again. There was no else branch, so the note
+     stayed on screen after the reader went back to an intraday range and said the references were not drawn
+     while all four of them were - and `bn.dataset.gone` was written here and read nowhere, which reads as a
+     guard and is not one. The second case it now covers: an experiment that DECLARES benchmarks and has no
+     curves for them at all. On the stock board that is every range - SPY and QQQ are named in the panel, in the
+     quote strip and in the tradable list, and the chart has never drawn either - and an absence that says
+     nothing looks exactly like the reader having switched them off in the legend. */
   const bn = $("bmkgone");
   if (bn) {
-    const nb = (((s.crypto || {}).benchmark_curves) || []).length;
-    const gone = mode !== "intraday" && nb;
-    bn.dataset.gone = gone ? "1" : "";
-    if (gone) {
-      bn.textContent = tr("参照组合只有分钟级曲线，按日的区间里不画") + `（${nb}）`;
-      bn.style.display = "";
-    }
+    const nb = benchCurves(s).length;
+    const declared = ((s.experiment || {}).benchmarks) || [];
+    let msg = "";
+    if (mode !== "intraday" && nb) msg = tr("参照组合只有分钟级曲线，按日的区间里不画") + par(nb);
+    else if (!nb && declared.length) msg = tr("基准") + " " + declared.join(" / ") + " " + tr("暂无对照曲线");
+    bn.textContent = msg;
+    bn.style.display = msg ? "" : "none";
   }
   const dates = $("cmpdates");
   if (dates) {
@@ -3813,8 +4021,10 @@ function renderCompare(s) {
   const shown = drawable.filter(x => !STATE.cmpHide.has(x.id));
 
   // --- the legend is also the scoreboard: colour, slot, and where that slot stands right now
+  // the chips carry the same colour, so they go stale on a theme switch for the same reason
   const lsig = all.map(x => x.id + x.pts.length + (STATE.cmpHide.has(x.id) ? "h" : "s")
-    + (x.pts.length ? x.pts[x.pts.length - 1][1] : "")).join(",") + "|" + LANG + "|" + STATE.cmpRange;
+    + (x.pts.length ? x.pts[x.pts.length - 1][1] : "")).join(",") + "|" + LANG + "|" + STATE.cmpRange
+    + "|" + cssVar("--ink3");
   if (leg.dataset.sig !== lsig) {
     leg.dataset.sig = lsig;
     leg.innerHTML = "";
@@ -3825,15 +4035,24 @@ function renderCompare(s) {
       b.type = "button";
       const last = has ? x.pts[x.pts.length - 1][1] : null;
       const bp = (has && isNum(x.principal) && x.principal) ? Math.round((last - x.principal) / x.principal * 10000) : null;
-      b.innerHTML = `<i style="background:${has ? x.color : "var(--ink3)"}"></i><span>${esc(x.bench ? (x.label || x.id) : x.id)}</span>`
+      // a reference's swatch is its LINE, in its own dash - four identical grey squares were not a legend
+      const sw = (x.bench && x.dash)
+        ? `<i class="bd" style="background-image:${dashGradient(x.dash)}"></i>`
+        : `<i style="background:${has ? x.color : "var(--ink3)"}"></i>`;
+      b.innerHTML = sw + `<span>${esc(x.bench ? (x.label || x.id) : x.id)}</span>`
         + (isNum(bp) ? `<b class="num ${bp > 0 ? "up" : bp < 0 ? "dn" : "flat"}">${esc(bpPct(bp, 2))}</b>` : "");
       if (!has) {
         b.appendChild(el("span", "muted", tr("无数据")));
         b.disabled = true;
-        b.title = tr("这个资金槽在所选范围内没有可画的净值点：不画线，也不画成 0");
+        b.title = x.bench
+          ? tr("这个参照组合在所选范围内没有可画的点") + (x.unavailable ? `（${esc(x.unavailable)}）` : "")
+            + "：" + tr("不画线，也不画成 0")
+          : tr("这个资金槽在所选范围内没有可画的净值点：不画线，也不画成 0");
       } else {
         b.setAttribute("aria-pressed", String(!off));
-        b.title = `${x.id} · ${usd(last)}`;
+        // the visible span, the end label and the crosshair all show the name; the tooltip showed the raw id
+      b.title = `${x.bench ? (x.label || x.id) : x.id} · ${usd(last)}`
+        + (x.bench ? " · " + benchFeeLine(s) : "");
         // "where is S05" is one hover: its line lights up in ITS colour even when six other slots share the path
         b.addEventListener("pointerenter", () => cmpHighlight(x.id, x.color));
         b.addEventListener("pointerleave", () => cmpHighlight(null));
@@ -3868,7 +4087,13 @@ function renderCompare(s) {
   });
   const coincident = [...groups.values()].filter(g => g.length > 1);
 
-  const sig = [w, h, LANG, STATE.cmpRange, STATE.cmpFrom, STATE.cmpTo, win.axis.length,
+  /* The resolved ink, IN the signature. The ten agent colours are literal hex and survive anything, but the
+     reference portfolios take theirs from cssVar("--ink3") at draw time and the chart only redraws when this
+     string changes - which had no theme term in it. Switch light to dark with nothing else moving and the four
+     reference lines kept the light theme's dark grey on a black chart. Carrying the colour itself rather than
+     the data-theme attribute also covers `auto`, where the attribute never changes and the OS does. */
+  const inkNow = cssVar("--ink3");
+  const sig = [w, h, LANG, STATE.cmpRange, STATE.cmpFrom, STATE.cmpTo, win.axis.length, inkNow,
                shown.map(x => x.id + ":" + x.pts.length + ":" + (x.pts.length ? x.pts[x.pts.length - 1][1] : "-")).join(",")].join("|");
   if (svg.dataset.sig !== sig) {
     svg.dataset.sig = sig;
@@ -3895,6 +4120,8 @@ function renderCompare(s) {
       if (STATE.cmpRange === "today" && !STATE.crypto) full.push(tr("盘前 04:00、常规盘 09:30–16:00、盘后到 20:00 用底色标出；其余时间没有交易"));
       if (STATE.cmpRange === "session") full.push(tr("已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后"));
       if (STATE.cmpZoom) full.push(tr("已放大到一段时间；⟲ 回到整段"));
+      // ...and what a reference portfolio's printed return actually measures. It is net of the entry fee.
+      if (benchCurves(s).length) full.push(tr("参照组合") + "：" + benchFeeLine(s));
       full.push(tr("图下方的导航条：拖窗口左右移动，拖两端改时长，空白处拖选一段，← → 逐步移动"));
     } else {
       full.push(tr("每日收盘冻结净值"));
@@ -3916,7 +4143,7 @@ function renderCompare(s) {
       const age = isNum(toB) ? 86400 - toB : null;
       if (isNum(age)) {
         const mins = Math.max(1, Math.round(age / 60));
-        full.push(`${tr("这个竞技场按 UTC 日计分：今日从 00:00 UTC 起算，到现在只过了")} ${mins < 120 ? mins + " " + tr("分钟") : Math.round(age / 3600) + " " + tr("小时")}${tr("，横轴因此只有这么长")}`);
+        full.push(`${tr("这个竞技场按 UTC 日计分：今日从 00:00 UTC 起算，到现在只过了")} ${mins < 120 ? mins + " " + tr("分钟") : Math.floor(age / 3600) + " " + tr("小时")}${tr("，横轴因此只有这么长")}`);
         if (age < 6 * 3600) full.push(tr("想看满 24 小时，请在上面选「最近 24 小时」"));
       } else {
         full.push(tr("这个竞技场按 UTC 日计分，今日从 00:00 UTC 起算"));
@@ -3950,7 +4177,9 @@ function renderCompare(s) {
       const et = ms => { const d = new Date(ms + off);
         return ampm(String(d.getUTCHours()).padStart(2, "0"), String(d.getUTCMinutes()).padStart(2, "0")); };
       // Scoring is still by UTC day; the chart is not, and the two boundaries have to be reconcilable on the page.
-      if (w) short.splice(1, 0, `${tr("计分按 UTC 日")}（${et(w.a)} → ${et(w.b)} ET）`);
+      // par(), not a hand-built （）: the same sentence already carried the correctly-translated ASCII pair of
+    // "Today (00:00-24:00 ET)" next to a full-width one
+    if (w) short.splice(1, 0, tr("计分按 UTC 日") + par(`${et(w.a)} → ${et(w.b)} ET`));
     }
     if (STATE.cmpZoom) short.push(tr("已放大"));
     if (coincident.length) short.push(`${coincident.reduce((a, g) => a + g.length, 0)} ${tr("个槽净值相同，已合并")}`);
@@ -3969,6 +4198,11 @@ let CMP = null;
    during the build pass: nothing is laid out there and getBBox reports a width of 0, which is exactly how the
    first attempt at this became dead code that looked like a guard. There is deliberately no floor at the
    gutter's edge, because a name that reaches a little over the plot is readable and a clipped one is not. */
+/* How far a leader stops SHORT of the text it points at. It is used twice - once when the leader is drawn and
+   once after a label has been pulled back inside the frame - and the two have to agree or the correction
+   re-creates the overlap it was meant to remove. */
+const CMP_LEAD_GAP = 5;
+
 function fitEndLabels(svg, w) {
   svg.querySelectorAll("text.slotlbl").forEach(t => {
     try {
@@ -3977,6 +4211,24 @@ function fitEndLabels(svg, w) {
       const over = bb.x + bb.width - (w - 2);
       if (over > 0) t.setAttribute("x", (parseFloat(t.getAttribute("x")) - over).toFixed(1));
     } catch (e) { /* not laid out (hidden tab): re-measured on the next draw */ }
+  });
+  /* A label that just moved drags its leader with it. Both were laid out in the same pass and then only ONE of
+     them was corrected here, so every pixel this function reclaimed for a long reference name became a pixel of
+     that name the leader was drawn across - worst at phone width, where "BTC/ETH 各半" is pulled 24.6px left. */
+  svg.querySelectorAll("polyline.leadln[data-lead]").forEach(ld => {
+    const t = svg.querySelector('text.slotlbl[data-lead="' + ld.getAttribute("data-lead") + '"]');
+    if (!t) return;
+    const p = (ld.getAttribute("points") || "").trim().split(" ").filter(Boolean).map(q => q.split(",").map(Number));
+    if (p.length !== 3 || p.some(q => q.length !== 2 || q.some(v => !isFinite(v)))) return;
+    const xa = p[0][0], y0 = p[0][1], y = p[2][1];
+    const xc = parseFloat(t.getAttribute("x")) - CMP_LEAD_GAP;
+    // pulled so far left that the name now sits over the line's own end: there is nothing left to join, and a
+    // leader drawn backwards reads as a stray tick pointing at nothing
+    if (!isFinite(xc) || xc <= xa + 2) { ld.remove(); return; }
+    const xb = Math.max(xa, xc - Math.max(4, Math.min(12, (xc - xa) * 0.3)));
+    ld.setAttribute("points", xa.toFixed(1) + "," + y0.toFixed(1) + " "
+                            + xb.toFixed(1) + "," + y.toFixed(1) + " "
+                            + xc.toFixed(1) + "," + y.toFixed(1));
   });
 }
 
@@ -4080,6 +4332,48 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   svg.removeChild(probe);
   if (axisW > 0) PL = Math.max(PL, Math.ceil(axisW) + 12);      // 8px of gap to the plot, 4px to the svg's edge
 
+  /* ---- and the RIGHT gutter, the same way. It holds one end label per line plus the elbow that reaches it,
+     and it used to be two fractions of a fixed PR - 0.30 for a reference NAME, 0.62 for a four-character slot
+     id - which is a guess about how wide a name renders in a font and a language nobody had asked. Everything
+     after it was a correction: fitEndLabels pulled an over-wide name back inside the frame, and at 375px it
+     pulled "BTC/ETH 各半" 26.1px, past the x where its own line ends, so the leader had nowhere to run.
+     Measured instead, before the plot is laid out, because PR decides the plot's width. */
+  const measureText = (txt, cls) => {
+    const pr2 = label(-999, -50, String(txt), "start", cls);
+    svg.appendChild(pr2);
+    let box = null;
+    try { box = { w: pr2.getComputedTextLength(), h: (pr2.getBBox() || {}).height || 0 }; } catch (e) { box = null; }
+    svg.removeChild(pr2);
+    return box || { w: String(txt).length * 7, h: 0 };          // a width no browser answered is a guess, and says so
+  };
+  const endText = (g, short) => (g[0].bench
+    ? (short ? tr(BENCH_SHORT[g[0].id] || g[0].label || g[0].id) : (g[0].label || g[0].id))
+    : g[0].id + (g.length > 1 ? "  x" + g.length : ""));
+  const gs = [...groups.values()];
+  const widthOf = short => {
+    let wd = 0, ht = 0;
+    gs.forEach(g => {
+      const m = measureText(endText(g, short), g[0].bench ? "slotlbl bench" : "slotlbl");
+      wd = Math.max(wd, m.w);
+      ht = Math.max(ht, m.h);
+    });
+    return { w: wd, h: ht };
+  };
+  // the elbow's horizontal run. Below about 10px the fan collapses into near-vertical stubs that sit on top of
+  // one another, which is the shape the leader exists to avoid; measured at 375px it had 4.
+  const LEAD_RUN = 22;
+  const GUTTER_MAX = w * 0.28;                     // more of the frame than this belongs to the plot, not to names
+  let shortBench = false;
+  let mEnd = widthOf(false);
+  if (LEAD_RUN + mEnd.w + 2 > GUTTER_MAX && gs.some(g => g[0].bench)) {
+    const full = mEnd;
+    mEnd = widthOf(true);
+    shortBench = mEnd.w < full.w;                  // only if it actually bought something
+    if (!shortBench) mEnd = full;
+  }
+  const LBL_H = mEnd.h;                            // 0 when nothing could be measured; the caller falls back
+  if (mEnd.w > 0) PR = Math.min(Math.max(PR, Math.ceil(LEAD_RUN + mEnd.w + 2)), Math.round(w * 0.34));
+
   const X = v => PL + (w - PL - PR) * (v - x0) / (x1 - x0);
   const Y = v => PT + (h - PT - PB) * (1 - (v - yLo) / (yHi - yLo));
 
@@ -4153,16 +4447,26 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     const stepMin = CMP_TICK_MIN.find(m2 => m2 >= rough) || CMP_TICK_MIN[CMP_TICK_MIN.length - 1];
     const step = stepMin * 60e3;
     const first = Math.ceil((x0 + off) / step) * step - off;
-    let lastX = -1e9, n = 0;
+    /* Measured boxes, not 44px between tick CENTRES. A tick near an edge is anchored start or end, so its whole
+       width falls on one side of its own x while the neighbour is centred - measured at 560px wide, "12:00 AM"
+       ran 58.0 -> 106.3 and "4:00 AM" ran 93.0 -> 135.0, a 13.3px overlap a centre-to-centre rule cannot see.
+       The session-boundary branch below has always done it this way; the ladder, which is the only axis a
+       24/7 board ever draws, had not. */
+    const taken = [];
+    let n = 0;
     for (let t = first; t <= x1; t += step) {
       const px = X(t);
-      if (px - lastX < 44) continue;
-      lastX = px;
-      n++;
       const d = new Date(t + off);                      // +off then UTC getters == that board's wall clock
       const hh = String(d.getUTCHours()).padStart(2, "0"), mm2 = String(d.getUTCMinutes()).padStart(2, "0");
       const txt = ampm(hh, mm2);
-      svg.appendChild(label(px, tickY, txt, px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle"));
+      const a = px < PL + 30 ? "start" : px > w - PR - 30 ? "end" : "middle";
+      const tw = measureText(txt, null).w;
+      const l = a === "end" ? px - tw : a === "start" ? px : px - tw / 2;
+      const box = { l: l - 6, r: l + tw + 6 };          // 6px of air, or two times read as one number
+      if (taken.some(q => box.l < q.r && q.l < box.r)) continue;
+      taken.push(box);
+      n++;
+      svg.appendChild(label(px, tickY, txt, a));
     }
     return n;
   };
@@ -4230,7 +4534,11 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   const clipId = "cmpclip";
   const defs = mk("defs");
   const cp = mk("clipPath", { id: clipId });
-  cp.appendChild(mk("rect", { x: PL, y: PT, width: Math.max(0, w - PL - PR), height: Math.max(0, h - PT - PB) }));
+  /* +4 on the RIGHT only. The end-of-line dot is r=2.8 with a 1.4 ring, drawn at the series' last point, and
+     nine agent dots sit exactly on x = w-PR when the curves reach the edge - so half of every one of them was
+     cut off. The left, top and bottom stay hard: the left clip is what stops a zoomed path running over the
+     price axis, which is why the clip exists. */
+  cp.appendChild(mk("rect", { x: PL, y: PT, width: Math.max(0, w - PL - PR) + 4, height: Math.max(0, h - PT - PB) }));
   defs.appendChild(cp);
   svg.appendChild(defs);
   const plot = mk("g", { "clip-path": "url(#" + clipId + ")" });
@@ -4242,8 +4550,10 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     const d = lead.pts.map(([x, v], i) => `${i ? "L" : "M"}${X(x).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
     const ids = g.map(o => o.id);
     const path = mk("path", { d, stroke: lead.color, "data-slots": ids.join(" ") }, lead.bench ? "ln bench" : "ln");
+    // the identity a single grey cannot carry; an inline style, because .cmp .ln.bench sets the default one
+    if (lead.bench && lead.dash) path.style.strokeDasharray = lead.dash;
     const ttl = mk("title");
-    ttl.textContent = `${ids.join(" ")} · ${usd(lead.pts[lead.pts.length - 1][1])}`;
+    ttl.textContent = `${lead.bench ? (lead.label || ids.join(" ")) : ids.join(" ")} · ${usd(lead.pts[lead.pts.length - 1][1])}`;
     path.appendChild(ttl);
     plot.appendChild(path);
     const last = lead.pts[lead.pts.length - 1];
@@ -4258,36 +4568,20 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   // y0 is where the series actually ENDS; y is where its label is allowed to sit after the anti-collision
   // pass. Keeping both is what lets a leader line join them back up.
   const tags = lines.map(l => ({ y: l.y, y0: l.y, x0: l.x, bench: !!l.series[0].bench,
-    text: l.series[0].bench ? (l.series[0].label || l.ids[0]) : l.ids[0] + (l.ids.length > 1 ? "  x" + l.ids.length : ""),
-    color: l.color }));
+    text: endText(l.series, shortBench), color: l.color }));
   const TOP = PT + 4, BOT = h - PB - 4;
-  const benchX = w - PR + PR * 0.30, slotX = w - PR + PR * 0.62;
+  /* ONE column, at the offset the measurement paid for. Two columns existed because a name is long and an id is
+     short, and they were kept apart by a test on the name's width that could fail: when it did, the whole set
+     was spread as one column anyway. So it is always one column - and then a name can never reach into the
+     other one, because there is no other one. */
+  const benchX = w - PR + LEAD_RUN, slotX = benchX;
 
-  /* ---- measure first. Two numbers decide this whole layout and neither is knowable from the source: how WIDE
-     a reference name renders (it decides whether the two columns are really separate) and how TALL one label's
-     box is (it decides how close two of them can sit). Both depend on the font and the language. Guessing the
-     height as 12 against a real 14.7 made every pair overlap by half a pixel - an adaptive gap that was worse
-     than the constant it replaced. */
-  let widest = 0, measured = 0;                    // `measured` stays 0 until getBBox actually answers
-  const measure = (txt, cls) => {
-    const probe = label(benchX, -50, txt, "start", cls);
-    svg.appendChild(probe);
-    let box = null;
-    try { box = { w: probe.getComputedTextLength(), h: (probe.getBBox() || {}).height || 0 }; } catch (e) { box = null; }
-    svg.removeChild(probe);
-    return box || { w: txt.length * 7, h: 0 };
-  };
-  /* BOTH classes are measured, and LINE takes the larger. `.bench` renders smaller than a slot id here, so
-     measuring only a reference name gave 13.98 for a slot label that is really 14.7 - and a gap computed from
-     the wrong one overlapped every pair by half a pixel while reporting itself as adaptive. */
-  tags.filter(t => t.bench).forEach(t => {
-    const m = measure(t.text, "slotlbl bench");
-    widest = Math.max(widest, m.w);
-    measured = Math.max(measured, m.h);
-  });
-  const anySlot = tags.find(t => !t.bench) || tags[0];
-  if (anySlot) measured = Math.max(measured, measure(anySlot.text, "slotlbl").h);
-  const LINE = measured || 16;                     // 16 only when nothing could be measured at all
+  /* ---- how TALL one label's box is decides how close two of them may sit, and it is not knowable from the
+     source: it depends on the font and the language. Guessing it as 12 against a real 14.7 made every pair
+     overlap by half a pixel - an adaptive gap that was worse than the constant it replaced. BOTH classes go
+     into it, because `.bench` renders smaller than a slot id (13.98 against 14.7) and a gap taken from the
+     wrong one is short for every pair. `widthOf` above already measured both; this is that answer. */
+  const LINE = LBL_H || 16;                        // 16 only when nothing could be measured at all
 
   /* ---- then decide. The gap fits the plot instead of being a constant that overflows it: at 375px fourteen
      labels want 208px and the plot has 184, which is how slot ids ended up printed on top of each other. LINE
@@ -4312,9 +4606,8 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
     }
   }
 
-  /* ---- then place. Two columns are spread separately ONLY when the measurement says they really are two: a
-     single pass over all fourteen made them compete for one column's vertical space, and separate passes
-     assumed a horizontal separation that a long reference name does not respect. */
+  /* ---- then place. One pass over every label, because there is one column: a name and an id in the same
+     column can only collide vertically, and this is what stops that. */
   const spread = group => {
     group.sort((a, b) => a.y - b.y);
     for (let i = 1; i < group.length; i++) if (group[i].y - group[i - 1].y < GAP) group[i].y = group[i - 1].y + GAP;
@@ -4323,13 +4616,8 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
       for (let i = group.length - 2; i >= 0; i--) if (group[i + 1].y - group[i].y < GAP) group[i].y = group[i + 1].y - GAP;
     }
   };
-  if (widest && benchX + widest + 6 > slotX) {
-    spread(tags);                                  // the names reach the ids: one column, which cannot collide
-  } else {
-    spread(tags.filter(t => !t.bench));
-    spread(tags.filter(t => t.bench));
-  }
-  tags.forEach(t => {
+  spread(tags);
+  tags.forEach((t, li) => {
     const y = Math.max(TOP, Math.min(BOT, t.y));
     // the leader, drawn first so it sits under the text: from where the line really ends to where its name had
     // to go. Seven of these slots end within two pixels of each other while their labels are spread over a
@@ -4341,17 +4629,33 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
        became a whole day, and the chart grew a gap between the last dot and the start of its own leader - about
        two hours wide at 10 PM, and a full day wide at one minute past midnight. */
     const xa = Math.min(w - PR + 2, Math.max(PL, (isNum(t.x0) ? t.x0 : w - PR) + 3));
-    const xb = w - PR + PR * 0.46, xc = w - PR + PR * 0.58;
+    /* The leader stops short of ITS OWN label, and the two columns do not start at the same x. A single
+       xc = w - PR + PR*0.58 served both: measured at viewBox 1173x300 that is x=1132.7, which clears the slot
+       ids (they start at 1136.4) and runs straight through every reference NAME (they start at 1104.9). Every
+       one of 持有 BTC / 持有 ETH / BTC/ETH 各半 / 持有现金 was printed with a line through it. The elbow is
+       placed from the run that is actually available instead of a second fixed fraction, so the two columns
+       still form two clean vertical fans. */
+    const lx = t.bench ? benchX : slotX;
+    const xc = lx - CMP_LEAD_GAP;
+    const xb = Math.max(xa, xc - Math.max(4, Math.min(12, (xc - xa) * 0.3)));
     // the "+N more" note names no series, so it gets no leader pointing at one
-    if (!t.note && (Math.abs(y - t.y0) > 1.5 || xa < w - PR - 1)) {
-      const ld = mk("polyline", { points: `${xa.toFixed(1)},${t.y0.toFixed(1)} ${xb.toFixed(1)},${y.toFixed(1)} ${xc.toFixed(1)},${y.toFixed(1)}` }, "leadln");
+    /* Every name gets one, not only a DISPLACED name. The old test skipped a label that had landed at its own
+       line's height while that line reached the plot's edge - true of the top two slots most ticks - and with
+       the column now a measured distance out into the gutter rather than hard against the plot, those names sat
+       22px from their curve with nothing joining them. A flat leader is a short tick from the dot to the name,
+       which is what it should have been. Measured: it was 2 of 13 labels at desktop width. */
+    if (!t.note && xc > xa + 2) {
+      const ld = mk("polyline", { points: `${xa.toFixed(1)},${t.y0.toFixed(1)} ${xb.toFixed(1)},${y.toFixed(1)} ${xc.toFixed(1)},${y.toFixed(1)}`,
+                                  "data-lead": String(li) }, "leadln");
       ld.style.stroke = t.color;
       svg.appendChild(ld);
     }
     // A reference label is a NAME ("BTC/ETH 各半"), not a four-character slot id, so one fixed offset cannot serve
     // both: at the slot offset it ran off the right edge at every width. Placed at a wider start and then
     // MEASURED and clamped, because the longest label depends on the language and no constant survives that.
-    const el2 = label(t.bench ? benchX : slotX, y + 3.5, t.text, "start", t.bench ? "slotlbl bench" : "slotlbl");
+    const el2 = label(lx, y + 3.5, t.text, "start", t.bench ? "slotlbl bench" : "slotlbl");
+    // the pair id: fitEndLabels moves this text after layout and has to move its leader with it
+    el2.setAttribute("data-lead", String(li));
     // an inline STYLE, not a fill attribute: a presentation attribute loses to `.cmp text{fill:var(--ink3)}`,
     // which is why every one of these names rendered the same grey however carefully it was coloured
     el2.style.fill = t.color;
@@ -4364,7 +4668,18 @@ function drawCompare(svg, shown, groups, w, h, PL, PR, PT, PB, mode, axis, sess)
   lines.forEach(l => cross.appendChild(mk("circle", { r: 3.4, fill: l.color, "data-slots": l.ids.join(" ") }, "cd")));
   plot.appendChild(cross);
 
-  CMP = { shown, X, Y, x0, x1, PL, PR, PT, PB, w, h, mode, base, cross, svg, stamps, xlabel, lines, range, zoomed };
+  /* What "near enough to read" means, for the hover. 今日 is the whole calendar day by construction, so most
+     of the plot is deliberately empty - measured on the crypto board, the data occupied 4.4% of the axis - and
+     cmpValueAt() returns the NEAREST point at any distance, so hovering empty axis printed a real number from
+     fourteen hours away with no mark on it. The anchor is the series with the most points, because the cash
+     reference has two and would make every hover look far from data. */
+  const anchor = shown.reduce((b, s2) => (s2.pts.length > b.pts.length ? s2 : b), shown[0]);
+  const gaps = [];
+  for (let i = 1; i < anchor.pts.length; i++) gaps.push(anchor.pts[i][0] - anchor.pts[i - 1][0]);
+  gaps.sort((a, b) => a - b);
+  const stepMs = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 0;
+  CMP = { shown, X, Y, x0, x1, PL, PR, PT, PB, w, h, mode, base, cross, svg, stamps, xlabel, lines, range, zoomed,
+          anchor, stepMs };
   wireCmpHover(svg);
   drawCmpNav(shown, groups, sess, range, base, PL, PR);
 }
@@ -4593,7 +4908,11 @@ function cmpHoverAt(clientX, clientY) {
   const py = (clientY - r.top) * sy2;
   if (px < CMP.PL || px > CMP.w - CMP.PR) return cmpHoverOff();
   const xv = CMP.x0 + (CMP.x1 - CMP.x0) * (px - CMP.PL) / Math.max(1, CMP.w - CMP.PL - CMP.PR);
-  const anchor = cmpValueAt(CMP.shown[0], xv) || null;
+  // two sample steps, or six pixels of axis, whichever is the more forgiving
+  const TOL = Math.max(2 * (CMP.stepMs || 0),
+                       (CMP.x1 - CMP.x0) * 6 / Math.max(1, CMP.w - CMP.PL - CMP.PR));
+  const anchor = cmpValueAt(CMP.anchor || CMP.shown[0], xv) || null;
+  if (!anchor || Math.abs(anchor[0] - xv) > TOL) return cmpHoverOff();   // empty axis reads as empty
   const snapX = anchor ? anchor[0] : xv;
   const sx = CMP.X(snapX);
 
@@ -4601,7 +4920,7 @@ function cmpHoverAt(clientX, clientY) {
   let best = null;
   CMP.lines.forEach(l => {
     const pt = cmpValueAt(l.series[0], snapX);
-    if (!pt) return;
+    if (!pt || Math.abs(pt[0] - snapX) > TOL) return;   // a line that does not reach here cannot win the dot
     const d = Math.abs(CMP.Y(pt[1]) - py);
     if (!best || d < best.d) best = { line: l, pt, d };
   });
@@ -4623,19 +4942,25 @@ function cmpHoverAt(clientX, clientY) {
      on which line" is answered by the leader fan at the right-hand end, so the panel does not have to carry
      the whole field as well. */
   const rows = best.line.series.map(s2 => {
-    const own = cmpValueAt(s2, snapX) || best.pt;
+    const near = cmpValueAt(s2, snapX);
+    // `|| best.pt` took ANOTHER series' value when this one had none. Unknown is unknown, never a neighbour's number.
+    const own = (near && Math.abs(near[0] - snapX) <= TOL) ? near : null;
     // a reference portfolio is named on its line and in the legend; printing its raw id here made the same thing
     // wear two names a centimetre apart
-    return { id: (s2.bench ? (s2.label || s2.id) : s2.id), color: s2.color, v: own[1],
-             bp: (isNum(s2.principal) && s2.principal) ? Math.round((own[1] - s2.principal) / s2.principal * 10000) : null };
+    return { id: (s2.bench ? (s2.label || s2.id) : s2.id), color: s2.color, dash: s2.bench ? s2.dash : null,
+             v: own ? own[1] : null,
+             bp: (own && isNum(s2.principal) && s2.principal) ? Math.round((own[1] - s2.principal) / s2.principal * 10000) : null };
   });
-  rows.sort((a, b) => b.v - a.v || a.id.localeCompare(b.id));
+  rows.sort((a, b) => (isNum(b.v) ? b.v : -Infinity) - (isNum(a.v) ? a.v : -Infinity) || a.id.localeCompare(b.id));
 
   const tip = $("cmptip");
   if (!tip) return;
   tip.innerHTML = `<div class="tiphead">${esc(anchor ? CMP.xlabel(anchor) : "")}</div>`
-    + rows.map(x => `<div class="tiprow"><i style="background:${x.color}"></i>`
-      + `<span class="tips">${esc(x.id)}</span><span class="num tipv">${esc(usd(x.v))}</span>`
+    // the same swatch the legend chip shows: one key for a reference, not a grey square here and a dash there
+    + rows.map(x => `<div class="tiprow">`
+      + (x.dash ? `<i class="bd" style="background-image:${dashGradient(x.dash)}"></i>`
+                : `<i style="background:${x.color}"></i>`)
+      + `<span class="tips">${esc(x.id)}</span><span class="num tipv">${isNum(x.v) ? esc(usd(x.v)) : UNK}</span>`
       + `<span class="num ${x.bp > 0 ? "up" : x.bp < 0 ? "dn" : "flat"} tipb">${isNum(x.bp) ? esc(bpPct(x.bp, 2)) : ""}</span></div>`).join("");
   tip.style.display = "";
   /* Beside the pointer, asked for 2026-09-19. The old rule parked it in a corner because a panel that chases
@@ -4900,8 +5225,10 @@ function renderRounds(s) {
     box.innerHTML = s.rounds_readable === false
       ? `<div class="blank"><span class="ico">⚠️</span>读不到进化记录<br><span class="muted">arena.sqlite 的 rounds 表这次没读到；这不表示没有进化过</span></div>`
       : `<div class="blank"><span class="ico">🧬</span>${tr("还没有进化轮次")}<br><span class="muted">${STATE.crypto
-          ? "每个完整 UTC 日在 00:05 UTC 结算一轮；实验开始当天晚于 00:00 UTC 起跑，按规则记为 PARTIAL、不评分"
-          : "每个完整交易日收盘 + 10 分钟后结算一轮"}</span></div>`;
+          // tr(), not a bare literal: translateStatic matches a whole text node exactly and this string has
+          // no key, so it survived onto the English page while its stock sibling happened to match one
+          ? tr("每个完整 UTC 日在 00:05 UTC 结算一轮；实验开始当天晚于 00:00 UTC 起跑，按规则记为 PARTIAL、不评分")
+          : tr("每个完整交易日收盘 + 10 分钟后结算一轮")}</span></div>`;
     return;
   }
   box.innerHTML = rs.slice(0, 8).map(r => {
