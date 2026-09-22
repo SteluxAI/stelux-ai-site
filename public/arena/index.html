@@ -125,8 +125,10 @@ header{
 #themebtn[data-mode=auto] .ic-auto,#themebtn[data-mode=dark] .ic-dark,#themebtn[data-mode=light] .ic-light{display:block}
 @media(hover:hover) and (pointer:fine){.iconbtn:hover{background:var(--hair2);color:var(--ink)}}
 .iconbtn:active{transform:scale(.92)}
+/* min-width, because `.pills` carries `min-width:0` and a <select>'s automatic minimum size is its (tiny)
+   min-content: it is the one element in the header that CAN be squeezed into its own chevron, and it was. */
 select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--ink2);padding:0 26px 0 11px;font-size:12.5px;
-  border:0;appearance:none;cursor:pointer;max-width:230px;
+  border:0;appearance:none;cursor:pointer;max-width:230px;min-width:150px;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238E8E93' stroke-width='1.6' stroke-linecap='round'/></svg>");
   background-repeat:no-repeat;background-position:right 10px center}
 @media(hover:hover) and (pointer:fine){select.exp:hover{background-color:var(--hair)}}
@@ -240,13 +242,19 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 @keyframes pop{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--blue) 45%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
 /* wraps rather than clips: at 375px the row held slot id + strategy chip + generation + "about to be replaced",
    and the last two were pushed off the card - the "about to be replaced" chip is the one a reader most needs. */
-.ahead{display:flex;flex-wrap:wrap;row-gap:6px;align-items:center;gap:8px;margin-bottom:11px}
+.ahead{display:flex;flex-direction:column;align-items:flex-start;row-gap:7px;margin-bottom:11px}
+/* wraps as a LAST resort. Without it the row cannot overflow gracefully, and at 375px a card carrying both
+   「末位 · 待替换」 and 「初代」 pushed the second chip 11px outside the card. Wrapping puts it on its own line
+   instead - still the same place on every card in that state, which is the point; overflowing is not. */
+.ahtop{display:flex;align-items:center;gap:8px;width:100%;min-width:0;flex-wrap:wrap;row-gap:6px}
 .rank{width:23px;height:23px;border-radius:7px;display:grid;place-items:center;font-size:11.5px;font-weight:700;
   background:var(--hair2);color:var(--ink2);flex:none}
 .rank.r1{background:linear-gradient(145deg,#FFD60A,#FF9500);color:#3a2a00}
 .rank.r2{background:linear-gradient(145deg,#E3E3E8,#B0B0B8);color:#2a2a2e}
 .rank.r3{background:linear-gradient(145deg,#E0A579,#C1763F);color:#3a1f08}
-.slotid{font-size:15.5px;font-weight:650;letter-spacing:-.02em}
+/* a fixed box, because "S01" and "S10" do not render the same width and the chip after them started 2px
+   apart from card to card - small, but it is exactly the jitter these rows exist to remove */
+.slotid{font-size:15.5px;font-weight:650;letter-spacing:-.02em;min-width:34px;flex:none}
 .gen{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:600;padding:2px 7px;border-radius:6px;background:var(--hair2);color:var(--ink3);white-space:nowrap}
 .gen.child{background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue-ink)}
 .gen.night{background:color-mix(in srgb,var(--purple) 14%,transparent);color:var(--purple-ink)}
@@ -1026,7 +1034,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T02:57:37Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922b","experiments":["crypto-kraken-20260922b","stock-research-20260922d"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-22T03:25:13Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"crypto-kraken-20260922b","experiments":["crypto-kraken-20260922b","stock-research-20260922d"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1289,7 +1297,8 @@ const I18N = {
     "持仓": "holding", "今日交易": "traded today", "最近交易": "traded recently", "基准": "benchmark",
     "暂无对照曲线": "have no comparison curve here yet", "参照组合": "Reference portfolios",
     "已恢复": "recovered", "知道了，收起": "Got it - hide this",
-    "紧止损": "tight stop", "宽止损": "wide stop", "近止盈": "near target", "远止盈": "far target", "是否已恢复：未知": "whether it has recovered: unknown",
+    "紧止损": "tight stop", "宽止损": "wide stop", "近止盈": "near target", "远止盈": "far target",
+    "美股": "US stocks", "是否已恢复：未知": "whether it has recovered: unknown",
     "这个参照组合在所选范围内没有可画的点": "this reference portfolio has no drawable point in the selected range",
     "不画线，也不画成 0": "no line is drawn, and it is not drawn as 0",
     "每个完整 UTC 日在 00:05 UTC 结算一轮；实验开始当天晚于 00:00 UTC 起跑，按规则记为 PARTIAL、不评分":
@@ -1396,7 +1405,7 @@ const I18N = {
     "收起，只留下这些 Agent 正在持仓、今日成交或最近成交的币": "collapse to what these agents hold, traded today or traded recently",
     "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
     "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
-    "按名次": "By rank", "按槽位": "By slot", "末位 · 待替换": "Bottom · to be replaced", "暂不淘汰": "Not this round",
+    "按名次": "By rank", "按槽位": "By slot", "末位 · 待替换": "Bottom · replacing", "暂不淘汰": "Not this round",
     "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "共计": "A total of", "即将": "any moment",
     "十个 Agent 共用这一个可交易币池": "all ten agents trade from this one pool", "行情陈旧": "market data stale", "有新版本待生效": "a new version is pending", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
     "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
@@ -2007,15 +2016,27 @@ function renderHeader(s) {
   const open = m.is_open === true;
   p.className = "pill " + (m.is_regular ? "live" : open ? "ext" : "");
   $("sesstxt").textContent = tr(m.session_zh || UNK) + " · " + (m.clock_ny ? hhmm(m.clock_ny) : tr(UNK)) + " ET";
-  const exps = (s.experiments || []).filter(e => !STATIC || (STATIC.experiments || []).includes(e.experiment_id));
+  /* The picker lists what THIS BUILD can show, not the intersection of that with whatever the snapshot
+     happens to describe. Those two disagree for the whole CDN cache window after an experiment is replaced -
+     the published snapshot still names the old ids, none of them are in the build's list, and the intersection
+     comes out EMPTY. An empty <select> renders as a bare chevron: measured on stelux.ai at 48px wide, with no
+     way for the reader to switch away from the board they were left on. The build's own list is the honest
+     answer, and an id the snapshot has not described yet is still selectable - which is the point. */
+  const known = new Map((s.experiments || []).map(e => [e.experiment_id, e]).filter(kv => kv[0]));
+  const ids = STATIC ? ((STATIC.experiments || []).length ? STATIC.experiments : [...known.keys()])
+                     : [...known.keys()];
+  const exps = ids.map(id => known.get(id) || { experiment_id: id });
   const sel = $("expsel");
   const want = exps.map(e => e.experiment_id).join("|");
   if (sel.dataset.sig !== want) {
     sel.dataset.sig = want;
     sel.innerHTML = "";
     exps.forEach(e => {
-      const o = el("option", null, e.experiment_id + " · " + (e.asset_class === "crypto_spot" ? "Crypto 24/7" : "") + (e.asset_class === "crypto_spot" ? " · " : "")
-        + (e.data_kind === "realtime_paper" ? tr("实时") : tr("回放")));
+      // board first: the id is 24 characters and the select is capped, so "stock" / "Crypto" led the truncated
+      // text rather than trailing off the end of it. An unknown field is simply omitted, never guessed.
+      const board = e.asset_class === "crypto_spot" ? "Crypto 24/7" : e.asset_class ? tr("美股") : null;
+      const kind = e.data_kind ? (e.data_kind === "realtime_paper" ? tr("实时") : tr("回放")) : null;
+      const o = el("option", null, [board, e.experiment_id, kind].filter(Boolean).join(" · "));
       o.value = e.experiment_id; sel.appendChild(o);
     });
     sel.onchange = () => {
@@ -2839,7 +2860,11 @@ function renderAgents(s) {
         // taken off once it has played, so a later reorder has no entrance left to restart
         n.addEventListener("animationend", () => n.classList.remove("enter"), { once: true });
         setTimeout(() => n.classList.remove("enter"), 1400);
-        n.innerHTML = `<div class="ahead"><span class="rank"></span><span class="slotid"></span><span class="vchip"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="riskchip" hidden></span><span class="tag"></span></div>
+        // Two FIXED rows, not one wrapping one. Every chip used to sit after a strategy name whose length
+        // varies from card to card, so 原版 / 初代 / 末位·待替换 landed on a different line and a different
+        // side on every card and the eye could not scan a column of them. Row 1 carries the chips at constant
+        // positions; row 2 carries the only variable-length thing, where its wrapping moves nothing.
+        n.innerHTML = `<div class="ahead"><div class="ahtop"><span class="rank"></span><span class="slotid"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="riskchip" hidden></span><span class="tag"></span></div><span class="vchip"></span></div>
           <div class="aeqrow"><div class="aeq num"></div><div class="acash" hidden></div></div><div class="arow"></div><svg class="spark"></svg><div class="posbox"></div><div class="warnbox"></div>`;
         n.addEventListener("click", () => openSheet(a.slot_id));
         n.setAttribute("role", "button");
