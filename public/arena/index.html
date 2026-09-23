@@ -189,6 +189,7 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .tk .ch{font-size:var(--fs-meta);font-weight:550}
 .qrole,.qmark{font-size:var(--fs-chip);font-weight:600}
 .qmark{color:var(--ink3)}
+.ftag{font-size:var(--fs-chip);font-weight:600;color:var(--orange-ink)}
 .qhalt{color:var(--red-ink);font-size:var(--fs-chip);font-weight:600}
 /* staleness is carried by the word 陈旧 / 未知; the dimming is only a second marker, so it must not erase the price */
 .tk .px.q-stale{opacity:.72}
@@ -580,6 +581,7 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .oc.completed{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green)}
 .oc.skipped{background:var(--hair);color:var(--ink3)}
 .oc.partial{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
+.oc.late{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
 .reason{font-size:var(--fs-note);color:var(--ink3);margin-top:6px;line-height:1.5;word-break:break-word}
 /* The one-line story of a round, above its numbers: brighter than the disclosures under it, because it is the
    sentence a reader should be able to stop at. */
@@ -666,7 +668,9 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   .grpbtn{height:44px;padding:0 14px;font-size:14px}
   .seg{height:44px;padding:3px;gap:4px}
   .seg button{padding:0 16px;font-size:14px}
-  .canchip{height:44px;padding:0 14px}
+  /* the session chip carries a sentence on a revision-2 crypto board (632px of English at 375px wide): it wraps on a
+     phone instead of pushing the whole page sideways, and keeps the 44px touch height as a minimum */
+  .canchip{height:auto;min-height:44px;padding:6px 14px;white-space:normal;max-width:100%;line-height:1.35;border-radius:14px}
   .sf{height:44px;padding:0 13px;font-size:13px}      /* 40px was under the 44px this block promises */
   #shClose{width:44px;height:44px}
   /* `.grpbtn` above loses on specificity to `.cmpzoom .grpbtn` (0,2,0 against 0,1,0), so the chart's zoom
@@ -699,6 +703,8 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   table.tape tr.grp{display:block;padding:9px 14px}
   table.tape tr.grp td{display:block;position:static;white-space:normal}
   table.tape td.blank{flex:1 1 100%;text-align:center;white-space:normal;padding:22px 12px}
+  /* an intent can carry a tag or two (protective exit, partial): that cell wraps instead of pushing the row wide */
+  table.tape td.icell{white-space:normal;flex-wrap:wrap}
   /* --- the crypto pool table: same row-card treatment ------------------------------------------------------ */
   .crtw{overflow-x:visible}
   .crtable thead{display:none}
@@ -886,7 +892,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
       <p class="eyebrow">全系统实时净值 <span id="eqtag" class="muted" style="text-transform:none;letter-spacing:0"></span></p>
       <div class="big num" id="sysEq">—</div>
       <div class="delta">
-        <span class="dpair"><span class="chg num" id="sysDay">—</span><span class="muted">今日</span></span>
+        <span class="dpair"><span class="chg num" id="sysDay">—</span><span class="muted" id="sysDayK" style="white-space:normal">今日</span></span>
         <span class="dpair"><span class="chg num" id="sysTot">—</span><span class="muted">累计</span></span>
         <span class="muted">本金 <span class="num" id="sysPrin">—</span></span>
       </div>
@@ -955,7 +961,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
 
   <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span>
     <button class="grpbtn" id="agsort" type="button" aria-pressed="true" title="按名次排列：领先的在前面。点一下改回按槽位 S01–S10 排列">按名次</button></div>
-  <div class="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
+  <div class="aglegend" id="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
 
   <!-- Five shelves, and nothing on the board may be called "the best strategy". The ten agents above are the
@@ -1034,7 +1040,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-23T00:25:47Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260923d","experiments":["stock-research-20260923d","crypto-kraken-20260922c"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-23T20:11:59Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-23T20:11:59Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260923e","experiments":["stock-research-20260923e","crypto-kraken-20260923"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1044,19 +1050,23 @@ const UNK = "未知";
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const isNum = v => typeof v === "number" && isFinite(v);
 
+/* The formatters answer an unknown value with tr(UNK), not the raw constant. A value that is ONLY 未知 used to be
+   rescued by translateStatic's whole-node match, but a combined node never was: every crypto drawer read
+   "Fees / slippage $72.00 / 未知" and "未知 / 未知" for stop/target on the English page. `tr` is a hoisted
+   declaration and these only run at render time, after LANG is set; nothing compares their output with UNK. */
 function usd(cents, opts) {
-  if (!isNum(cents)) return UNK;
+  if (!isNum(cents)) return tr(UNK);
   const o = opts || {}, neg = cents < 0, v = Math.abs(cents) / 100;
   const s = v.toLocaleString("en-US", { minimumFractionDigits: o.cents === false ? 0 : 2, maximumFractionDigits: o.cents === false ? 0 : 2 });
   return (neg ? "−$" : (o.sign ? "+$" : "$")) + s;
 }
 function bpPct(bp, digits) {
-  if (!isNum(bp)) return UNK;
+  if (!isNum(bp)) return tr(UNK);
   const v = bp / 100;
   return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(digits == null ? 2 : digits) + "%";
 }
 function px(p) {
-  if (p == null) return UNK;
+  if (p == null) return tr(UNK);
   const v = Number(p);
   // a crypto price needs the precision the asset trades at: PEPE at $0.000004 must not render as $0.00
   const d = !STATE.crypto ? 2 : Math.abs(v) >= 1 ? 2 : Math.abs(v) >= 0.01 ? 4 : Math.abs(v) >= 0.0001 ? 6 : 9;
@@ -1066,9 +1076,25 @@ function px(p) {
   const lo = (STATE.crypto && Math.abs(v) < 1) ? Math.min(2, d) : d;
   return "$" + v.toLocaleString("en-US", { minimumFractionDigits: lo, maximumFractionDigits: d });
 }
+/* A price AS RECORDED: a fill, an average cost, an untouched VWAP. The ledger stores crypto prices at the pair's own
+   precision plus four - max(8, pair_decimals + 4): 13 decimals for PEPE/BONK, 9-11 for XRP, SEI, DOGE and the other
+   pairs quoted to 5-7 (e6f076a, 221eb54) - and px() above rounds to at most 9, so a BONK fill at 0.0000189012345
+   read $0.000018901 and two fills a tick apart looked identical. This keeps every recorded digit (trailing zeros
+   trimmed, two decimals the floor) and adds the thousands separators; a stock price, or a value that is not a plain
+   decimal string, goes through px() unchanged. The quote tiles keep px(): a ticker is quoted at the pair's own
+   precision, and the tile's width is the reason px() trims. */
+function pxFull(p) {
+  if (p == null) return tr(UNK);
+  const sv = String(p).trim();
+  const m = /^(-?)(\d+)(?:\.(\d+))?$/.exec(sv);
+  if (!STATE.crypto || !m) return px(p);
+  let frac = (m[3] || "").replace(/0+$/, "");
+  if (frac.length < 2) frac = (frac + "00").slice(0, 2);
+  return (m[1] ? "−" : "") + "$" + m[2].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "." + frac;
+}
 /* a fractional quantity, as the ledger holds it (Decimal string): trailing zeros trimmed, never rounded to an integer */
 function fmtQty(q) {
-  if (q == null) return UNK;
+  if (q == null) return tr(UNK);
   const sv = String(q);
   if (!STATE.crypto) return sv;
   if (!/^-?\d+(\.\d+)?$/.test(sv)) return sv;
@@ -1085,12 +1111,14 @@ function ampm(hh, mm, ss) {
   return `${h12}:${mm}${ss ? ":" + ss : ""} ${suffix}`;
 }
 function hhmm(iso) { if (!iso) return "—"; const m = String(iso).match(/T(\d{2}):(\d{2}):(\d{2})/); return m ? ampm(m[1], m[2], m[3]) : String(iso).slice(0, 16); }
+/* hours and minutes only: a bar start or a close's due instant is on the minute, and ":00" is noise in a sentence */
+function hm12(iso) { if (!iso) return "—"; const m = String(iso).match(/T(\d{2}):(\d{2})/); return m ? ampm(m[1], m[2]) : String(iso).slice(0, 16); }
 function mdhm(iso) { if (!iso) return "—"; const m = String(iso).match(/(\d{2})-(\d{2})T(\d{2}):(\d{2})/); return m ? `${m[1]}-${m[2]} ${ampm(m[3], m[4])}` : String(iso).slice(0, 16); }
 const DUR_UNITS = { zh: [" 秒", " 分钟", " 小时", " 天"], en: ["s", "m", "h", "d"] };
 /* A length of time. `ago` is this plus a suffix, and they were one function until something needed to say how
    long a thing has been TRUE rather than how long ago it happened. */
 function dur(s) {
-  if (!isNum(s)) return UNK;
+  if (!isNum(s)) return tr(UNK);
   const u = DUR_UNITS[LANG === "en" ? "en" : "zh"];
   if (s < 60) return Math.round(s) + u[0];
   if (s < 3600) return Math.round(s / 60) + u[1];
@@ -1311,8 +1339,8 @@ const I18N = {
     "行情源已关闭（--no-feed）": "Quote feed disabled (--no-feed)",
     // ---- agents
     "十个 Agent": "Ten Agents",
-    "每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（A01–A10 是策略编号，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。":
-      "Each card: rank · capital slot (S01–S10, permanent) · current strategy (its personality; A01–A10 on hover) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.",
+    "每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。":
+      "Each card: rank · capital slot (S01–S10, permanent) · current strategy (its code, then its personality) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.",
     "原版": "original", "可隔夜": "may hold overnight", "保留": "kept", "新生": "new", "任内": "tenure",
     // ---- trades
     "交易记录": "Trades", "选择交易日": "Select trading day", "交易记录视图": "Trades view",
@@ -1472,7 +1500,6 @@ const I18N = {
       "fitted to the session running now (after the close that is the regular session plus its after-hours tail); "
       + "pick Today (all sessions) to see pre-market through after-hours",
     "最近 8 小时": "Last 8 hours", "最近 24 小时": "Last 24 hours",
-    "今日 = 盘前 04:00 起，含盘前、常规盘、盘后": "today starts at the 04:00 ET pre-market open and covers pre, regular and post",
     "净值曲线": "equity curve", "分钟一个点": "minutes per point",
     "尚无已冻结的日收盘，图上只有今日的实时点": "no daily close has been frozen yet: what is plotted is today's live point",
     "有资金槽的每日记录这次没读到": "some slots' daily records could not be read this time",
@@ -1497,6 +1524,120 @@ const I18N = {
     "个不同的分数": "distinct scores across the board",
     "最高与最低相差": "highest to lowest spread",
     "有效参数相同 ⇒ 成交相同": "identical effective parameters mean identical fills",
+    "全场同分，本轮的淘汰完全由并列规则决定": "every agent scored the same, so this round's eliminations came from the tie rule alone",
+    "后代与亲代参数相同": "the child's parameters equal its parent's",
+    "开盘区间突破": "opening-range breakout",
+    "基准趋势": "reference trend",
+    "中等止损": "medium stop",
+    "快速趋势": "fast trend",
+    "不看 4 小时": "no 4h check",
+    "慢速趋势": "slow trend",
+    "长持有": "long hold",
+    "严格多周期确认": "strict multi-timeframe confirmation",
+    "快进快出": "quick in, quick out",
+    "放量突破": "volume breakout",
+    "相对强弱领先": "relative-strength leaders",
+    "不看 BTC 方向": "ignores BTC direction",
+    "早期入场": "early entry",
+    "低延伸": "low extension",
+    "一次建满三仓": "fills all three positions at once",
+    "趋势持有": "trend holder",
+    "不因转弱离场": "holds through weakness",
+    "标准": "standard",
+    "严格放量": "strict volume surge",
+    "相对强度突破": "relative-strength breakout",
+    "只做强势股": "strong stocks only",
+    "VWAP 回踩": "VWAP reclaim",
+    "放量确认": "volume-confirmed",
+    "突破组合": "the two breakouts",
+    "看纳指": "reads the Nasdaq",
+    "全策略": "all three strategies",
+    "弱市也做": "trades weak markets too",
+    "对照组": "the control",
+    "每天一次": "once a day", "每天": "daily",
+    "按当天（UTC 日）的净收益比较": "judged on that UTC day's net return",
+    "按当日净收益比较": "judged on the day's net return", "按累计净收益比较": "judged on cumulative net return",
+    "末位由自己的微调版本接替": "the bottom ones are taken over by tweaked versions of themselves",
+    "各自的微调版本": "a tweaked version of each",
+    "每周最后一个交易日收盘 + 10 分钟后结算一轮": "a round settles 10 minutes after the close of the last trading day of each week",
+    "每个板块按自己冻结的规则进化，股票与加密货币互不影响。": "Each board evolves under its own frozen rule; the stock and crypto boards do not affect each other.",
+    "决策相同的 Agent，成交价和数量仍可能不同": "identical decisions can still fill at different prices and sizes",
+    "执行修订": "Execution revision",
+    // ---- 2026-09-23 page follow-up: the runner / close / fill / crypto records the engine groups now write
+    "常规盘柱数不足、导致当日不完整": "regular-session bars short, which made the day incomplete",
+    "非常规时段柱数不足、导致当日不完整": "extended-session bars short, which made the day incomplete",
+    "非常规时段柱数": "extended-session bars",
+    "成交所依据的柱已核对：无事后修订": "the bars the fills were priced on were checked: none was revised afterwards",
+    "柱修订核对未完成": "the bar-revision check did not finish",
+    "数据质量记录：未知（没有对应的收盘事件）": "data-quality record: unknown (no matching close event)",
+    "报价核对：未知（这一天的记录来自旧的字符串比较，计数不作为证据）":
+      "quote check: unknown (this day was checked by the old string comparison, and its count is not evidence)",
+    "报价核对：未知（当日成交的柱时段内没有可比对的报价）":
+      "quote check: unknown (no quote fell inside any fill's bar window, so nothing was compared)",
+    "报价核对：当日无成交": "quote check: no fills that day",
+    "部分槽位的收盘晚于到期时刻处理": "some slots' close was processed after it was due",
+    "各按自己的到期时刻估值": "each valued as of its due instant",
+    "收盘时读不到这些槽位": "these slots could not be read at the close",
+    "已成交": "filled", "已撤销": "cancelled", "已过期": "expired", "被拒绝": "rejected",
+    "已提交": "submitted", "挂单中": "working",
+    "迟结算": "late close",
+    "周线基线部分缺失": "week baseline partial",
+    "修订 2：止损/止盈在每次行情轮询时检查；这笔出场是在两次整点决策之间、价格穿过止损/止盈位时提交的，没有对应的决策记录":
+      "Revision 2: stops and targets are checked on every ticker poll; this exit was submitted between two hourly decisions, when the price crossed its level, and has no decision record",
+    "盘中止损/止盈": "between-rounds stop/target",
+    "部分卖出，余量待卖": "partial sell, remainder left",
+    "部分成交": "partial fill",
+    "盘中止损/止盈（修订 2）": "Between-rounds stops and targets (revision 2)",
+    "止损/止盈在每次行情轮询时检查，不等整点决策；这些单没有决策记录，触发价写在原因里":
+      "stops and targets are checked on every ticker poll instead of waiting for the hourly decision; these orders have no decision record, and the trigger price is in their reason",
+    "触发": "triggered at",
+    "冻结这一天时，前一个交易日还没有收盘记录，所以这一天的收益跨越了不止一个交易日":
+      "the previous trading day had no close when this day was frozen, so this day's return spans more than one session",
+    "跨多日": "spans days",
+    "未实现（扣除买入费）": "Unrealised (net of the buy fee)",
+    "已实现累计（扣除全部费用）": "Realised, cumulative (net of all fees)",
+    "24/7 现货 · 每个整点评估入场与出场；止损/止盈在每次行情轮询时检查":
+      "24/7 spot · entries and exits evaluated every hour on the hour; stops and targets checked on every ticker poll",
+    "修订 2：止损/止盈不等整点，每次行情轮询都检查，价格穿过就提交卖单；每张单在自己那份未被别的槽动过的订单簿上成交。":
+      "Revision 2: stops and targets do not wait for the hour - every ticker poll checks them and a crossing submits the sell; each order fills against its own copy of the book, untouched by the other slots.",
+    "上一轮决策用了上一根 K 线": "last decision round used the previous candle",
+    "上一轮决策的 K 线没有全部更新到边界": "last decision round's candles did not all reach the boundary",
+    "修订 2 的更正：每张单在自己那份未被别的槽动过的订单簿上成交，相同的单成交相同；平均成本按交易对自身的精度记录；止损/止盈在每次行情轮询时检查，不等整点；时间出场与最短持有按决策网格计时；卖出后留下的可卖余量在下一轮卖掉。":
+      "What revision 2 corrects: every order fills against its own copy of the book, untouched by the other slots, so identical orders fill identically; the average cost is kept at the pair's own precision; stops and targets are checked on every ticker poll, not only on the hour; time exits and the minimum hold are counted on the decision grid; a sellable remainder left by an exit is sold at the next round.",
+    "修订 2 的更正：入场区间不会低到止损价（#27/#32）；成交量基线把没成交的日子算作 0，至少要 3 个已知日（#28/#53）；盘前的 ATR 与回看区间也取夜盘（#33）；入场有效期从提交后第一根开盘的柱算起（#55）；VWAP 出场用两个收盘价所在时段的 VWAP（#54）；出场改价时旧单在它已生效的那根柱上继续有效（#26/#31）；持仓管理读入场以来的每一根柱（#61）；非常规时段的离群下影线既不算回踩也不触发止损（#41）；次日熔断按当天结束时的净值判断（#4/#5）；24 小时板的完整性也检查非常规时段（#37）。":
+      "What revision 2 corrects: an entry zone never reaches down to its stop (#27/#32); the volume baseline counts untraded days as zero and needs 3 known days (#28/#53); pre-market draws its ATR and lookback from the overnight session too (#33); an entry's validity counts from the first bar that opens after it was submitted (#55); VWAP_EXIT reads the VWAP of the session its two closes were printed in (#54); a repriced exit keeps the old order live for the bar it was already live at (#26/#31); position management reads every bar since the entry (#61); an outlier low wick in an extended session is neither a pullback nor a stop (#41); the next day's breaker is judged from the equity the day ended on (#4/#5); a 24h board's completeness checks the extended sessions too (#37).",
+    "修订 1 · 2026-09-23 审计之前的引擎": "revision 1 · the engine as it was before the 2026-09-23 audit",
+    "修订 1 仍按审计前的方式运行，修订 2 更正的这些行为在这里照旧：入场区间可能低到止损价以下（#27/#32）；改价后的出场单隔一根柱才检查一次（#26/#31）；按提交时刻计时的成交模型下，入场窗口实际只有 entry_ttl_bars−1 根柱（#55）。":
+      "Revision 1 runs as the engine did before the audit, so the behaviours revision 2 corrects still hold here: an entry zone can reach below its stop (#27/#32); a repriced exit is tested only on every other bar (#26/#31); under the submit-timed fill model an entry's window is really entry_ttl_bars-1 bars (#55).",
+    "24 小时交易下还有：VWAP 出场只看常规盘的 VWAP（#54）；盘前只有 VWAP 回踩策略能入场，相对强度突破只有回看 8 根柱时才行（#33）。":
+      "With 24-hour trading also: VWAP_EXIT reads the regular session's VWAP only (#54); in pre-market only the VWAP reclaim strategy can enter, and the relative-strength breakout only at an 8-bar lookback (#33).",
+    "记录保持原样、可复现，不回溯修改。": "The record stays as it is and reproducible; nothing is changed after the fact.",
+    // ---- 2026-09-23 audit group E: leaders, baselines, stale prices, feed, chart, retired boards
+    "无领先": "no leader",
+    "参照组合的买入时刻": "reference portfolios bought at",
+    "上一日没有冻结收盘价（可能错过了日终结算），基准退回本金，这实际上是建仓以来收益":
+      "no close was frozen for the previous day (a daily settlement may have been missed), so the baseline falls back to the principal: this is really a since-inception return",
+    "本槽今天首日运行，本金即当日基准": "this slot's first session: the principal is the day's baseline",
+    "今日（上一日待结算）": "Today (prior day settling)",
+    "今日（上一日未冻结）": "Today (prior day unfrozen)",
+    "当日基准": "day baseline", "上一日冻结收盘": "the previous day's frozen close",
+    "含陈旧价": "includes stale prices", "最旧": "oldest", "估值含陈旧价": "valued on stale prices",
+    "故障": "fault",
+    "图上是 ET 日历日": "the chart shows the ET calendar day",
+    "今日从 00:00 ET 起算，到现在过了": "today starts at 00:00 ET and so far that is",
+    "，右侧是还没发生的时间": " - the right of the axis is time that has not happened yet",
+    "夜盘也有成交，未着色": "the overnight session trades too and is not shaded",
+    "其余时间没有交易": "nothing trades outside them",
+    "已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日（00:00–24:00 ET）」看全天":
+      "fitted to the session running now (after the close that is the regular session plus its after-hours tail); "
+      + "pick Today (00:00-24:00 ET) to see the whole day",
+    "此实验已停止发布": "This experiment is no longer published",
+    "这里的数据不再更新": "the data here will not update",
+    "当前实验": "current experiment",
+    "这个页面的实验列表里没有": "This page's experiment list does not include",
+    "它可能已停止发布，显示的内容不一定是最新的": "it may no longer be published, and what is shown may not be current",
+    "这个板块冻结时打开了 2026-09-23 全面审计后的引擎修正（execution_model.revision）；更早的实验按修订 1 运行，它们的记录保持可复现。":
+      "This board was frozen with the engine corrections from the 2026-09-23 full audit switched on (execution_model.revision); earlier experiments run as revision 1, so their records stay reproducible.",
     "并列于淘汰线": "tied at the elimination line",
     "同分，按槽位编号决定淘汰，不代表表现更差": "equal scores; the slot number decided, which does not mean they did worse",
     "个槽当日只有": "slots produced only",
@@ -1548,12 +1689,12 @@ const I18N = {
     "仅观察": "watch only", "数据预热": "warming up", "受限": "restricted", "持有但已出池": "held, no longer in the pool", "淘汰": "eliminated", "当日净资产收益率（默认：今日谁表现最好）": "daily net equity return (default: who did best today)", "滚动共同窗口净收益（稳健实验，需最小观察期）": "net return over a rolling common window (the robust arena; needs a minimum observation period)", "累计净资产收益率（资金槽历史排名，继任策略继承旧槽负担）": "cumulative net equity return (ranks the slot's whole history; a successor inherits its predecessor's P&L)", "滚动窗口净收益": "net return over a rolling window", "Paper 实盘观察到": "observed in live paper", "已实现（代码在，未跑过）": "implemented (the code exists; it has not been run)", "离线测试过（历史/回放）": "tested offline (history / replay)", "被阻断（缺授权、预算或数据）": "blocked (missing authorisation, budget or data)", "24/7 现货": "24/7 spot", "按名单顺序（旧行为对照）": "in list order (the old behaviour, as a control)", "按名单顺序（对照组）": "in list order (the control)", "按最窄止损": "by tightest stop", "按最宽止损": "by widest stop", "近止盈 1.5R": "near target, 1.5R", "远止盈 3.0R": "far target, 3.0R", "按相对大盘强度": "by strength against the market", "按相对成交量": "by relative volume", "按风险回报比": "by risk/reward ratio", "参考阈值": "reference threshold", "更高成交量门槛": "higher volume floor", "策略": "Strategy",
     "持续": "open-ended", "轮数据不全": "rounds had incomplete data", "个版本": "versions", "在岗": "active", "已进行的天数 / 计划天数 · 已结算的进化轮数（括号内为数据不完整、未进化的轮次） · 出现过的策略版本总数与当前在岗数": "days run / days planned · evolution rounds settled (in brackets: rounds whose data was incomplete, so nothing evolved) · strategy versions seen in total, and how many are active now",
     "目的": "Purpose", "进展": "Progress", "进化改了": "Evolved", "今天": "Today", "注意": "Note", "还没进化，十个都是初始版本": "no evolution yet; all ten are their original versions", "只列被改过的参数，没列出的至今没被动过": "only parameters that changed are listed; the rest are untouched", "模拟盘。领先 ≠ 有效——有效与否看「研究状态」第 ④ 格。": "Paper trading. Leading ≠ working - box ④ of the Research status panel answers that.", "每天淘汰后三名，前三名各留一个微调后代。看互相淘汰能不能长出更好的策略。": "The bottom three are replaced daily by tweaked offspring of the top three. Does mutual elimination grow anything better?", "十个策略全程不进化的对照组。回答：进化有没有比不动更好。": "Ten strategies that never evolve, as the control: did evolving beat standing still?", "每日进化，但评估日不够就不许淘汰，免得一两天的运气定去留。": "Daily evolution, but no elimination until enough days are scored - luck should not decide who stays.", "开发区：随便试，失败也留着。产出只是候选，永远不能自称成功。": "The workshop: try anything, keep the failures. Its output is a candidate, never a success.", "版本锁死，只用锁死之后的新数据检验。唯一能产生「被证明」的地方。": "Versions locked, tested only on data produced after the lock. The only place a proven verdict comes from.", "只收事前登记规则判定 PASS 的版本。空着就是结论。": "Admits only a version a pre-registered rule passed. Empty is the conclusion.",
-    "今日 = 你这一天，00:00 到 24:00（ET）": "today = your day, 00:00 to 24:00 (ET)", "盘前 04:00、常规盘 09:30–16:00、盘后到 20:00 用底色标出；其余时间没有交易": "pre-market 04:00, regular 09:30-16:00 and post to 20:00 are shaded; nothing trades outside them", "计分按交易日": "scored on trading day",
+    "今日 = 你这一天，00:00 到 24:00（ET）": "today = your day, 00:00 to 24:00 (ET)", "计分按交易日": "scored on trading day",
     "日亏熔断已触发": "daily-loss breaker tripped", "累计/回撤熔断已触发": "cumulative / drawdown breaker tripped", "熔断状态读不到：未知": "breaker state could not be read: unknown", "实时估值未知（缺报价）": "live valuation unknown (no quote)", "账本读不到（文件缺失/损坏）": "ledger unreadable (missing or corrupt file)", "熔断状态读取失败：未知，不代表没有触发": "the breaker state could not be read: unknown, which is not the same as nothing having tripped", "日亏": "daily loss",
     "…共": "…", "个并列": "tied in all",
     "个交易日": "trading days", "当日并列第一": "tied for first today", "（同分，排序按槽位编号，不代表更好）": " (equal; ordered by slot number, which says nothing about which is better)",
     "进化改了什么": "What evolution changed", "改动集中在": "the knobs it keeps turning", "回到原值": "back to its original value", "次": "times", "等": "and", "个参数": "parameters in all", "其余参数至今没被动过": "every other parameter is untouched so far", "还没有一轮进化落地，十个策略仍是初始版本。": "no evolution round has landed yet; all ten strategies are still their original versions.",
-    "已进行": "running for", "计划": "of a planned", "（持续运行）": " (open-ended)", "UTC 日": "UTC days", "已结算": "settled", "轮进化": "evolution rounds", "轮因数据不完整未进化": "rounds did not evolve - the day's data was incomplete", "共出现过": "a total of", "个策略版本": "strategy versions so far", "当前在岗": "currently active:", "个": "", "今天领先": "today's leader", "当日净值未冻结，以日结为准": "today's equity is a live figure, not the frozen daily close", "这是模拟盘。领先不等于有效——是否有效由「研究状态」那一栏的第 ④ 格回答，现在它是空的。": "This is paper trading. Leading is not the same as working - whether anything works is answered by box ④ of the Research status panel, and that box is empty.", "让十个策略每天同场竞争：每天结算一次，前三名各留一个微调后代，顶掉后三名。目的是看「让它们互相淘汰」能不能自己长出更好的策略。": "Ten strategies compete daily: each day the top three each leave one tweaked offspring, which displaces the bottom three. The question is whether letting them eliminate each other grows anything better.", "十个策略全程不进化，作为对照。它存在的意义就是回答一句话：进化到底有没有比原地不动更好。": "Ten strategies frozen for the whole run, as the control. It exists to answer one question: did evolving beat standing still.", "和每日进化一样，但要求足够多的评估日才允许淘汰，避免一两天的运气决定去留。": "Daily evolution, but no elimination until enough days have been scored - so a day or two of luck cannot decide who stays.", "开发区：可以随便试假设、试参数，失败会被保留下来。它永远不能自己宣布成功——产出只是「值得拿去验证的候选」。": "The workshop: try any hypothesis, any parameter, and failures are kept. It can never declare its own success - its output is only a candidate worth validating.", "把十个版本锁死，用锁死之后才产生的数据检验它们。期间不许改参数，否则就是边考边改答案。这是唯一能产生「被证明」结论的地方。": "Ten versions locked, tested on data produced only after the lock. No parameter may change during it, or you are editing the answer during the exam. This is the only place a 'proven' verdict can come from.", "只接收带着事前登记规则 PASS 的版本。没有合格者就空着——空位是结论，不是缺陷。": "Admits only a version carrying a PASS from a pre-registered rule. No qualifier means it stays empty - empty is the conclusion, not a defect.", "这一栏只回答一个问题：有没有策略被真正证明过？": "This panel answers one question: has any strategy actually been shown to work?", "从左到右是五道关卡，通过检验才能往右走。": "Five gates, left to right; a strategy moves right only by passing something.", "目前没有任何策略走到第 ④ 格。": "Nothing has reached box ④ yet.", "目前有 ": "So far ", "个走到了第 ④ 格。": " have reached box ④.", "这不是选股推荐。": "These are not stock picks.", "名单是实验开始前用机械规则筛一次定下来的，之后不再变动——不会因为哪只涨了就加进来，也不会因为哪只跌了就踢出去。": "The list was screened once by a mechanical rule before the experiment began and has not changed since - nothing joins because it went up, nothing leaves because it went down.", "只可交易": "tradable", "另有基准": "plus the benchmarks", "，只用来判断大盘方向，永远不可买卖": ", used only to read the market's direction and never tradable", "冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。": "Frozen means that over this window any difference between the agents can only come from the strategies themselves, never from one of them having been handed a better list.", "这个竞技场按 UTC 日计分：今日从 00:00 UTC 起算，到现在只过了": "this arena is scored by UTC day: today starts at 00:00 UTC and so far that is only", "，横轴因此只有这么长": " of it, which is why the axis is this short", "想看满 24 小时，请在上面选「最近 24 小时」": "for a full 24 hours pick “last 24 hours” above", "小时": "hours", "个交易日可合计（有槽当日估值未知）": "trading days can be summed (some slots have an unknown valuation that day)", "收起，只留下这些 Agent 正在持仓、今日成交或最近成交的股票（外加基准）": "collapse to just what the agents hold, traded today or traded recently (plus the benchmarks)", "可交易名单": "Tradable list", "那一轮": "round", "分钟一轮": "min per round", "十个 Agent 共用这一份名单 · 实验创建时冻结，全程不变": "all ten agents share this list - frozen when the experiment was created and unchanged since", "这个实验想回答什么": "What is this trying to find out", "进展到哪了": "Where it has got to", "今天怎么样": "How today is going", "要注意": "Worth knowing", "计分按 UTC 日": "scored by UTC day", "今日（00:00–24:00 ET）": "Today (00:00-24:00 ET)", "规则": "rule",
+    "已进行": "running for", "计划": "of a planned", "（持续运行）": " (open-ended)", "UTC 日": "UTC days", "已结算": "settled", "轮进化": "evolution rounds", "轮因数据不完整未进化": "rounds did not evolve - the day's data was incomplete", "共出现过": "a total of", "个策略版本": "strategy versions so far", "当前在岗": "currently active:", "个": "", "今天领先": "today's leader", "当日净值未冻结，以日结为准": "today's equity is a live figure, not the frozen daily close", "这是模拟盘。领先不等于有效——是否有效由「研究状态」那一栏的第 ④ 格回答，现在它是空的。": "This is paper trading. Leading is not the same as working - whether anything works is answered by box ④ of the Research status panel, and that box is empty.", "让十个策略每天同场竞争：每天结算一次，前三名各留一个微调后代，顶掉后三名。目的是看「让它们互相淘汰」能不能自己长出更好的策略。": "Ten strategies compete daily: each day the top three each leave one tweaked offspring, which displaces the bottom three. The question is whether letting them eliminate each other grows anything better.", "十个策略全程不进化，作为对照。它存在的意义就是回答一句话：进化到底有没有比原地不动更好。": "Ten strategies frozen for the whole run, as the control. It exists to answer one question: did evolving beat standing still.", "和每日进化一样，但要求足够多的评估日才允许淘汰，避免一两天的运气决定去留。": "Daily evolution, but no elimination until enough days have been scored - so a day or two of luck cannot decide who stays.", "开发区：可以随便试假设、试参数，失败会被保留下来。它永远不能自己宣布成功——产出只是「值得拿去验证的候选」。": "The workshop: try any hypothesis, any parameter, and failures are kept. It can never declare its own success - its output is only a candidate worth validating.", "把十个版本锁死，用锁死之后才产生的数据检验它们。期间不许改参数，否则就是边考边改答案。这是唯一能产生「被证明」结论的地方。": "Ten versions locked, tested on data produced only after the lock. No parameter may change during it, or you are editing the answer during the exam. This is the only place a 'proven' verdict can come from.", "只接收带着事前登记规则 PASS 的版本。没有合格者就空着——空位是结论，不是缺陷。": "Admits only a version carrying a PASS from a pre-registered rule. No qualifier means it stays empty - empty is the conclusion, not a defect.", "这一栏只回答一个问题：有没有策略被真正证明过？": "This panel answers one question: has any strategy actually been shown to work?", "从左到右是五道关卡，通过检验才能往右走。": "Five gates, left to right; a strategy moves right only by passing something.", "目前没有任何策略走到第 ④ 格。": "Nothing has reached box ④ yet.", "目前有 ": "So far ", "个走到了第 ④ 格。": " have reached box ④.", "这不是选股推荐。": "These are not stock picks.", "名单是实验开始前用机械规则筛一次定下来的，之后不再变动——不会因为哪只涨了就加进来，也不会因为哪只跌了就踢出去。": "The list was screened once by a mechanical rule before the experiment began and has not changed since - nothing joins because it went up, nothing leaves because it went down.", "只可交易": "tradable", "另有基准": "plus the benchmarks", "，只用来判断大盘方向，永远不可买卖": ", used only to read the market's direction and never tradable", "冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。": "Frozen means that over this window any difference between the agents can only come from the strategies themselves, never from one of them having been handed a better list.", "小时": "hours", "个交易日可合计（有槽当日估值未知）": "trading days can be summed (some slots have an unknown valuation that day)", "收起，只留下这些 Agent 正在持仓、今日成交或最近成交的股票（外加基准）": "collapse to just what the agents hold, traded today or traded recently (plus the benchmarks)", "可交易名单": "Tradable list", "那一轮": "round", "分钟一轮": "min per round", "十个 Agent 共用这一份名单 · 实验创建时冻结，全程不变": "all ten agents share this list - frozen when the experiment was created and unchanged since", "这个实验想回答什么": "What is this trying to find out", "进展到哪了": "Where it has got to", "今天怎么样": "How today is going", "要注意": "Worth knowing", "计分按 UTC 日": "scored by UTC day", "今日（00:00–24:00 ET）": "Today (00:00-24:00 ET)", "规则": "rule",
     "十个 Agent 共用一个币池 · 只按能不能顺利成交筛选，不看涨跌": "all ten agents trade one pool - chosen purely on whether an order can be filled, never on which way a coin might go",
     "历史不够": "too little history", "排名靠后": "ranked below the line", "行情过期": "quotes stale", "交易所不可用": "unavailable at the venue", "仍持有但已出池": "held but out of the pool", "交易对仍可交易": "Pairs still tradable", "每轮向交易所核对一次：下架或暂停的币会被移出，不会拿着失效的代码下单": "re-checked with the venue each cycle: a delisted or halted coin leaves the pool rather than being ordered with a dead symbol", "是否用 AI 模型": "Uses an AI model?", "否：全部由固定规则决定": "No - every decision comes from fixed rules", "每笔手续费": "Fee per trade", "按吃单价计，约每 $10,000 收 $": "taker side; about $ per $10,000 traded: ", "虚拟成交量不享受任何折扣档": "virtual volume earns no discount tier",
     "十槽合计": "ten slots combined", "最强基准": "best reference", "超额": "excess",
@@ -1576,11 +1717,9 @@ const I18N = {
     "每个完整交易日收盘后一轮": "one round after each complete trading day's close",
     "还没有进化轮次": "no evolution round yet",
     "持有 BTC": "hold BTC", "持有 ETH": "hold ETH", "BTC/ETH 各半": "BTC/ETH 50/50", "持有现金": "hold cash",
-    "今日（UTC 日）": "Today (UTC day)",
     "这个竞技场按 UTC 日计分；今天的 UTC 日从": "this arena scores on UTC days; today's UTC day began at",
     "开始": "", "这个 UTC 日才过了": "this UTC day is only",
     "分钟，所以横轴很短；想看满 24 小时请选「最近 24 小时」": "minutes old, which is why the axis is short - pick \u300cLast 24 hours\u300d for a full day",
-    "这个竞技场按 UTC 日计分，今日从 00:00 UTC 起算": "this arena scores on UTC days; today starts at 00:00 UTC",
     "纵轴贴合数据（本金线在范围外）": "axis fits the data (principal off range)",
     "本金线不在当前纵轴范围内：净值已离开本金较远，纵轴改为贴合可见数据": "the principal is outside the current y range: equity has moved well away from it, so the axis fits the visible data instead",
     "个槽净值相同，已合并": "slots share one equity (merged into one line)", "口径说明": "how to read this",
@@ -1788,29 +1927,71 @@ function publishLagS(s) {
    published page aged its own quotes by ~135 s on every one of those, and prices the publisher had just written
    drifted 新鲜 -> 陈旧 -> 未知 without anything actually going stale. The raw age is kept once and every pass
    recomputes from it. */
+/* Three more things it does since 2026-09-23 (audit 24 / 47), said here because the body is kept compact:
+     - the thresholds are the BOARD's own when the snapshot carries them (`market.fresh_s` / `unknown_s`: the crypto
+       board's 3 x ticker_s and mark_max_age_s). The crypto board has no entry in the stock table, so it fell to the
+       120 s default and a 150 s quote the server itself calls fresh read 陈旧;
+     - aging never UPGRADES a quote the server already called unknown, and one aged past `unknown` loses its price
+       and change, as live._blank_price does - a coloured percentage beside a price declared unusable is a claim;
+     - each held position is regraded the same way, and the stale-price qualifier recomputed from them. */
 function applyPublishLag(s) {
   const lag = publishLagS(s);
   if (lag == null) return s;
   s.publish_lag_s = lag;
-  const fresh = (STATIC.fresh_s || {}), closed = STATIC.closed_fresh_s || 21600, unknownAfter = STATIC.unknown_s || 86400;
-  const sess = (s.market || {}).session;
-  const limit = (sess && isNum(fresh[sess])) ? fresh[sess] : (sess === "closed" ? closed : (STATIC.fresh_default_s || 120));
+  const fresh = (STATIC.fresh_s || {}), closed = STATIC.closed_fresh_s || 21600, m = s.market || {};
+  const sess = m.session;
+  const limit = isNum(m.fresh_s) ? m.fresh_s
+    : (sess && isNum(fresh[sess])) ? fresh[sess] : (sess === "closed" ? closed : (STATIC.fresh_default_s || 120));
+  const unknownAfter = isNum(m.unknown_s) ? m.unknown_s : (STATIC.unknown_s || 86400);
   Object.values(s.quotes || {}).forEach(q => {
     if (!isNum(q.age_s) && !isNum(q.age_s_raw)) return;
     if (!isNum(q.age_s_raw)) q.age_s_raw = q.age_s;     // remember the publisher's own number, once
+    if (q.status_raw === undefined) q.status_raw = q.status;
     q.age_s = q.age_s_raw + lag;
     q.status = q.age_s <= limit ? "fresh" : (q.age_s <= unknownAfter ? "stale" : "unknown");
+    if (q.status_raw === "unknown") q.status = "unknown";
+    if (q.status === "unknown") { q.price = q.price_f = q.change = q.change_pct = null; }
   });
-  (s.slots || []).forEach(a => (a.positions || []).forEach(p => {
-    if (!isNum(p.price_age_s) && !isNum(p.price_age_s_raw)) return;
-    if (!isNum(p.price_age_s_raw)) p.price_age_s_raw = p.price_age_s;
-    p.price_age_s = p.price_age_s_raw + lag;
-  }));
   if (s.feed && (isNum(s.feed.last_ok_age_s) || isNum(s.feed.last_ok_age_s_raw))) {
     if (!isNum(s.feed.last_ok_age_s_raw)) s.feed.last_ok_age_s_raw = s.feed.last_ok_age_s;
     s.feed.last_ok_age_s = s.feed.last_ok_age_s_raw + lag;
   }
+  (s.slots || []).forEach(a => (a.positions || []).forEach(p => {
+    if (!isNum(p.price_age_s) && !isNum(p.price_age_s_raw)) return;
+    if (!isNum(p.price_age_s_raw)) p.price_age_s_raw = p.price_age_s;
+    if (p.price_status_raw === undefined) p.price_status_raw = p.price_status;
+    p.price_age_s = p.price_age_s_raw + lag;
+    if (p.price_status_raw === "fresh" || p.price_status_raw === "stale") {
+      p.price_status = p.price_age_s <= limit ? "fresh" : (p.price_age_s <= unknownAfter ? "stale" : "unknown");
+    }
+  }));
+  lagStaleness(s);
   return s;
+}
+
+/* The stale-price qualifier (web.merge_live's live_price_status / live_stale_symbols / live_price_max_age_s),
+   recomputed from the positions after the publish lag has aged them - the server stamped it at publish time. A
+   position regraded past `unknown` still counts as stale here: the equity beside it was valued on that print. */
+function lagStaleness(s) {
+  const stale = [];
+  let oldest = null, priced = 0;
+  (s.slots || []).forEach(a => {
+    if (a.live_price_status !== "fresh" && a.live_price_status !== "stale") return;   // flat, or not valued
+    const ps = (a.positions || []).filter(p => p.live_price != null);
+    const st = ps.filter(p => p.price_status && p.price_status !== "fresh").map(p => p.symbol);
+    const ages = ps.map(p => p.price_age_s).filter(isNum);
+    a.live_price_status = st.length ? "stale" : "fresh";
+    a.live_stale_symbols = [...new Set(st)].sort();
+    a.live_price_max_age_s = ages.length ? Math.max(...ages) : null;
+    priced++;
+    if (st.length) stale.push(a.slot_id);
+    if (isNum(a.live_price_max_age_s)) oldest = Math.max(oldest == null ? 0 : oldest, a.live_price_max_age_s);
+  });
+  if (s.system && priced) {
+    s.system.live_price_status = stale.length ? "stale" : "fresh";
+    s.system.live_stale_slots = stale;
+    s.system.live_price_max_age_s = oldest;
+  }
 }
 
 /* How long a bad connection has to last before the page says so in the body. A single failed poll is ordinary and
@@ -2115,7 +2296,8 @@ function faultBanner(s, add) {
   const recent = f.recent || [];
   if (recent.length) {
     const by = f.counts || {};
-    const zh = { fault: "运行故障", fetch_failed: "行情抓取失败", close_failed: "日终结算失败", calendar_missing: "交易日历缺失", outage_marked: "行情中断", week_backfill_failed: "周线基线回补失败" };
+    const zh = { fault: "运行故障", fetch_failed: "行情抓取失败", close_failed: "日终结算失败", calendar_missing: "交易日历缺失", outage_marked: "行情中断", week_backfill_failed: "周线基线回补失败",
+                 week_backfill_partial: "周线基线部分缺失" };
     // built with tr() rather than left to translateStatic: the count sits INSIDE the sentence, so the whole
     // thing is one text node and a whole-node match can never fire on it. An unreadable fault banner is the
     // worst place for this to happen - it is the one message a reader has to act on.
@@ -2150,6 +2332,69 @@ function faultBanner(s, add) {
   if (r && r.fault_fields_written === false) {
     add("", `<span>ℹ️</span><span>这个实验的 runner 运行的是<b>较早版本的代码</b>，不会写入逐槽故障计数：页面上的「无故障」只代表<b>事件表里没有</b>，槽级状态显示为未知。</span>`);
   }
+  /* A partial week baseline is not a fault that recovers: it is recorded once and stays true all day - these symbols
+     have no multi-day baseline today (rel_volume and the prior-day range need it), every other symbol's is in (audit
+     #36). The event log's banner reads "recovered" fifteen minutes later, so the state itself is said while it
+     holds: the runner's own record, for today's trading day only. */
+  const wp = r && r.week_backfill_partial;
+  const td = (s.market || {}).trading_day;
+  if (wp && typeof wp === "object" && Array.isArray(wp.symbols) && wp.symbols.length && (!td || wp.trading_day === td)) {
+    const n = wp.symbols.length;
+    add("", `<span>ℹ️</span><span><b>${tr("周线基线部分缺失")}</b>${col()}${esc(wp.symbols.slice(0, 8).join(" "))}${n > 8 ? ` ${tr("…共")} ${n}` : ""}`
+      + par(LANG === "en" ? `${n === 1 ? "this symbol has" : "these symbols have"} no multi-day baseline today: the venue does not serve ${n === 1 ? "it" : "them"}, or the payload was refused. Every other symbol's is in`
+                          : `这些标的今天没有多日基线：行情源不提供，或数据未通过校验；其余标的的基线已就绪`) + `</span>`);
+  }
+}
+
+/* A published board that is no longer published says so, and points at the one that is.
+
+   The publisher never removed a replaced experiment's folder, so an old shared link rendered its last snapshot -
+   运行中, 实时（未冻结）, Day 1/45 - a day after it stopped, with only the snapshot's age as a hint (measured on
+   ?experiment=stock-research-20260922d). The publisher now overwrites such a folder with a `retired` marker; this
+   is the page's half. Independently, an id this BUILD does not list is said to be unlisted, which covers the
+   window before a marker exists. Static pages only: the live dashboard serves every experiment it can read.
+
+   "Listed" means the build's list OR the snapshot's own published list (review of 4a49624). The primary link,
+   stelux.ai/arena, is a page-only build committed by hand, so its frozen list goes stale at the next replacement:
+   with build {23d, crypto22c} and 23e published, 23d's marker sent the reader to 23e, and 23e's page then called
+   the live board unpublished and linked straight back to the retired 23d - a loop, reproduced in the node probe.
+   The publisher filters `s.experiments` to what it publishes NOW (publish.py emit), so a FRESH snapshot's list is
+   newer than any hand-committed build. Every snapshot lists itself, though, including one left behind in a folder
+   nobody publishes any more - the very case the unlisted banner is for - so the snapshot's list only counts while
+   the snapshot is fresh: published within UNLISTED_TRUST_S (the stock publisher's slowest cadence is 1800 s
+   while the market is closed; two of those plus the visibility lag). An age the page cannot measure (a live
+   server, no published_utc) is trusted. The link is the marker's own `default` (the publisher's current pick), else
+   the build's default only when a trusted published list does not leave it out. */
+const UNLISTED_TRUST_S = 7200;
+function retiredBanner(s, add, st) {
+  const S = st === undefined ? STATIC : st;       // `st`: the build's static config, passed in by the node probe
+  if (!S) return;
+  const lag = s && isNum(s.publish_lag_s) ? s.publish_lag_s : null;
+  // what the snapshot's publisher listed, at any age; `pub` is the same list only while it is recent enough to vouch
+  // that an id is still published. The LINK uses the list at any age: if even an old snapshot names this board and
+  // leaves out the build's default, that default was not being published then, so it is not offered as current
+  // (review of the page pass: past the trust window the stale build otherwise linked 23e back to the retired 23d)
+  const seen = ((s && s.experiments) || []).map(e => e && e.experiment_id).filter(Boolean);
+  // A snapshot published AFTER this copy was built knows the current list better than the copy, at any age: the
+  // hand-committed stelux.ai build is exactly such a stale copy. Without a build stamp (an older build) the age gate
+  // decides - a folder nobody publishes lists itself, and only a recent list is evidence of anything current.
+  const tb = S.built_utc ? Date.parse(S.built_utc) : NaN, ts = s && s.published_utc ? Date.parse(s.published_utc) : NaN;
+  const newer = isFinite(tb) && isFinite(ts) && ts > tb;
+  const pub = (newer || lag == null || lag <= UNLISTED_TRUST_S) ? seen : [];
+  const def = (s && s.default) || ((!pub.length || pub.includes(S.default)) ? (S.default || "") : "");
+  const link = def ? `<a href="?experiment=${encodeURIComponent(def)}">${esc(def)}</a>` : "";
+  if (s && s.retired === true) {
+    const why = s.retired_why ? par(esc(String(s.retired_why).slice(0, 120))) : "";
+    add("err", `<span>📦</span><span><b>${tr("此实验已停止发布")}</b>${why}${col()}${tr("这里的数据不再更新")}`
+      + (link ? ` · ${tr("当前实验")}${col()}${link}` : "") + `</span>`);
+    return;
+  }
+  const built = S.experiments || [];
+  const listed = new Set([...built, ...pub]);
+  if (STATE.exp && built.length && !listed.has(STATE.exp)) {
+    add("err", `<span>📦</span><span><b>${tr("这个页面的实验列表里没有")} ${esc(STATE.exp)}</b>${col()}${tr("它可能已停止发布，显示的内容不一定是最新的")}`
+      + (link && def !== STATE.exp ? ` · ${tr("当前实验")}${col()}${link}` : "") + `</span>`);
+  }
 }
 
 function renderBanners(s) {
@@ -2170,6 +2415,7 @@ function renderBanners(s) {
   // any text selection inside it, so the command can never actually be selected.
   const items = [];
   const add = (cls, html) => items.push(cls + "\u0000" + html);
+  retiredBanner(s, add);
   faultBanner(s, add);
   const paint = () => {
     const sig = items.length + "~" + items.join("~~");
@@ -2198,9 +2444,13 @@ function renderBanners(s) {
 }
 
 function renderEmptyState(s) {
-  // "there is nothing here" and "we could not read what is here" are different statements
+  // "there is nothing here" and "we could not read what is here" are different statements - and so is "this one
+  // was retired": its banner names the current board, and the body must not read as an empty environment
   const unreadable = s.reason === "registry_unreadable" || s.reason === "experiment_unreadable";
-  $("agents").innerHTML = unreadable
+  $("agents").innerHTML = s.retired === true
+    ? `<div class="card pad blank" style="grid-column:1/-1"><span class="ico">📦</span>
+       ${tr("此实验已停止发布")} <b>${esc(s.experiment_id || "")}</b><br><span class="muted">${tr("这里的数据不再更新")}</span></div>`
+    : unreadable
     ? `<div class="card pad blank" style="grid-column:1/-1"><span class="ico">⚠️</span>
        读不到实验 <b>${esc(s.experiment_id || "")}</b><br><span class="muted">${esc(s.note_zh || "账本文件可能损坏，或 init 没有完成。这不表示没有数据，只表示这次读不到。")}</span></div>`
     : `<div class="card pad blank" style="grid-column:1/-1"><span class="ico">🗂️</span>
@@ -2238,10 +2488,25 @@ function renderHero(s) {
   const sys = s.system || {}, ex = s.experiment || {};
   const live = isNum(sys.live_equity_cents);
   setNum($("sysEq"), live ? sys.live_equity_cents : null, v => usd(v));
-  $("eqtag").textContent = "· " + (live ? tr("实时（未冻结）") : tr(UNK));
+  // 实时 with a stale print inside it says so, and how stale: the published overnight board valued AAL on a
+  // 37-minute-old price under the words 实时（未冻结）
+  const staleTag = live && sys.live_price_status === "stale"
+    ? " · " + tr("含陈旧价") + (isNum(sys.live_price_max_age_s) ? par(`${tr("最旧")} ${dur(sys.live_price_max_age_s)}`) : "")
+    : "";
+  $("eqtag").textContent = "· " + (live ? tr("实时（未冻结）") : tr(UNK)) + staleTag;
   const d = $("sysDay"), t = $("sysTot");
   d.className = "chg num " + signCls(sys.live_day_pnl_cents);
   d.textContent = isNum(sys.live_day_pnl_cents) ? `${usd(sys.live_day_pnl_cents, { sign: true })} · ${bpPct(sys.live_day_return_bp)}` : UNK;
+  // the ten-slot 今日 carries the worst of its slots' baselines (system.prev_close_source), with the first such
+  // slot's days in the hover - from 20:00 to about 20:10 ET it was a two-day move printed as today's
+  const dk = $("sysDayK");
+  if (dk) {
+    const src = sys.prev_close_source;
+    const one = (s.slots || []).find(a => a.prev_close_source === src) || {};
+    const db = dayBasis(src ? { ...one, prev_close_source: src } : {});
+    dk.textContent = db.k;
+    dk.title = src ? db.tip : "";
+  }
   t.className = "chg num " + signCls(sys.live_pnl_cents);
   t.textContent = isNum(sys.live_pnl_cents) ? `${usd(sys.live_pnl_cents, { sign: true })} · ${bpPct(sys.live_return_bp)}` : UNK;
   $("sysPrin").textContent = usd(sys.principal_cents, { cents: false });
@@ -2250,6 +2515,9 @@ function renderHero(s) {
   setNum($("sPos"), posVal, v => usd(v, { cents: false }));
   const un = $("sUnreal");
   un.textContent = usd(sys.live_unrealized_cents, { sign: isNum(sys.live_unrealized_cents) && sys.live_unrealized_cents > 0 });
+  // on the crypto board the figure is net of the buy fee each position still carries (finding 29), which the bare
+  // word did not say; the drawer's two lines use the same labels
+  un.title = STATE.crypto ? tr("未实现（扣除买入费）") : "";
   un.style.color = isNum(sys.live_unrealized_cents) ? (sys.live_unrealized_cents > 0 ? cssVar("--green-ink") : sys.live_unrealized_cents < 0 ? cssVar("--red-ink") : "") : "";
   // drawdown is only shown when every scored day could be summed; "partial"/"unknown" render 未知, never $0
   const dd = $("sDD");
@@ -2285,8 +2553,10 @@ function renderHero(s) {
       + `<div class="bk">${esc(tr(r.k))}</div><div class="bv">${r.v}</div></div>`).join("");
   }
   $("mMetric").textContent = tr(ex.metric_zh || UNK);
+  // the cadence leads on BOTH boards: the crypto board evolves daily and the stock board weekly, and a chip that
+  // named only the weekly one left the daily one to be assumed
   $("mRule").textContent = (ex.keep_top != null)
-    ? `${ex.round_cadence === "weekly" ? `${tr("每周")} · ` : ""}${tr("留")} ${ex.keep_top} / ${tr("换")} ${ex.replace_bottom}`
+    ? `${ex.round_cadence === "weekly" ? `${tr("每周")} · ` : ex.round_cadence === "daily" ? `${tr("每天")} · ` : ""}${tr("留")} ${ex.keep_top} / ${tr("换")} ${ex.replace_bottom}`
     : tr(UNK);
   // Either spelling. The stock layer expands these counters to total/completed and the crypto layer used to
   // pass them through as t/c, so the panel read 未知 on every crypto experiment while the numbers were present.
@@ -2317,11 +2587,26 @@ function renderChips(s) {
     : r && r.alive === null ? cssVar("--orange-ink") : cssVar("--ink3");
   const f = s.feed || {};
   const fn = $("mFeed");
-  const fresh = isNum(f.last_ok_age_s) && f.last_ok_age_s < 60;
+  /* Graded against the feed's OWN cadence and fault state, not a fixed 60 s. The hub spaces its fetches by session on
+     purpose (live.SESSION_TTL_MULT: 300 s overnight and closed), so a healthy overnight feed read 陈旧 about 80% of
+     the time - every night and all weekend - while one that was actually failing looked exactly the same. One missed
+     refresh is tolerated; two is stale; an error or an active backoff is a fault whatever the age. The published
+     page keeps the fixed cut: its age includes the publishing pipeline, and the footer states that floor. */
+  const ttl = isNum(f.ttl_effective_s) ? f.ttl_effective_s : 0;
+  const limit = STATIC ? 60 : Math.max(60, 2 * ttl);
+  const faulty = !!f.backoff_active || (f.last_error != null && f.last_error !== "");
+  const fresh = isNum(f.last_ok_age_s) && !faulty && (STATIC ? f.last_ok_age_s < 60 : f.last_ok_age_s <= limit);
   fn.textContent = !f.enabled ? tr("已关闭")
     : !isNum(f.last_ok_age_s) ? tr("等待中")
+    : faulty ? `${tr("故障")} · ${Math.round(f.last_ok_age_s)}s`
     : `${fresh ? tr("正常") : tr("陈旧")} · ${Math.round(f.last_ok_age_s)}s`;
-  fn.style.color = f.enabled && fresh ? cssVar("--green-ink") : f.enabled && isNum(f.last_ok_age_s) ? cssVar("--orange-ink") : cssVar("--ink3");
+  fn.title = !f.enabled || !isNum(f.last_ok_age_s) ? ""
+    : faulty ? `${tr("行情源异常")}${f.last_error ? col() + String(f.last_error).slice(0, 160) : ""}${f.backoff_active ? tr("（退避重试中）") : ""}`
+    : STATIC ? "" : (LANG === "en"
+        ? `refreshed every ${Math.round(ttl)}s this session; stale only after ${Math.round(limit)}s without a successful fetch`
+        : `本时段每 ${Math.round(ttl)}s 刷新一次；超过 ${Math.round(limit)}s 没有成功抓取才算陈旧`);
+  fn.style.color = f.enabled && fresh ? cssVar("--green-ink") : f.enabled && faulty ? cssVar("--red-ink")
+    : f.enabled && isNum(f.last_ok_age_s) ? cssVar("--orange-ink") : cssVar("--ink3");
 }
 
 const SESSION_CAN = {
@@ -2329,6 +2614,9 @@ const SESSION_CAN = {
   // between decisions only fills pending orders - so "exits any time" was not true, and it hid why a 3% stop
   // can fill several points beyond 3%
   crypto_24_7: ["go", "24/7 现货 · 每个整点评估一次入场与出场（止损/止盈也按整点检查）"],
+  // execution_model.revision 2 (a9ebd89): a RULE_BASED slot's stop and take-profit are checked on every ticker poll,
+  // not only at the hourly round - the line above would tell a reader of the new board the opposite
+  crypto_24_7_rev2: ["go", "24/7 现货 · 每个整点评估入场与出场；止损/止盈在每次行情轮询时检查"],
   pre: ["exit", "盘前 · 只处理出场与估值，不评估入场"],
   regular: ["go", "常规盘 · 09:45–15:30 评估入场，全时段可出场"],
   post: ["exit", "盘后 · 只处理出场与估值，不评估入场"],
@@ -2421,8 +2709,10 @@ function renderTicker(s, keep) {
   wrap.dataset.session = sess;
   const is24 = !STATE.crypto && !!ex.trading_hours;
   const all24 = is24 && ex.trading_hours.entries === "all_sessions";
+  const pxRev2 = STATE.crypto && isNum(ex.execution_revision) && ex.execution_revision >= 2
+    && (ex.agent_mode || "RULE_BASED") === "RULE_BASED";
   const key = (all24 && SESSION_CAN[sess + "_24h_all"]) ? sess + "_24h_all"
-    : (sess === "overnight" && is24 ? "overnight_24h" : sess);
+    : (sess === "overnight" && is24 ? "overnight_24h" : (sess === "crypto_24_7" && pxRev2) ? "crypto_24_7_rev2" : sess);
   const [cls, text0] = SESSION_CAN[key] || ["stop", "未知时段"];
   const text = tr(text0);
   const chip = $("canchip");
@@ -2434,6 +2724,7 @@ function renderTicker(s, keep) {
     chip.textContent = sess === "regular" && !inWindow ? tr("常规盘 · 已过入场窗口，只出场") : text;
     chip.title = STATE.crypto
       ? tr("加密现货 24/7：每个决策周期（默认整点 +90s）在同一份快照上评估全部活跃币；下单后在下一份订单簿观测上按 taker 成交；按 UTC 日计分，00:00 UTC 为估值边界。")
+        + (pxRev2 ? " " + tr("修订 2：止损/止盈不等整点，每次行情轮询都检查，价格穿过就提交卖单；每张单在自己那份未被别的槽动过的订单簿上成交。") : "")
       : all24
         ? tr("24 小时交易：每个时段都评估入场与出场。常规盘 09:45–15:30；盘前、盘后、夜盘按各自开盘后 15 分钟到收盘前 30 分钟，每个策略的开盘区间、VWAP 和涨跌幅都从该时段开盘算起。周一至周四持仓可跨收盘持有，周五、节假日前和最后一天收盘前平仓，平仓后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%，非常规时段成交量小，仓位会小、也常成交不了。")
       : is24
@@ -2721,6 +3012,15 @@ function renderCrypto(s) {
   if (isNum(data.n_products_verified) && isNum(data.n_products) && data.n_products_verified < data.n_products)
     warn.push(`${tr("产品核验")} ${data.n_products_verified} / ${data.n_products}`);
   if (pend) warn.push(tr("有新版本待生效"));
+  // the last decision round's own account of its candles (6a04702): series the venue had not closed at the boundary
+  // were evaluated on the PREVIOUS completed candle. `candles_current` absent (an older runner) says nothing either way
+  const ldr = data.last_decision_round;
+  if (ldr && ldr.candles_current === false) {
+    const sc = Array.isArray(ldr.stale_candidates) ? ldr.stale_candidates.map(x => String(x).split(":")[0]) : [];
+    warn.push(sc.length
+      ? `${tr("上一轮决策用了上一根 K 线")}${col()}${[...new Set(sc)].slice(0, 6).join(" ")}${sc.length > 6 ? " …" : ""}`
+      : tr("上一轮决策的 K 线没有全部更新到边界"));
+  }
   // how long, not when: measured against the snapshot's own clock, like 距 UTC 日结 - a published photograph
   // reports the gap it saw. The absolute UTC time stays in the 下次决策 tile for whoever needs it.
   const dSecs = (data.next_decision_utc && s.ts_utc) ? (Date.parse(data.next_decision_utc) - Date.parse(s.ts_utc)) / 1000 : null;
@@ -2847,6 +3147,37 @@ function flipAgents(wrap, ids) {
    risk_state used to render exactly like a clean one, so a latched cumulative-loss breaker and a locked database
    were the same sentence. The server now reports `readable`; an OLDER runner does not send the key at all, and
    an absent key is also not a promise that nothing tripped - hence `=== false` rather than a falsy test. */
+/* Which baseline a "today" figure was measured from, as the label printed beside it and the hover under it.
+   The drawer used to be the only place that asked - the cards printed 今日 whatever `prev_close_source` said, so a
+   real missed close was labelled 今日 on the board - and its hover was a raw Chinese sentence on the English page.
+     prior_final          the frozen close of the day before today: a real day return
+     principal_first_day  the slot's first session: the principal IS the day's baseline
+     principal_no_close   no close was ever frozen: this is a since-inception figure, and says so
+     pending_close        the day before today is still being settled (20:00-20:10 ET, 00:00-00:05 UTC, retries)
+     missed_close         it was not frozen on time; both of these are measured from the last equity recorded before
+                          that day ended (`prev_close_mark_ny`), or unknown, and are never ranked
+   An older server sends none of these: the label stays 今日 and the hover names the baseline day, as before. */
+function dayBasis(a) {
+  const x = a || {}, en = LANG === "en";
+  const src = x.prev_close_source, day = x.prev_close_day, last = x.prev_final_day;
+  const at = x.prev_close_mark_ny ? `${mdhm(x.prev_close_mark_ny)} ET` : null;
+  if (src === "principal_no_close") return { k: tr("自建仓起"), tip: tr("上一日没有冻结收盘价（可能错过了日终结算），基准退回本金，这实际上是建仓以来收益") };
+  if (src === "principal_first_day") return { k: tr("今日"), tip: tr("本槽今天首日运行，本金即当日基准") };
+  if (src === "pending_close" || src === "missed_close") {
+    const head = src === "pending_close"
+      ? (en ? `the close of ${day || "the previous day"} is still being settled` : `上一日（${day || "?"}）的收盘还在结算中`)
+      : (en ? `the close of ${day || "the previous day"} was not frozen on time (the settlement failed or did not run)`
+               + (last ? `; the last frozen close is ${last}` : "")
+            : `上一日（${day || "?"}）的收盘没有按时冻结（结算失败或没有运行）` + (last ? `，最近一次冻结收盘是 ${last}` : ""));
+    const how = at
+      ? (en ? `; today is measured from the last equity recorded before it ended (${at}), and is not ranked`
+            : `；今日按它结束前记录的最后净值（${at}）计算，不参与排名`)
+      : (en ? "; no equity was recorded before it ended, so today is unknown" : "；它结束前没有记录到净值，今日未知");
+    return { k: tr(src === "pending_close" ? "今日（上一日待结算）" : "今日（上一日未冻结）"), tip: head + how };
+  }
+  return { k: tr("今日"), tip: `${tr("当日基准")}${col()}${day || tr("上一日冻结收盘")}` };
+}
+
 function breakerWords(br) {
   const b = br || {};
   if (b.daily || b.cum) {
@@ -2895,7 +3226,10 @@ function renderAgents(s) {
     btn.setAttribute("aria-pressed", String(ranked));
   }
   const slots = ordered;
-  const lead = (s.system || {}).leader_slot;
+  // the ring marks a LEADER, and a tie has none: ringing the lowest slot number of a ten-way tie was a claim about
+  // a strategy made by a sort order, and ringing all ten on a flat day would mean nothing
+  const lv = leaderView(s.system);
+  const lead = lv.tie === false ? lv.slots[0] : null;
   const live = new Set(slots.map(a => a.slot_id));
   // drop anything that is not a card for a current slot -- including the empty-state placeholder,
   // which has no data-slot and would otherwise sit above the ten real cards forever
@@ -2951,7 +3285,8 @@ function renderAgents(s) {
           : (inert.length
             ? `按当前实时名次属于末 ${nRep} 名，但本轮不会替换：${inert.join("、")}`
             : `按当前实时名次属于末 ${nRep} 名。资金槽与本金永久保留，被替换的是槽里的策略版本；`
-            + `实际淘汰以 UTC 日结冻结后的当日成绩为准，现在只是实时推演。`);
+            // the board's own boundary: a stock board freezes at its 20:10 close, not at a UTC day end
+            + `实际淘汰以${STATE.crypto ? " UTC 日结" : "收盘"}冻结后的当日成绩为准，现在只是实时推演。`);
       }
       const rk = n.querySelector(".rank");
       rk.textContent = isNum(a.live_rank) ? a.live_rank : "–";
@@ -3004,8 +3339,10 @@ function renderAgents(s) {
       }
       const row = n.querySelector(".arow");
       const dayCls = signCls(a.live_day_return_bp);
+      // the same label the drawer uses: a since-inception figure or an unfrozen baseline must not read as 今日
+      const db = dayBasis(a);
       row.innerHTML = `<span class="chg s num ${dayCls}">${isNum(a.live_day_return_bp) ? bpPct(a.live_day_return_bp) : UNK}</span>
-        <span class="muted">今日</span>
+        <span class="muted" title="${esc(db.tip)}">${esc(db.k)}</span>
         <span class="muted num">累计 <b style="color:${isNum(a.live_return_bp) ? (a.live_return_bp > 0 ? cssVar("--green-ink") : a.live_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_return_bp) ? bpPct(a.live_return_bp) : UNK}</b></span>
         <span class="muted num" title="${tr("策略任内收益：本策略版本接手这个资金槽之后的收益，不含前任的盈亏")}">${tr("任内")} <b style="color:${isNum(a.live_tenure_return_bp) ? (a.live_tenure_return_bp > 0 ? cssVar("--green-ink") : a.live_tenure_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_tenure_return_bp) ? bpPct(a.live_tenure_return_bp) : UNK}</b>${isNum(a.tenure_sessions) ? ` <span class="muted">· ${a.tenure_sessions} ${plu(a.tenure_sessions, tr("日"), "day")}</span>` : ""}</span>
         ${a.live_rank_tied ? `<span class="muted" title="${tr("当日收益相同，名次由 tie-break 决定")}">· ${tr("并列")}</span>` : ""}`;
@@ -3018,7 +3355,8 @@ function renderAgents(s) {
         pb.className = "posbox pos";   // keep the hook class: querySelector(".posbox") runs again next frame
         pb.innerHTML = a.positions.map(p => {
           const u = p.unrealized_cents;
-          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}</span><span class="q num">${fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}</span>
+          // a position valued on a stale print says so on its own row, not only in the drawer
+          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}${p.price_status === "stale" ? ` <span class="qmark"${isNum(p.price_age_s) ? ` title="${esc(ago(p.price_age_s))}"` : ""}>${tr("陈旧")}</span>` : ""}</span><span class="q num">${fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}</span>
             <span class="u num" style="color:${isNum(u) ? (u > 0 ? cssVar("--green-ink") : u < 0 ? cssVar("--red-ink") : "") : cssVar("--ink3")}">${isNum(u) ? usd(u, { sign: u > 0 }) : UNK}${isNum(p.unrealized_bp) ? ` <span class="muted">${bpPct(p.unrealized_bp, 1)}</span>` : ""}</span></div>`;
         }).join("");
       } else if (a.ledger_readable === false || a.live_equity_status === "unreadable") {
@@ -3058,7 +3396,14 @@ function renderAgents(s) {
           : `${when} · ${tr(DECISION_STATUS_ZH[st] || st)}${d.reason ? " · " + esc(String(d.reason).slice(0, 80)) : ""}`;
         if ((d.blocked || []).length) dec += ` · ${tr("被风控拦下")} ${d.blocked.map(b => b.candidate + "(" + (b.blocked_by || []).map(x => tr(REASON_WORDS[String(x).split(":")[0]] || x)).join("/") + ")").join(", ")}`;
       }
+      // Valued on a stale print: the number is right (the frozen rule counts a stale mark as known), the card just
+      // has to say it is not 实时 in the sense the word promises. Orange, not the breaker red: it is a qualifier.
+      const staleLine = a.live_price_status === "stale"
+        ? `${tr("估值含陈旧价")}${col()}${(a.live_stale_symbols || []).join(" ")}`
+          + (isNum(a.live_price_max_age_s) ? par(`${tr("最旧")} ${dur(a.live_price_max_age_s)}`) : "")
+        : "";
       wb.innerHTML = (warns.length ? `<div class="warnrow"><span>●</span><span>${esc(warns.join(" · "))}</span></div>` : "")
+        + (staleLine ? `<div class="warnrow" style="color:var(--orange-ink)"><span>◦</span><span>${esc(staleLine)}</span></div>` : "")
         + (dec ? `<div class="warnrow" style="color:var(--ink3)"><span>◦</span><span>${dec}</span></div>` : "");
     } catch (e) {
       RENDER_FAILS.set("agents:" + (a && a.slot_id || i), (e && e.message) || String(e));
@@ -3067,6 +3412,19 @@ function renderAgents(s) {
   });
   // the cards move to their places only once every one of them has this frame's numbers on it
   try { flipAgents(wrap, slots.map(a => a.slot_id)); } catch (e) { console.error("[render:agents:order]", e); }
+  /* The legend names THIS board's codes. The static line named the A-codes on boards whose codes are P01–P10
+     (the stock population) and C01–C10 (crypto), so the one cross-reference it offers pointed at nothing. The
+     static wording stays as the pre-render placeholder; the rendered one is composed from the slots. */
+  const lg = $("aglegend");
+  if (lg) {
+    const ids = byIndex.map(a => a.slot_id).filter(Boolean);
+    const codes = [...new Set(byIndex.map(a => a.candidate_key).filter(Boolean))].sort();
+    const sr = ids.length > 1 ? `${ids[0]}–${ids[ids.length - 1]}` : (ids[0] || "S01–S10");
+    const cr = codes.length > 1 ? `${codes[0]}–${codes[codes.length - 1]}` : (codes[0] || "");
+    lg.textContent = LANG === "en"
+      ? `Each card: rank · capital slot (${sr}, permanent) · current strategy (${cr ? `${cr} is its code, then` : "its code, then"} its personality) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.`
+      : `每张卡：名次 · 资金槽（${sr}，永久）· 当前策略（${cr ? `${cr} 是策略编号` : "策略编号"}，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。`;
+  }
   const ex = s.experiment || {};
   // say it plainly when the configured competition metric is not what the badges are showing
   const daily = (ex.metric || "daily_net_equity_return") === "daily_net_equity_return";
@@ -3082,6 +3440,8 @@ function renderAgents(s) {
       bnote.innerHTML = `${tr("十槽合计")} <b class="num ${sysBp > 0 ? "up" : sysBp < 0 ? "dn" : "flat"}">${esc(bpPct(sysBp, 2))}</b>`
         + ` · ${tr("最强基准")}${LANG === "en" ? ": " : " "}${esc(benchName(top))} <b class="num ${top.return_bp > 0 ? "up" : top.return_bp < 0 ? "dn" : "flat"}">${esc(bpPct(top.return_bp, 2))}</b>`
         + ` · ${tr("超额")} <b class="num ${ex > 0 ? "up" : ex < 0 ? "dn" : "flat"}">${(ex > 0 ? "+" : "") + ex.toFixed(2)} pp</b>`;
+      // WHEN the reference was bought is half of what its return means; the row has always carried it
+      bnote.title = top.funded_from_ny ? `${tr("参照组合的买入时刻")}${col()}${mdhm(top.funded_from_ny)} ET` : "";
       bnote.style.display = "";
     } else { bnote.style.display = "none"; }
   }
@@ -3145,8 +3505,10 @@ async function loadTradeDay() {
     const r = await fetch(API.trades(day), { cache: "no-store" });
     const d = await r.json();
     if (!d.ok) delete $("tradebody").dataset.sig;
-    drawTrades(d.trades || [], d.ok ? `${(d.trades || []).length} 笔 · ${day === "all" ? "全部交易日" : day}` : "读取失败", !d.ok);
-  } catch (e) { delete $("tradebody").dataset.sig; drawTrades([], "读取失败：" + e.message, true); }
+    // built from translated pieces: "20 笔 · 全部交易日" is one text node with a number in it, so no whole-node
+    // lookup can ever reach it - it was Chinese on the English page every time a day was picked
+    drawTrades(d.trades || [], d.ok ? `${(d.trades || []).length} ${tr("笔")} · ${day === "all" ? tr("全部交易日") : day}` : tr("读取失败"), !d.ok);
+  } catch (e) { delete $("tradebody").dataset.sig; drawTrades([], `${tr("读取失败")}${col()}${e.message}`, true); }
 }
 
 /* A crypto arena holds no stocks. The tape and the slot sheet were labelled 股票 in static markup, which read
@@ -3289,8 +3651,17 @@ function evolutionDriftLine(s) {
 function experimentBrief(s) {
   const ex = s.experiment || {}, sys = s.system || {}, rc = s.rounds_count || {}, v = s.versions || {};
   const out = [];
+  // USER_DAILY_3's fixed sentence ("the bottom three, offspring of the top three") was only ever true of the first
+  // crypto boards: kraken-20260923 replaces 2 a day, each by its own tuned version. Composed from the frozen rule
+  // when the block carries it; the fixed sentence stays for a server that does not send the rule.
+  const k = ex.replace_bottom, own = ex.breeding === "within_slot";
+  const composed = (ex.mode === "USER_DAILY_3" && isNum(k) && ex.breeding) ? (LANG === "en"
+      ? `The bottom ${k} are replaced daily by ${own ? "tweaked versions of themselves" : `tweaked offspring of the top ${k}`}. Does mutual elimination grow anything better?`
+      : `每天替换末 ${k} 名，由${own ? "它们自己的微调版本" : `前 ${k} 名的微调后代`}接替。看互相淘汰能不能长出更好的策略。`)
+    : null;
   const purpose = MODE_PURPOSE[ex.mode];
-  if (purpose) out.push({ k: "目的", v: tr(purpose), tip: tr(MODE_WHY[ex.mode] || purpose) });
+  if (composed) out.push({ k: "目的", v: composed, tip: composed });
+  else if (purpose) out.push({ k: "目的", v: tr(purpose), tip: tr(MODE_WHY[ex.mode] || purpose) });
 
   // progress: where in the window, how many rounds have actually settled, how many versions are alive
   // NOT tr("交易日") - that key already means "Session" elsewhere in this table, and reusing it printed
@@ -3311,21 +3682,76 @@ function experimentBrief(s) {
   const th = ex.trading_hours;
   if (!STATE.crypto && th) {
     const allS = th.entries === "all_sessions";
+    const q = th.extended_entries_per_day, qMax = th.max_entries_per_day;
+    const quota = !isNum(q) ? "" : " · " + (LANG === "en"
+      ? `at most ${q} of ${isNum(qMax) ? qMax : "?"} daily entries outside regular hours`
+      : `非常规时段每天最多 ${q} 次入场（共 ${isNum(qMax) ? qMax : "?"} 次）`);
+    // the ORDER budget beside the fill budget (trading_hours.extended_entry_orders_per_day, 2026-09-23): an unfilled
+    // overnight entry order spends one of the day's order submissions too, which the fill cap cannot see. Said only
+    // when the server sends it; an older server leaves it unsaid rather than implying there is no such cap
+    const qo = th.extended_entry_orders_per_day, qoMax = th.max_entry_orders_per_day;
+    const oquota = !isNum(qo) ? "" : " · " + (LANG === "en"
+      ? `at most ${qo}${isNum(qoMax) ? ` of ${qoMax}` : ""} daily entry orders outside regular hours, filled or not`
+      : `非常规时段每天最多提交 ${qo} 张入场单${isNum(qoMax) ? `（共 ${qoMax} 张）` : ""}，成交与否都算`);
+    const otip = !isNum(qo) ? "" : " " + (LANG === "en"
+      ? `The entry-order cap: overnight tapes are thin and most entry orders there expire unfilled, yet each one spends `
+        + `one of the day's order submissions - in the audit replay, 28 of 60 slot-days had spent the day's budget before `
+        + `the regular session opened. So at most ${qo} entry orders a day are submitted outside regular hours.`
+      : `入场单上限：夜盘成交量薄，那里的入场单大多到期也成交不了，但每张都占用当天的下单次数——审计回放里 60 个槽日有 28 个`
+        + `在常规盘开盘前就用完了当天的下单额度。所以非常规时段每天最多提交 ${qo} 张入场单。`);
     out.push({ k: tr("交易时段"),
                v: allS
-                 ? `${tr("24 小时交易")} ${th.n_all_day}/${th.n_universe} · ${tr("所有时段入场与出场")}`
+                 ? `${tr("24 小时交易")} ${th.n_all_day}/${th.n_universe} · ${tr("所有时段入场与出场")}${quota}${oquota}`
                  : `${tr("24 小时市场")} ${th.n_all_day}/${th.n_universe} · ${tr("入场 09:45–15:30")} · ${tr("夜盘可出场")}`,
                tip: allS
-                 ? tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票在盘前、常规盘、盘后和夜盘都会评估入场与出场：三个策略的规则不变，只是开盘区间、VWAP 和涨跌幅从所在时段的开盘算起。周一至周四持仓可跨收盘持有；周五、节假日前和最后一天收盘前平仓，之后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%，所以非常规时段的仓位小、也常成交不了。")
+                 ? tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票在盘前、常规盘、盘后和夜盘都会评估入场与出场：三个策略的规则不变，只是开盘区间、VWAP 和涨跌幅从所在时段的开盘算起。周一至周四持仓可跨收盘持有；周五、节假日前和最后一天收盘前平仓，之后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%，所以非常规时段的仓位小、也常成交不了。") + otip
                  : tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。") });
   }
-  if (ex.round_cadence === "weekly") {
-    out.push({ k: tr("进化节奏"),
-               // one sentence per language: "按最近 N 个交易日比较" does not split into pieces that translate alone
-               v: (() => { const nw = isNum(ex.rolling_window_sessions) ? ex.rolling_window_sessions : "?";
-                           return LANG === "en" ? `once a week · judged on the last ${nw} trading ${nw === 1 ? "day" : "days"}`
-                                                : `每周一次 · 按最近 ${nw} 个交易日比较`; })(),
-               tip: tr("只在每周最后一个交易日进行一轮进化，其余交易日只记录当日得分。所有 Agent 都按同样长度的最近窗口比较——得分是日收益之和，窗口长短不一就不公平。周五新繁殖的子代，到下周五正好有一周的记录。") });
+  // How THIS board evolves, from its own frozen selection block - both boards, never one board's rule printed on
+  // the other. The crypto board evolves every UTC day and the stock board once a week; each states its own.
+  if (ex.round_cadence) {
+    const R = evoRule(s);
+    const bits = [tr(R.cadence === "weekly" ? "每周一次" : "每天一次")];
+    // one sentence per language where a number sits inside it: "按最近 N 个交易日比较" does not split into pieces
+    // that translate alone
+    if (R.metric === "rolling_net_equity_return") {
+      bits.push(LANG === "en" ? `judged on the last ${evoDays(R.win, R)}` : `按最近 ${evoDays(R.win, R)}比较`);
+    } else if (R.metric === "daily_net_equity_return") {
+      bits.push(tr(R.utc ? "按当天（UTC 日）的净收益比较" : "按当日净收益比较"));
+    } else if (R.metric === "cumulative_net_equity_return") {
+      bits.push(tr("按累计净收益比较"));
+    }
+    if (R.breeding === "within_slot") bits.push(tr("末位由自己的微调版本接替"));
+    else if (R.breeding === "competitive") bits.push(LANG === "en"
+      ? `offspring of the top ${isNum(R.rep) ? R.rep : "?"} replace the bottom ${isNum(R.rep) ? R.rep : "?"}`
+      : `前 ${isNum(R.rep) ? R.rep : "?"} 名的后代顶替后 ${isNum(R.rep) ? R.rep : "?"} 名`);
+    const tip = [evoRuleWords(s, true)];
+    if (R.cadence === "weekly") tip.push(tr("只在每周最后一个交易日进行一轮进化，其余交易日只记录当日得分。所有 Agent 都按同样长度的最近窗口比较——得分是日收益之和，窗口长短不一就不公平。周五新繁殖的子代，到下周五正好有一周的记录。"));
+    tip.push(tr("每个板块按自己冻结的规则进化，股票与加密货币互不影响。"));
+    out.push({ k: tr("进化节奏"), v: esc(bits.join(" · ")), tip: tip.join(" ") });
+  }
+  // execution_model.revision: said only when the corrections are ON. Revision 1 is every experiment frozen before
+  // 2026-09-23 and needs no line; an old server that sends no revision says nothing either.
+  // The hover names WHAT the revision changes, by audit number (group C / D handoffs): "includes the corrections"
+  // alone left a reader to guess which behaviour on the board was the corrected one.
+  if (isNum(ex.execution_revision) && ex.execution_revision >= 2) {
+    out.push({ k: tr("执行修订"),
+               v: LANG === "en" ? `revision ${ex.execution_revision} · includes the 2026-09-23 audit corrections`
+                                : `修订 ${ex.execution_revision} · 含 2026-09-23 审计修正`,
+               tip: tr("这个板块冻结时打开了 2026-09-23 全面审计后的引擎修正（execution_model.revision）；更早的实验按修订 1 运行，它们的记录保持可复现。")
+                 + " " + tr(STATE.crypto
+                   ? "修订 2 的更正：每张单在自己那份未被别的槽动过的订单簿上成交，相同的单成交相同；平均成本按交易对自身的精度记录；止损/止盈在每次行情轮询时检查，不等整点；时间出场与最短持有按决策网格计时；卖出后留下的可卖余量在下一轮卖掉。"
+                   : "修订 2 的更正：入场区间不会低到止损价（#27/#32）；成交量基线把没成交的日子算作 0，至少要 3 个已知日（#28/#53）；盘前的 ATR 与回看区间也取夜盘（#33）；入场有效期从提交后第一根开盘的柱算起（#55）；VWAP 出场用两个收盘价所在时段的 VWAP（#54）；出场改价时旧单在它已生效的那根柱上继续有效（#26/#31）；持仓管理读入场以来的每一根柱（#61）；非常规时段的离群下影线既不算回踩也不触发止损（#41）；次日熔断按当天结束时的净值判断（#4/#5）；24 小时板的完整性也检查非常规时段（#37）。") });
+  } else if (!STATE.crypto && ex.execution_revision === 1) {
+    // a revision-1 stock board (every one frozen before 2026-09-23, e.g. 20260923d) still runs the behaviours revision 2
+    // corrects; its record stays reproducible, and the reader is told what it is a record OF
+    out.push({ k: tr("执行修订"),
+               v: tr("修订 1 · 2026-09-23 审计之前的引擎"),
+               tip: tr("修订 1 仍按审计前的方式运行，修订 2 更正的这些行为在这里照旧：入场区间可能低到止损价以下（#27/#32）；改价后的出场单隔一根柱才检查一次（#26/#31）；按提交时刻计时的成交模型下，入场窗口实际只有 entry_ttl_bars−1 根柱（#55）。")
+                 // the two that exist only where the strategies enter outside the regular session
+                 + ((th && th.entries === "all_sessions")
+                   ? " " + tr("24 小时交易下还有：VWAP 出场只看常规盘的 VWAP（#54）；盘前只有 VWAP 回踩策略能入场，相对强度突破只有回看 8 根柱时才行（#33）。") : "")
+                 + " " + tr("记录保持原样、可复现，不回溯修改。") });
   }
 
   // ...and WHAT it changed, which the counts above do not say
@@ -3337,13 +3763,14 @@ function experimentBrief(s) {
   const today = [];
   if (isNum(sys.day_return_bp)) today.push(`${tr("十槽合计")} ${pct1(sys.day_return_bp)}`);
   else if (isNum(sys.cum_return_bp)) today.push(`${tr("累计")} ${pct1(sys.cum_return_bp)}`);
-  if (sys.leader_slot) {
+  const lv = leaderView(sys);
+  if (lv.slots.length) {
     // ten slots flat at 0 bp have no leader, they have a sort order. Saying 领先 there is the one thing this
-    // board is least allowed to do.
-    const tied = sys.leader_tied_with || [];
-    today.push(tied.length > 1
+    // board is least allowed to do. leaderView is the same answer shelf ① and the card ring give.
+    const tied = lv.slots;
+    today.push(lv.tie
       ? `<span title="${esc(tr("（同分，排序按槽位编号，不代表更好）"))}">${tr("当日并列第一")} ${esc(tied.slice(0, 4).join(" "))}${tied.length > 4 ? ` ${tr("…共")} ${tied.length} ${tr("个并列")}` : ""}</span>`
-      : `${tr("今天领先")} ${esc(sys.leader_slot)}`);
+      : `${tr("今天领先")} ${esc(tied[0])}`);
   }
   const nd = (s.crypto && s.crypto.data && s.crypto.data.next_decision_utc);
   if (nd) today.push(`${tr("下次决策")} ${hhmm(nd)} UTC`);
@@ -3356,16 +3783,30 @@ function experimentBrief(s) {
   return out;
 }
 
+/* Who leads today, as ONE answer for every place that says it - the hero line, shelf ① and the card ring.
+   `leader_slot` is always ranked[0], and on a tie that is merely the lowest slot number: measured on the live stock
+   board after the identical RKLB stop-out, all ten slots at -5 bp, the hero correctly said 当日并列第一 while shelf ①
+   listed S01 with a count of 1 and S01's card wore the leader ring. The crypto board did the same with a two-way
+   tie. merge_live's own comment calls this the one claim the board must not make. */
+function leaderView(sys) {
+  const y = sys || {};
+  const tied = Array.isArray(y.leader_tied_with) ? y.leader_tied_with : [];
+  if (!y.leader_slot) return { slots: [], tie: null };
+  return (y.leader_is_tie === true && tied.length > 1) ? { slots: tied, tie: true } : { slots: [y.leader_slot], tie: false };
+}
+
 function renderShelves(s) {
   const sec = $("shelfsec"), box = $("shelves");
   const r = (s.research || null);
   if (!box) return;
   if (!r) { if (sec) sec.style.display = "none"; box.style.display = "none"; return; }
-  const lead = (s.system || {}).leader_slot;
+  const lv = leaderView(s.system);
+  const lead = lv.tie === false ? lv.slots[0] : null;
   const counts = {
     // counted from the LEADER, not from the slot count: when the server cannot rank anyone (a feed outage
     // leaves every day return unknown) leader_slot is null, and the shelf used to show a bare "1" with no name
-    // under it - asserting that one strategy leads today at the moment nothing can be ranked.
+    // under it - asserting that one strategy leads today at the moment nothing can be ranked. A TIE is no leader
+    // either: the count is 0 and the shelf names the tie instead of its lowest slot number.
     day_leader: (lead ? 1 : 0),
     research_candidate: (r.research_candidates || []).length,
     in_frozen_validation: (r.in_frozen_validation || []).length,
@@ -3382,11 +3823,18 @@ function renderShelves(s) {
   box.innerHTML = Object.keys(SHELF_ZH).map(k => {
     const nm = names[k] || [];
     const empty = !counts[k];
+    // a tied top: no number (there is no leader to count), then who is tied and how many - the same words and the
+    // same hover the hero uses (the server's leader_tie_note_zh is Chinese only, so it is not the hover)
+    const tieBlock = (k === "day_leader" && lv.tie === true)
+      ? `<ul><li title="${esc(tr("（同分，排序按槽位编号，不代表更好）"))}">${tr("当日并列第一")} ${esc(lv.slots.slice(0, 6).join(" "))}`
+        + `${lv.slots.length > 6 ? ` ${tr("…共")} ${lv.slots.length} ${tr("个并列")}` : ""}</li></ul>`
+      : "";
     return `<div class="shelf ${esc(k)}${empty ? " empty" : ""}">
       <h3>${tr(SHELF_ZH[k])}</h3>
-      <div class="n">${empty && k === "evidence_supported" ? tr("无合格候选") : counts[k]}</div>
+      <div class="n">${empty && k === "evidence_supported" ? tr("无合格候选")
+        : (k === "day_leader" && lv.tie === true) ? tr("无领先") : counts[k]}</div>
       <div class="why">${tr(SHELF_WHY[k])}</div>
-      ${nm.length ? `<ul>${nm.slice(0, 6).map(x => {
+      ${tieBlock}${nm.length ? `<ul>${nm.slice(0, 6).map(x => {
         // `trend_continuation · d26199a9` is a family and a config hash. The hash is provenance - two entries of
         // the same family are told apart by it - so it stays in the tooltip and out of the reading line.
         const m = String(x).match(/^(.+?)\s*·\s*([0-9a-f]{6,})$/);
@@ -3472,6 +3920,27 @@ function renderSlotFilter() {
   syncFilterHint();
 }
 
+/* A sell's realized P&L as the reader means it. On the crypto board `realized_pnl_cents` is net of the EXIT fee and
+   gross of the ENTRY fee (finding 29), so a round trip that made +$10 before a $24 buy fee showed green; the server
+   now sends realized_net_cents (net of both, crypto/web.entry_fee_parts) and the tape, its group totals and the
+   drawer read that. A row without it (the stock board, whose fee is in the same place for both, or an older
+   server) keeps the recorded figure. */
+function realOf(t) { return isNum(t.realized_net_cents) ? t.realized_net_cents : t.realized_pnl_cents; }
+
+/* What a fill row cannot say by its intent alone (crypto, revision 2): a protective exit - a stop / take-profit
+   submitted between the hourly rounds when the ticker crossed its level, with no decision behind it (order id
+   '-PX') - and an order the book only partly covered, including a >= 98% sell that left a sellable remainder
+   still holding a seat. */
+function fillTags(t) {
+  const out = [];
+  if (t.protective) out.push(`<span class="ftag" title="${esc(tr("修订 2：止损/止盈在每次行情轮询时检查；这笔出场是在两次整点决策之间、价格穿过止损/止盈位时提交的，没有对应的决策记录"))}">${tr("盘中止损/止盈")}</span>`);
+  if (t.order_status === "partial") {
+    const rem = /remainder/.test(String(t.order_status_reason || ""));
+    out.push(`<span class="ftag" title="${esc(String(t.order_status_reason || ""))}">${tr(rem ? "部分卖出，余量待卖" : "部分成交")}</span>`);
+  }
+  return out.length ? " " + out.join(" ") : "";
+}
+
 function renderTape() {
   const body = $("tradebody");
   wireTapeControls();
@@ -3490,20 +3959,26 @@ function renderTape() {
   const note = STATE.tape.note;
   const list = STATE.tradeSlot === "all" ? all : all.filter(t => t.slot_id === STATE.tradeSlot);
   const showDate = (STATE.tradeDay || "today") !== "today";
+  // A time alone only means "today" when the fill happened on today's calendar date. The 今日 tape of a 24h board
+  // holds the trading day's overnight fills from the evening BEFORE (9:35 PM on 09-22 for trading day 09-23), and
+  // the "recent" fallback holds earlier days: both printed a bare time that read as this afternoon.
+  const calToday = String(((STATE.snap || {}).market || {}).clock_ny || "").slice(0, 10);
+  const dated = t => showDate || !calToday || String(t.confirmed_ny || "").slice(0, 10) !== calToday;
   $("tradenote").textContent = note || "";
   // the signature must be written on EVERY path, blank included: otherwise the blank render leaves the
   // previous day's signature behind and re-selecting that day is suppressed as "unchanged".
   // a phone row is three lines tall, so 60 of them is a 4000px scroll; the cap is disclosed either way, below
   const SHOWN = window.innerWidth <= 700 ? 30 : 60;
   const sigNow = (STATE.tradeDay || "today") + "|" + STATE.tradeSlot + "|" + (STATE.tradeGroup ? "G" : "-") + (STATE.tradeColor ? "C" : "-")
-    + "|" + (failed ? "ERR" : "") + list.length + "|" + SHOWN + "|" + list.map(t => t.fill_id).join(",");
+    + "|" + (failed ? "ERR" : "") + list.length + "|" + SHOWN + "|" + calToday + "|" + LANG + "|" + list.map(t => t.fill_id).join(",");
   if (body.dataset.sig === sigNow) return;
   body.dataset.sig = sigNow;
   if (!list.length) {
     body.innerHTML = failed
       ? `<tr><td colspan="9" class="blank"><span class="ico">⚠️</span>读不到成交记录<br><span class="muted">这不表示当天没有成交，只表示这次没读到；请重选交易日重试</span></td></tr>`
       : STATE.tradeSlot !== "all" && all.length
-      ? `<tr><td colspan="9" class="blank"><span class="ico">📈</span>${esc(STATE.tradeSlot)} 在这个范围内没有成交<br><span class="muted">其它 Agent 有 ${all.length} 笔；空仓与不交易都是合法状态</span></td></tr>`
+      // composed per language: a slot id and a count sit inside each sentence
+      ? `<tr><td colspan="9" class="blank"><span class="ico">📈</span>${LANG === "en" ? `${esc(STATE.tradeSlot)} has no fills in this range` : `${esc(STATE.tradeSlot)} 在这个范围内没有成交`}<br><span class="muted">${LANG === "en" ? `the other agents have ${all.length}; holding cash and not trading are both legitimate states` : `其它 Agent 有 ${all.length} 笔；空仓与不交易都是合法状态`}</span></td></tr>`
       : STATE.crypto
       ? `<tr><td colspan="9" class="blank"><span class="ico">📈</span>还没有成交<br><span class="muted">每个决策周期在同一份快照上评估全部活跃币；空仓与不交易都是合法状态，币池为空或数据预热中也不会强行交易</span></td></tr>`
       : `<tr><td colspan="9" class="blank"><span class="ico">📈</span>还没有成交<br><span class="muted">常规盘 09:45–15:30 才会评估入场；空仓与不交易都是合法状态</span></td></tr>`;
@@ -3513,8 +3988,11 @@ function renderTape() {
   }
   body.innerHTML = "";
   const bits = [];
-  if (STATE.tradeSlot !== "all") bits.push(`只看 ${STATE.tradeSlot}：${list.length} 笔 / 全部 ${all.length} 笔`);
-  if (list.length > SHOWN) bits.push(`显示最近 ${SHOWN} 笔 / 共 ${list.length} 笔`);   // never cap silently
+  // per language, for the same reason as the day note: numbers inside a sentence can never match a key
+  if (STATE.tradeSlot !== "all") bits.push(LANG === "en" ? `only ${STATE.tradeSlot}: ${list.length} of ${all.length} fills`
+                                                         : `只看 ${STATE.tradeSlot}：${list.length} 笔 / 全部 ${all.length} 笔`);
+  if (list.length > SHOWN) bits.push(LANG === "en" ? `showing the latest ${SHOWN} of ${list.length} fills`
+                                                   : `显示最近 ${SHOWN} 笔 / 共 ${list.length} 笔`);   // never cap silently
   if (bits.length) $("tradenote").textContent = `${note || ""}${note ? " · " : ""}${bits.join(" · ")}`;
 
   // grouped: agent by agent, each under a header carrying its own 笔数 and 已实现合计
@@ -3527,15 +4005,15 @@ function renderTape() {
     if (STATE.tradeGroup && t.slot_id !== group) {
       group = t.slot_id;
       const mine = list.filter(x => x.slot_id === group);
-      const realized = mine.filter(x => x.side === "SELL" && isNum(x.realized_pnl_cents));
-      const sum = realized.reduce((a, x) => a + x.realized_pnl_cents, 0);
+      const realized = mine.filter(x => x.side === "SELL" && isNum(realOf(x)));
+      const sum = realized.reduce((a, x) => a + realOf(x), 0);
       const a = ((STATE.snap || {}).slots || []).find(x => x.slot_id === group) || {};
       const hr = el("tr", "grp");
       hr.dataset.slot = group;
       hr.style.setProperty("--slotc", slotColor(group));
       // realized is summed only over the SELL fills that carry a figure; if none do, it is unknown
       hr.innerHTML = `<td colspan="9"><b>${esc(tr(group))}</b>${a.label_zh ? `<span class="gmeta">${esc(phraseWords(a.label_zh))}</span>` : (a.candidate_key ? `<span class="gmeta">${esc(a.candidate_key)}</span>` : "")}` +
-        `<span class="gmeta">${mine.length} 笔</span><span class="gmeta">已实现 ${realized.length ? usd(sum, { sign: sum > 0 }) : UNK}</span></td>`;
+        `<span class="gmeta">${mine.length} ${tr("笔")}</span><span class="gmeta">${tr("已实现")} ${realized.length ? usd(sum, { sign: sum > 0 }) : tr(UNK)}</span></td>`;
       hr.style.cursor = "pointer";
       hr.addEventListener("click", () => openSheet(group));
       body.appendChild(hr);
@@ -3546,19 +4024,19 @@ function renderTape() {
     // NOT `tr`: that is the translator, and naming a <tr> element after it shadows the function for this whole
     // callback - every tr("…") inside would call a DOM node.
     const row = el("tr", isNew ? "tape-in" : null);
-    const r = t.realized_pnl_cents;
+    const r = realOf(t);
     row.dataset.slot = t.slot_id;
     row.style.setProperty("--slotc", slotColor(t.slot_id));
     // data-k carries each <th>'s own word into the cell, so the phone layout can hide the head without losing it
-    row.innerHTML = `<td class="num" data-k="时间">${showDate ? mdhm(t.confirmed_ny) : hhmm(t.confirmed_ny)}</td>
+    row.innerHTML = `<td class="num" data-k="时间">${dated(t) ? mdhm(t.confirmed_ny) : hhmm(t.confirmed_ny)}</td>
       <td class="slotcell" data-k="槽"><button type="button" class="slotpill" aria-pressed="${STATE.tradeSlot === t.slot_id ? "true" : "false"}" title="${tr("只看")} ${esc(t.slot_id)} ${tr("的成交")}">${esc(t.slot_id)}</button></td>
       <td><span class="side ${esc(t.side)}">${esc(t.side)}</span></td>
       <td><b>${esc(t.symbol)}</b></td>
       <td class="num" data-k="数量">${t.qty}</td>
-      <td class="num" data-k="成交价">${px(t.price)}</td>
+      <td class="num" data-k="成交价">${pxFull(t.price)}</td>
       <td class="num" data-k="金额">${usd(t.notional_cents)}</td>
       <td class="num" data-k="已实现" style="color:${isNum(r) && r !== 0 ? (r > 0 ? cssVar("--green-ink") : cssVar("--red-ink")) : ""}">${t.side === "SELL" && isNum(r) ? usd(r, { sign: r > 0 }) : "—"}</td>
-      <td class="muted" data-k="意图"><span title="${t.intent === "CLEANUP" ? esc(tr("策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜")) : ""}">${esc(t.intent || "")}</span></td>`;
+      <td class="muted icell" data-k="意图"><span title="${t.intent === "CLEANUP" ? esc(tr("策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜")) : ""}">${esc(t.intent || "")}</span>${fillTags(t)}</td>`;
     row.addEventListener("click", () => openSheet(t.slot_id));
     row.style.cursor = "pointer";
     const pill = row.querySelector(".slotpill");
@@ -3605,9 +4083,14 @@ function saveCmpPrefs() {
 const CMP_RANGES = ["session", "today", "8h", "24h", "7d", "30d", "all", "custom"];
 const CMP_RANGE_ZH = { session: "当前时段", today: "今日全时段", "8h": "最近 8 小时", "24h": "最近 24 小时",
                        "7d": "最近 7 个交易日", "30d": "最近 30 个交易日", all: "全部交易日", custom: "自定义" };
-// 24/7: no sessions, and no "trading days" either - the scoring day IS the UTC calendar day
-const CMP_RANGE_ZH_CRYPTO = { today: "今日（UTC 日）", "7d": "最近 7 个 UTC 日", "30d": "最近 30 个 UTC 日",
+// 24/7: no sessions, and no "trading days" either - the scoring day IS the UTC calendar day. 今日 is not: since
+// 今日 became the reader's calendar day (cmpLocalDayWindow) the picker still said 今日（UTC 日） beside a caption
+// saying 00:00–24:00 ET. 7d/30d/all plot frozen UTC-day closes, so those keep their UTC names.
+const CMP_RANGE_ZH_CRYPTO = { today: "今日（00:00–24:00 ET）", "7d": "最近 7 个 UTC 日", "30d": "最近 30 个 UTC 日",
                               all: "全部 UTC 日" };
+/* A stock board frozen with the 24h policy trades from 20:00 the evening before. Its 今日 is still the calendar
+   day, so 今日全时段 ("all of today's sessions") promised the overnight session the window does not contain. */
+function cmpIs24(s) { return !STATE.crypto && !!(((s || {}).experiment || {}).trading_hours); }
 const CMP_INTRADAY = { session: 1, today: 1, "8h": 1, "24h": 1 };   // the minute series, not the frozen closes
 
 /* The session the market is in right now, as a window to fit the chart to. Outside trading hours there is nothing
@@ -3952,12 +4435,14 @@ function wireCmpControls() {
   // does not exist, and the day ranges named a calendar the venue does not keep.
   const ranges = CMP_RANGES.filter(r => !(STATE.crypto && r === "session"));
   if (STATE.crypto && STATE.cmpRange === "session") STATE.cmpRange = "today";
-  const key = LANG + (STATE.crypto ? "|c" : "|s");
+  const is24 = cmpIs24(STATE.snap);
+  const key = LANG + (STATE.crypto ? "|c" : is24 ? "|s24" : "|s");
   if (sel && sel.dataset.lang !== key) {
     sel.dataset.lang = key;
     sel.innerHTML = "";
     ranges.forEach(r => {
-      const o = el("option", null, tr(STATE.crypto ? (CMP_RANGE_ZH_CRYPTO[r] || CMP_RANGE_ZH[r]) : CMP_RANGE_ZH[r]));
+      const o = el("option", null, tr(STATE.crypto ? (CMP_RANGE_ZH_CRYPTO[r] || CMP_RANGE_ZH[r])
+                                      : (is24 && r === "today") ? "今日（00:00–24:00 ET）" : CMP_RANGE_ZH[r]));
       o.value = r;
       sel.appendChild(o);
     });
@@ -4231,11 +4716,29 @@ function renderCompare(s) {
       // a line drawn at one point every few minutes must not imply it has every minute
       full.push(step > 1 ? `${tr("净值曲线")} · ${tr("每")} ${step} ${tr("分钟一个点")}` : tr("今日分钟级净值"));
       if (STATE.cmpRange === "today") full.push(tr("今日 = 你这一天，00:00 到 24:00（ET）"));
-      if (STATE.cmpRange === "today" && !STATE.crypto) full.push(tr("盘前 04:00、常规盘 09:30–16:00、盘后到 20:00 用底色标出；其余时间没有交易"));
-      if (STATE.cmpRange === "session") full.push(tr("已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后"));
+      if (STATE.cmpRange === "today" && !STATE.crypto) {
+        /* The session times the bands are actually drawn from (market.*_at), never a fixed "盘前 04:00": the venue's
+           pre-market opens at 07:00. After 20:00 ET those fields already describe TOMORROW's sessions - outside
+           today's window, so nothing is shaded - and then the caption promises no shading. A 24h board also trades
+           overnight, which the old "其余时间没有交易" denied. */
+        const ss = cmpSessions(s), day = cmpLocalDayWindow(s);
+        const hm = iso => { const m = String(iso || "").match(/T(\d{2}):(\d{2})/); return m ? ampm(m[1], m[2]) : "?"; };
+        const onToday = !!(ss && day && ss.extOpen >= day.a && ss.extClose <= day.b);
+        if (onToday) full.push(LANG === "en"
+          ? `pre-market from ${hm(ss.str.extOpen)}, regular ${hm(ss.str.open)}–${hm(ss.str.close)} and after-hours to ${hm(ss.str.extClose)} are shaded`
+          : `盘前 ${hm(ss.str.extOpen)} 起、常规盘 ${hm(ss.str.open)}–${hm(ss.str.close)}、盘后到 ${hm(ss.str.extClose)} 用底色标出`);
+        if (cmpIs24(s)) full.push(ss ? (LANG === "en"
+            ? `the overnight session (${hm(ss.str.extClose)} to ${hm(ss.str.extOpen)} the next morning) trades too and is not shaded`
+            : `夜盘（${hm(ss.str.extClose)} 至次日 ${hm(ss.str.extOpen)}）也有成交，未着色`)
+          : tr("夜盘也有成交，未着色"));
+        else if (onToday) full.push(tr("其余时间没有交易"));
+      }
+      if (STATE.cmpRange === "session") full.push(tr(cmpIs24(s)
+        ? "已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日（00:00–24:00 ET）」看全天"
+        : "已按当前所处时段缩放（收盘后含常规盘与盘后）；选「今日全时段」看盘前到盘后"));
       if (STATE.cmpZoom) full.push(tr("已放大到一段时间；⟲ 回到整段"));
       // ...and what a reference portfolio's printed return actually measures. It is net of the entry fee.
-      if (benchCurves(s).length) full.push(tr("参照组合") + "：" + benchFeeLine(s));
+      if (benchCurves(s).length) full.push(tr("参照组合") + col() + benchFeeLine(s));
       full.push(tr("图下方的导航条：拖窗口左右移动，拖两端改时长，空白处拖选一段，← → 逐步移动"));
     } else {
       full.push(tr("每日收盘冻结净值"));
@@ -4250,17 +4753,20 @@ function renderCompare(s) {
     full.push(tr("纵轴按可见区间缩放，基准线为本金"));
     if (CMP_BASE_OFF) full.push(tr("本金线不在当前纵轴范围内：净值已离开本金较远，纵轴改为贴合可见数据"));
     if (STATE.crypto && STATE.cmpRange === "today") {
-      // A 57-minute axis under a label that says "today" reads as a bug. It is not: this arena scores on UTC
-      // days, so 今日 began at 00:00 UTC. Stated as an ELAPSED time, which needs no timezone arithmetic - the
-      // file is explicit that Date() would re-read a New York stamp in the viewer's own zone.
-      const toB = (s.crypto || {}).seconds_to_boundary;
-      const age = isNum(toB) ? 86400 - toB : null;
+      /* 今日 on the chart is the reader's ET calendar day on a fixed 00:00-24:00 axis; the SCORE is the UTC day.
+         This block used to say "今日从 00:00 UTC 起算，到现在只过了 N，横轴因此只有这么长" and send the reader to
+         最近 24 小时 - both false since the chart moved to the calendar day (the axis is a whole day, and the data
+         began at 00:00 ET, not 00:00 UTC). What IS true: which day the score is on, and that the right of the axis
+         is time that has not happened yet - measured from ET midnight, never from the UTC boundary countdown. */
+      const w = cmpUtcDayWindow(s), day = cmpLocalDayWindow(s), off = cmpNyOffsetMs(s);
+      const et = ms => { const d = new Date(ms + off);
+        return ampm(String(d.getUTCHours()).padStart(2, "0"), String(d.getUTCMinutes()).padStart(2, "0")); };
+      if (w) full.push(`${tr("计分按 UTC 日")}${par(`${et(w.a)} → ${et(w.b)} ET`)}${LANG === "en" ? "; " : "；"}${tr("图上是 ET 日历日")}`);
+      const nowMs = Date.parse((s.market || {}).clock_ny || s.ts_ny || "");
+      const age = (day && isFinite(nowMs) && nowMs >= day.a) ? (nowMs - day.a) / 1000 : null;
       if (isNum(age)) {
         const mins = Math.max(1, Math.round(age / 60));
-        full.push(`${tr("这个竞技场按 UTC 日计分：今日从 00:00 UTC 起算，到现在只过了")} ${mins < 120 ? mins + " " + tr("分钟") : Math.floor(age / 3600) + " " + tr("小时")}${tr("，横轴因此只有这么长")}`);
-        if (age < 6 * 3600) full.push(tr("想看满 24 小时，请在上面选「最近 24 小时」"));
-      } else {
-        full.push(tr("这个竞技场按 UTC 日计分，今日从 00:00 UTC 起算"));
+        full.push(`${tr("今日从 00:00 ET 起算，到现在过了")} ${mins < 120 ? mins + " " + tr("分钟") : Math.floor(age / 3600) + " " + tr("小时")}${tr("，右侧是还没发生的时间")}`);
       }
     }
     full.push(tr("最后一点为实时净值（未冻结）"));
@@ -5257,18 +5763,110 @@ const SKIP_WORDS = [
          + (wz ? par(wz) : "");
   }],
   [/^cadence:weekly/, () => tr("每周进化一次：今天不是本周最后一个交易日，只记录当日得分")],
+  // a COMPLETED round's disclosures come through here too; before these the English page printed the raw codes
+  [/^tie_at_cut:([A-Z0-9,]+)/, m => (LANG === "en"
+    ? `${m[1].split(",").join(" ")} tied with an agent that was kept, so nobody is eliminated on the tie (a tie is never decided by slot number)`
+    : `${m[1].split(",").join(" ")} 与保留的 Agent 同分，本轮不因并列淘汰任何人（并列从不按槽位编号裁决）`)],
+  [/^kept_tied_at_cut:([A-Z0-9,]+)/, m => (LANG === "en"
+    ? `${m[1].split(",").join(" ")} tied with an agent that was kept, so stayed - only agents strictly worse than every kept one were replaced`
+    : `${m[1].split(",").join(" ")} 与保留的 Agent 同分，因此保留——只替换严格差于所有保留者的 Agent`)],
+  [/^tie_across_cut:(.+)$/, m => (LANG === "en"
+    ? `eliminated on the tied slot number: ${m[1].split(",").join(" ")}`
+    : `按并列的槽位编号淘汰：${m[1].split(",").join(" ")}`)],
+  [/^all_tied:/, () => tr("全场同分，本轮的淘汰完全由并列规则决定")],
+  // the token names no basis; the round's own `distinct_records` does. Counted on DECISIONS since 2026-09-23,
+  // on fills before - and the two are different claims, so a round without the field keeps the old wording
+  [/^distinct_records:(\d+)_of_(\d+)(?:_over_(\d+)_sessions)?$/, (m, r) => {
+    const dr = (r && r.distinct_records) || {};
+    return recordsWords(+m[2], +m[1], m[3] ? +m[3] : 1, dr.basis, dr.n_distinct_fills);
+  }],
   [/^min_eval_sessions:(\d+)<(\d+)/, m => (LANG === "en"
     ? `these agents have run only ${m[1]} sessions, short of the ${m[2]} the rule requires`
     : `这些 Agent 只跑了 ${m[1]} 个交易日，不足规则要求的 ${m[2]} 个`)],
+  // selection.young_versions / protect_while_inherited: who sat this round out. The token lists ids only; the
+  // round's `protected_young` carries each one's reason, and when it is there the sentence says it per slot
+  [/^protected_young:([A-Z0-9,]+)/, (m, r) => youngWords(m[1].split(",").filter(Boolean), r)],
+  // selection.window_end_guard: a child bred now could never be ranked before the frozen window ends
+  [/^window_end:(\d+)_sessions_remain<(\d+)/, m => windowEndWords(+m[1], +m[2])],
 ];
 const SKIP_ONE = { day_incomplete: "当日数据不完整", valuation_unknown: "估值未知", no_data: "没有数据",
                    breaker: "触发熔断", not_active: "当日未在岗" };
 
-function skipWords(reason) {
+/* "10 agents made only 4 distinct sets of decisions" - over the round day, or over the days a rolling score summed.
+   Composed from the numbers so it reads in either language; the server's own sentence is Chinese only.
+
+   `basis` is what was counted. Since 2026-09-23 evolution keys the disclosure on DECISIONS (the orders a slot
+   placed and the bars they filled on, without quantity or price), because the fill key saw ten "different"
+   records on the crypto board's 09-22 fills where the decisions formed three groups - identical decisions fill at
+   different prices and sizes. A round recorded before that has no basis and was counted on fills, so it keeps the
+   fill wording; the fill-level count is shown beside the decision count only when the two differ. */
+function recordsWords(nSlots, nDistinct, nDays, basis, nFills) {
+  const en = LANG === "en";
+  if (basis === "decisions") {
+    const fills = (isNum(nFills) && nFills !== nDistinct)
+      ? (en ? ` (${nFills} distinct at the fill level)` : `（成交层面有 ${nFills} 份不同的记录）`) : "";
+    if (nDays > 1) return (en
+      ? `over the ${nDays} scored sessions, ${nSlots} agents made only ${nDistinct} distinct sets of decisions`
+      : `评分窗口的 ${nDays} 个交易日里，${nSlots} 个 Agent 只做出 ${nDistinct} 组不同的决策`) + fills;
+    return (en
+      ? `${nSlots} agents made only ${nDistinct} distinct sets of decisions that day`
+      : `${nSlots} 个 Agent 当日只做出 ${nDistinct} 组不同的决策`) + fills;
+  }
+  if (nDays > 1) return en
+    ? `over the ${nDays} scored sessions, ${nSlots} agents produced only ${nDistinct} distinct trade records`
+    : `评分窗口的 ${nDays} 个交易日里，${nSlots} 个 Agent 只产生 ${nDistinct} 份不同的交易记录`;
+  return en
+    ? `${nSlots} agents produced only ${nDistinct} distinct trade records that day`
+    : `${nSlots} 个 Agent 当日只产生 ${nDistinct} 份不同的交易记录`;
+}
+
+/* The parenthetical beside that count. "Identical parameters mean identical fills" was the old reading and is
+   wrong on a decisions basis: the same decisions fill at different prices and sizes (queue position in a shared
+   book, each slot's own equity through the sizing rule). */
+function recordsWhy(basis) {
+  return basis === "decisions" ? par(tr("决策相同的 Agent，成交价和数量仍可能不同")) : par(tr("有效参数相同 ⇒ 成交相同"));
+}
+
+/* One reason from scoring's `young` list, in words: `sessions<N` (too few sessions of its own) or
+   `inherited_open:K` (still holding K positions it took over). Anything else prints as the code. */
+function youngReason(why) {
+  const w = String(why || "");
+  let m = w.match(/^sessions<(\d+)$/);
+  if (m) return LANG === "en" ? `fewer than ${m[1]} sessions of its own` : `自己的记录不足 ${m[1]} 个交易日`;
+  m = w.match(/^inherited_open:(\d+)$/);
+  if (m) return LANG === "en" ? `still holding ${m[1]} inherited ${+m[1] === 1 ? "position" : "positions"}`
+                              : `仍持有继承的 ${m[1]} 个仓位`;
+  return w;
+}
+
+function youngWords(ids, r) {
+  const en = LANG === "en";
+  const rows = Array.isArray(r && r.protected_young) ? r.protected_young : [];
+  const by = {};
+  rows.forEach(y => { if (y && y.slot_id) by[y.slot_id] = y.reason; });
+  const detail = ids.filter(id => id in by).map(id => `${id} ${youngReason(by[id])}`);
+  const head = en ? `${ids.join(" ")} sat this round out - neither bred from nor replaced`
+                  : `${ids.join(" ")} 本轮不参评：既不繁殖，也不被淘汰`;
+  if (detail.length) return head + par(detail.join(en ? "; " : "；"));
+  return head + par(en ? "too young, or still holding positions they inherited" : "版本太新，或仍持有继承的仓位");
+}
+
+function windowEndWords(n, need) {
+  return LANG === "en"
+    ? `only ${n} ${n === 1 ? "session is" : "sessions are"} left in the window, fewer than the ${need} a child needs to be `
+      + `ranked - a child bred now could never be judged, so nothing is bred`
+    : `窗口只剩 ${n} 个交易日，少于排名需要的 ${need} 个：现在繁殖的版本到结束前都排不上名次，本轮不进化`;
+}
+
+function skipWords(reason) { return skipWordsFor(reason, null); }
+
+/* The same, with the round it belongs to: a few codes only name ids or counts, and the round record carries what
+   they mean (per-slot reasons for a sit-out, the basis a record count was taken on). */
+function skipWordsFor(reason, r) {
   if (!reason) return "";
   const parts = String(reason).split(";").map(x => x.trim()).filter(Boolean);
   const out = parts.map(pt => {
-    for (const [re, fn] of SKIP_WORDS) { const m = pt.match(re); if (m) return fn(m); }
+    for (const [re, fn] of SKIP_WORDS) { const m = pt.match(re); if (m) return fn(m, r || null); }
     return pt;                                   // no words for it: show the code rather than hide it
   });
   return [...new Set(out)].join(LANG === "en" ? "; " : "；");
@@ -5312,30 +5910,135 @@ function paramFull(key) {
 /* What a round IS, before any of the detail. The log said "每个完整 UTC 日 00:05 UTC 结算一轮", which answers
    when and leaves what to guesswork - and the thing people most often assume is that a replaced agent's money
    is taken away, which is the one thing that does not happen. */
-function evoHowItWorks() {
-  const sel = (STATE.snap && STATE.snap.experiment && STATE.snap.experiment.selection) || {};
-  const keep = isNum(sel.keep_top) ? sel.keep_top : 7, rep = isNum(sel.replace_bottom) ? sel.replace_bottom : 3;
-  if (LANG === "en") {
-    const w = STATE.crypto ? "Once per complete UTC day (00:05 UTC)" : "Ten minutes after each complete session's close";
-    return `${w} the ${keep + rep} agents are ranked by that day's net equity return: the top ${rep} each copy `
-         + `themselves with one parameter tweaked, and those offspring displace the bottom ${rep}. The middle `
-         + `${keep - rep} stay as they are. A displaced slot is not flattened and its principal is not reset - `
-         + `the offspring inherits that slot's existing cash and positions.`;
-  }
-  const when = STATE.crypto ? "每个完整 UTC 日（00:05 UTC）" : "每个完整交易日收盘 10 分钟后";
-  return `${when}结算一次：按当日净值收益给 ${keep + rep} 个 Agent 排名，`
-       + `前 ${rep} 名各复制出一个参数微调的后代，顶替掉后 ${rep} 名，中间的 ${keep - rep} 个原样留任。`
-       + `被顶替的槽位不平仓、不重置本金——后代直接接手那个槽位现有的现金和持仓。`;
+/* The evolution rule THIS board was frozen with, from the experiment block the server sends (web.selection_view).
+
+   It used to be one fixed sentence on both boards - "every complete session, the top 3 breed into the bottom 3" -
+   and the lookup meant to vary it read `experiment.selection`, a key no layer has ever sent, so it always fell
+   back to 7/3. On stock-research-20260923d (weekly, a 5-session rolling window, within-slot breeding, strictly-
+   worse ties) the log described daily competitive breeding while the brief beside it said weekly, and the first
+   completed round would have printed a replacement story the engine never ran.
+
+   Every clause comes from one frozen key. A key the server does not send - a dashboard process still on older
+   code serves this page from disk - is UNKNOWN and its clause is left out, never filled in with a default: an
+   absent `breeding` read as "competitive" would put the old story straight back on the weekly board. */
+function evoRule(s) {
+  const ex = ((s || STATE.snap || {}).experiment) || {};
+  const num = v => (isNum(v) ? v : null);
+  return {
+    utc: STATE.crypto || ex.scoring_day === "UTC",
+    cadence: ex.round_cadence || "daily",
+    metric: ex.metric || null,
+    win: num(ex.rolling_window_sessions),
+    minEval: num(ex.min_eval_sessions_effective),
+    keep: num(ex.keep_top), rep: num(ex.replace_bottom),
+    breeding: ex.breeding || null,                            // null = not sent: say who is replaced, not by whom
+    tieKnown: "tie_at_cut" in ex, tie: ex.tie_at_cut || null, // known-absent (the slot-id rule) != not sent
+    young: ex.young_versions === "protect",
+    inherited: ex.protect_while_inherited === true,
+    windowEnd: ex.window_end_guard === "v1",
+    common: ex.rolling_window === "frozen_days_v2",
+    revision: num(ex.execution_revision),
+  };
 }
 
-/* The one-line story of a round, above the numbers. */
+/* When a round runs, as a clause. The crypto board scores UTC days and settles each one at 00:05 UTC; a stock
+   board settles ten minutes after the close, every session or only on the week's last one. */
+function evoWhenWords(R) {
+  const en = LANG === "en";
+  if (R.cadence === "weekly") return en ? "A round settles ten minutes after the close of the last trading day of each week"
+                                        : "每周最后一个交易日收盘 10 分钟后结算一轮";
+  if (R.utc) return en ? "A round settles once per complete UTC day, at 00:05 UTC" : "每个完整 UTC 日（00:05 UTC）结算一轮";
+  return en ? "A round settles ten minutes after each complete session's close" : "每个完整交易日收盘 10 分钟后结算一轮";
+}
+
+/* "N trading days" / "N UTC days", agreeing with N in English. */
+function evoDays(n, R) {
+  if (LANG === "en") return `${isNum(n) ? n : "?"} ${R.utc ? "UTC" : "trading"} ${n === 1 ? "day" : "days"}`;
+  return `${isNum(n) ? n : "?"} 个${R.utc ? " UTC 日" : "交易日"}`;
+}
+
+/* The log's header note is the short form - when, on what, who replaces whom, ties, and that the money stays. Who
+   sits a round out and why is said on the round that did it; the brief's hover carries the full rule. */
+function evoHowItWorks() { return evoRuleWords(STATE.snap, false); }
+
+function evoRuleWords(s, full) {
+  const R = evoRule(s);
+  const en = LANG === "en";
+  const q = v => (isNum(v) ? v : "?");
+  const n = (isNum(R.keep) && isNum(R.rep)) ? R.keep + R.rep : null;
+  const out = [evoWhenWords(R), en ? ": " : "："];
+  // what it is ranked ON
+  if (R.metric === "rolling_net_equity_return") {
+    out.push(en ? `the ${q(n)} agents are ranked by their net equity return over the last ${evoDays(R.win, R)}`
+                : `按最近 ${evoDays(R.win, R)}的净值收益给 ${q(n)} 个 Agent 排名`);
+    if (full && R.common) out.push(en ? " (one common window of days for every agent)" : "（所有 Agent 用同一段日历窗口）");
+  } else if (R.metric === "cumulative_net_equity_return") {
+    out.push(en ? `the ${q(n)} agents are ranked by their cumulative net equity return`
+                : `按累计净值收益给 ${q(n)} 个 Agent 排名`);
+  } else if (R.metric === "daily_net_equity_return") {
+    out.push(en ? `the ${q(n)} agents are ranked by that day's net equity return` : `按当日净值收益给 ${q(n)} 个 Agent 排名`);
+  } else {
+    out.push(en ? `the ${q(n)} agents are ranked` : `给 ${q(n)} 个 Agent 排名`);
+  }
+  // who is ranked at all
+  if (full && isNum(R.minEval) && R.minEval > 1) {
+    out.push(en ? `; a version is ranked only once it has ${evoDays(R.minEval, R)} of its own`
+                : `；一个版本要有自己的 ${evoDays(R.minEval, R)}记录才参与排名`);
+    if (R.young) out.push(en ? ", and one that has not sits the round out - neither bred from nor replaced - instead of "
+                               + "cancelling the round for everyone"
+                             : "，不够的本轮不参评（既不繁殖也不被淘汰），不会让整轮作废");
+  }
+  if (full && R.inherited) out.push(en ? "; a version still holding positions it inherited sits the round out too"
+                                       : "；仍持有继承仓位的版本本轮也不参评");
+  // who replaces whom
+  const keep = q(R.keep), rep = q(R.rep), mid = (isNum(R.keep) && isNum(R.rep)) ? R.keep - R.rep : "?";
+  if (R.breeding === "within_slot") {
+    out.push(en ? `. The bottom ${rep} are each taken over by a tweaked version of themselves; the other ${keep} stay as they are`
+                : `。排在最后的 ${rep} 个各由自己的一个参数微调版本接替，其余 ${keep} 个原样留任`);
+  } else if (R.breeding === "competitive") {
+    out.push(en ? `. The top ${rep} each copy themselves with one parameter tweaked, and those offspring displace the bottom `
+                  + `${rep}; the middle ${mid} stay as they are`
+                : `。前 ${rep} 名各复制出一个参数微调的后代，顶替掉后 ${rep} 名，中间的 ${mid} 个原样留任`);
+  } else {
+    out.push(en ? `. The bottom ${rep} are taken over by new versions; the other ${keep} stay as they are`
+                : `。排在最后的 ${rep} 个由新版本接替，其余 ${keep} 个原样留任`);
+  }
+  // how a tie at the cut is settled - only when the server said which rule; silence is not "the slot-id rule"
+  if (R.tieKnown) {
+    out.push(R.tie === "replace_strictly_worse" ? (en ? "; one tied with a kept agent is not replaced" : "；与保留者同分的不换")
+      : R.tie === "skip_round" ? (en ? "; a tie at the cut line means nobody is replaced that round" : "；淘汰线上有同分时本轮不淘汰任何人")
+      : (en ? "; a tie at the cut is broken by slot number, and disclosed as such" : "；淘汰线上的同分按槽位编号裁决，并如实标出"));
+  }
+  if (full && R.windowEnd) out.push(en ? ". Near the end of the window nothing is bred, because a child bred then could never be ranked"
+                               : "。窗口最后几天不再繁殖：那时繁殖的版本到结束前排不上名次");
+  out.push(en ? ". A replaced slot is not flattened and its principal is not reset - the new version takes over that "
+                + "slot's existing cash and positions."
+              : "。被顶替的槽位不平仓、不重置本金——接替的版本直接接手那个槽位现有的现金和持仓。");
+  return out.join("");
+}
+
+/* The one-line story of a round, above the numbers. WHO bred is the round's own record (`breeding`): within one
+   slot the replaced agent is taken over by a tweak of ITSELF, and naming the top slots as parents there tells the
+   reader the opposite of what the mutation rows below it show. A round the server did not say is told without
+   parents at all. */
 function roundStory(r) {
-  if (r.outcome === "skipped") return skipWords(r.reason) || tr("这一轮没有进化");
+  if (r.outcome === "skipped") return skipWordsFor(r.reason, r) || tr("这一轮没有进化");
   const top = (r.top || []), bot = (r.bottom || []);
   const sep = LANG === "en" ? ", " : "、";
-  if (!top.length) {
+  if (!bot.length || (r.breeding === "competitive" && !top.length)) {
     return LANG === "en" ? `kept ${r.n_kept}, replaced ${r.n_replaced}`
                          : `留下 ${r.n_kept} 个，换掉 ${r.n_replaced} 个`;
+  }
+  if (r.breeding === "within_slot") {
+    return LANG === "en"
+      ? `${bot.join(sep)} finished at the bottom; each was taken over by a tweaked version of itself`
+        + par("the cash and positions in those slots stayed where they were")
+      : `${bot.join(sep)} 排在末位，各由自己的一个微调版本接替（这些槽位的现金和持仓原样留在原地）`;
+  }
+  if (r.breeding !== "competitive") {
+    return LANG === "en"
+      ? `${bot.join(sep)} were taken over by new versions` + par("the cash and positions in those slots stayed where they were")
+      : `${bot.join(sep)} 由新版本接替（这些槽位的现金和持仓原样留在原地）`;
   }
   if (LANG === "en") {
     return `${top.join(sep)} finished on top; each left one tweaked offspring, which took over `
@@ -5346,6 +6049,17 @@ function roundStory(r) {
        + `（这些槽位的现金和持仓原样留在原地，由后代继续管）`;
 }
 
+/* The round header's "who went where", by the round's own breeding rule. */
+function roundFlow(r) {
+  const top = (r.top || []), bot = (r.bottom || []);
+  if (r.outcome === "skipped" || !bot.length) return "";
+  if (r.breeding === "competitive") {
+    return top.length ? `top ${esc(top.join(" "))} → bottom ${esc(bot.join(" "))}` : "";
+  }
+  if (r.breeding === "within_slot") return `${esc(bot.join(" "))} → ${tr("各自的微调版本")}`;
+  return `${tr("换")} ${esc(bot.join(" "))}`;
+}
+
 function renderRounds(s) {
   const box = $("rounds");
   const rs = s.rounds || [];
@@ -5354,33 +6068,40 @@ function renderRounds(s) {
   const sig = (s.rounds_readable === false ? "ERR|" : "") + rs.map(r => [r.round_id, r.outcome, r.n_kept, r.n_replaced, r.reason,
     (r.top || []).join("."), (r.bottom || []).join("."),
     (r.mutations || []).map(m => `${m.slot}${m.status}${m.child}${JSON.stringify(m.diff || {})}`).join(";"),
-    JSON.stringify(r.cut_ties || null), JSON.stringify(r.distinct_records || null), JSON.stringify(r.data_quality || null)
-  ].join("~")).join("|");
+    JSON.stringify(r.cut_ties || null), JSON.stringify(r.distinct_records || null), JSON.stringify(r.data_quality || null),
+    r.breeding || "", JSON.stringify(r.protected_young || null)
+  ].join("~")).join("|") + "|" + LANG + "|" + JSON.stringify(evoRule(s));
   if (box.dataset.sig === sig) return;
   box.dataset.sig = sig;
   if (!rs.length) {
+    const R = evoRule(s);
     box.innerHTML = s.rounds_readable === false
       ? `<div class="blank"><span class="ico">⚠️</span>读不到进化记录<br><span class="muted">arena.sqlite 的 rounds 表这次没读到；这不表示没有进化过</span></div>`
-      : `<div class="blank"><span class="ico">🧬</span>${tr("还没有进化轮次")}<br><span class="muted">${STATE.crypto
+      : `<div class="blank"><span class="ico">🧬</span>${tr("还没有进化轮次")}<br><span class="muted">${R.utc
           // tr(), not a bare literal: translateStatic matches a whole text node exactly and this string has
           // no key, so it survived onto the English page while its stock sibling happened to match one
           ? tr("每个完整 UTC 日在 00:05 UTC 结算一轮；实验开始当天晚于 00:00 UTC 起跑，按规则记为 PARTIAL、不评分")
+          // the board's own cadence: a weekly board promised a round after every close here
+          : R.cadence === "weekly" ? tr("每周最后一个交易日收盘 + 10 分钟后结算一轮")
           : tr("每个完整交易日收盘 + 10 分钟后结算一轮")}</span></div>`;
     return;
   }
   box.innerHTML = rs.slice(0, 8).map(r => {
     const muts = (r.mutations || []).filter(m => m.status === "accepted");
+    const flow = roundFlow(r);
     return `<div class="round">
       <div class="rh"><span class="day num">${esc(r.trading_day)}</span>
         <span class="oc ${esc(r.outcome)}">${({ completed: "已完成", skipped: "未进化", partial: "部分完成" })[r.outcome] || esc(r.outcome)}</span>
+        ${(r.data_quality && lateCloseIsLate(r.data_quality.late_close))
+          ? `<span class="oc late" title="${esc(lateCloseWords(r.data_quality).replace(/<[^>]*>/g, ""))}">${tr("迟结算")}</span>` : ""}
         ${r.outcome !== "skipped" ? `<span class="muted num">${tr("留")} ${r.n_kept} · ${tr("换")} ${r.n_replaced}</span>` : ""}
-        ${(r.top || []).length ? `<span class="muted">top ${esc((r.top || []).join(" "))} → bottom ${esc((r.bottom || []).join(" "))}</span>` : ""}
+        ${flow ? `<span class="muted">${flow}</span>` : ""}
       </div>
       <div class="story" ${r.reason ? `title="${esc(r.reason)}"` : ""}>${esc(roundStory(r))}</div>
       ${/* on a skipped round the story IS the reason in words, so printing both says it twice */ ""}
-      ${(r.reason && r.outcome !== "skipped") ? `<div class="reason" title="${esc(r.reason)}">${esc(skipWords(r.reason))}</div>` : ""}
+      ${(r.reason && r.outcome !== "skipped") ? `<div class="reason" title="${esc(r.reason)}">${esc(skipWordsFor(r.reason, r))}</div>` : ""}
       ${roundDisclosures(r)}
-      ${muts.length ? `<div class="mut">${muts.map(m => `<div><b>${esc(m.slot)}</b> <span class="muted" title="${esc((m.parent || "") + " → " + (m.child || ""))}">${esc(versionWords(m.parent))}<span class="arrow">→</span>${esc(versionWords(m.child))}</span><br>${Object.entries(m.diff || {}).map(([k, v]) => `<span title="${esc(k)}">${esc(paramWord(k))}</span>: ${esc(v.from)}<span class="arrow">→</span><b>${esc(v.to)}</b>`).join(" · ") || "（后代与亲代参数相同）"}</div>`).join("")}</div>` : ""}
+      ${muts.length ? `<div class="mut">${muts.map(m => `<div><b>${esc(m.slot)}</b> <span class="muted" title="${esc((m.parent || "") + " → " + (m.child || ""))}">${esc(versionWords(m.parent))}<span class="arrow">→</span>${esc(versionWords(m.child))}</span><br>${Object.entries(m.diff || {}).map(([k, v]) => `<span title="${esc(k)}">${esc(paramWord(k))}</span>: ${esc(v.from)}<span class="arrow">→</span><b>${esc(v.to)}</b>`).join(" · ") || par(tr("后代与亲代参数相同"))}</div>`).join("")}</div>` : ""}
     </div>`;
   }).join("");
 }
@@ -5401,20 +6122,42 @@ function roundDisclosures(r) {
       (t.length ? ` · <b>${tr("按并列的槽位编号")} ${t.length}${par(esc(t.join(" ")))} — ${tr("这不是关于这些策略的判断")}</b>` : "") +
       (isNum(sq.n_distinct_values) ? ` · ${tr("全场只有")} ${sq.n_distinct_values} ${tr("个不同的分数")}` : "") +
       (isNum(sq.spread_bp) ? `${LANG === "en" ? ", " : "，"}${tr("最高与最低相差")} ${sq.spread_bp} bp` : ""));
-    if (sq.records_note) bits.push(esc(sq.records_note) + par(tr("有效参数相同 ⇒ 成交相同")));
+    const basis = (r.distinct_records || {}).basis;
+    if (sq.records_note) bits.push(esc(isNum(sq.n_distinct_records) && isNum(sq.n_slots)
+      ? recordsWords(sq.n_slots, sq.n_distinct_records, isNum(sq.n_record_days) ? sq.n_record_days : 1,
+                     basis, sq.n_distinct_fill_records)
+      : sq.records_note) + recordsWhy(basis));
   } else if ((r.cut_ties || []).length) {
     bits.push(`${tr("并列于淘汰线")}${col()}${esc(r.cut_ties.join(" "))}`
               + par(tr("同分，按槽位编号决定淘汰，不代表表现更差")));
   }
   const dr = r.distinct_records;
   if (!r.selection_quality && dr && isNum(dr.n_distinct) && isNum(dr.n_slots) && dr.n_distinct < dr.n_slots)
-    bits.push(`${dr.n_slots} ${tr("个槽当日只有")} ${dr.n_distinct} ${tr("份不同的交易记录")}`
-              + par(tr("有效参数相同 ⇒ 成交相同")));
+    bits.push(esc(recordsWords(dr.n_slots, dr.n_distinct, (dr.days || []).length || 1, dr.basis, dr.n_distinct_fills))
+              + recordsWhy(dr.basis));
+  // who sat the round out, and why, when the reason line does not already say it. Not on a skipped day: the
+  // scores of every day record who WOULD sit out, and on a weekly board that is four days a week of noise
+  const py = Array.isArray(r.protected_young) ? r.protected_young : [];
+  if (py.length && r.outcome !== "skipped" && !/(^|;\s*)protected_young:/.test(String(r.reason || ""))) {
+    bits.push(esc(youngWords(py.map(y => y.slot_id).filter(Boolean), r)));
+  }
   const dq = r.data_quality;
   if (dq) {
     const cov = dq.coverage || {}, rb = cov.regular_bars || {}, exp = cov.expected_regular_bars;
     const covTxt = Object.keys(rb).map(k => `${esc(k)} ${rb[k]}${isNum(exp) ? "/" + exp : ""}`).join(" · ");
     if (covTxt) bits.push(`${tr("常规盘柱数")}${col()}${covTxt}${cov.outage ? ` · ${tr("当日记录到行情中断")}` : ""}`);
+    // WHICH symbols made the day incomplete. The line above lists every universe symbol (40 on the stock board), so
+    // the few the verdict rests on were never named; rule 3 (revision 2, 24h boards) adds the executable extended
+    // sessions, whose shortfalls read 'SPY:overnight 12/119' - on-time bars against the 90% requirement
+    const blk = Array.isArray(cov.blocking_symbols) ? cov.blocking_symbols : [];
+    const xs = cov.extended_sessions || null;
+    const blkS = xs && Array.isArray(xs.blocking_sessions) ? xs.blocking_sessions : [];
+    if (blk.length) bits.push(`⚠️ ${tr("常规盘柱数不足、导致当日不完整")}${col()}${esc(blk.join(" "))}`);
+    if (blkS.length) bits.push(`⚠️ ${tr("非常规时段柱数不足、导致当日不完整")}${col()}${esc(blkS.slice(0, 8).join(" · "))}`
+      + (blkS.length > 8 ? ` ${tr("…共")} ${blkS.length}` : ""));
+    else if (xs && xs.required_session_bars && Object.keys(xs.required_session_bars).length)
+      bits.push(`${tr("非常规时段柱数")}${col()}${tr("全部达标")}${par(Object.entries(xs.required_session_bars)
+        .map(([k, v]) => `${tr(SESSION_WORD[k] || k)} ≥ ${v}`).join(" · "))}`);
     // A 24/7 venue records its coverage as hourly ticker buckets, not regular-session bars. Only the stock shape
     // was rendered, so the crypto board printed the raw skip code and NOTHING explaining it - and a reader who
     // is told "day_incomplete" with no reason concludes the machinery is broken. It was not; it was mute.
@@ -5435,14 +6178,19 @@ function roundDisclosures(r) {
       bits.push(`<span title="${esc(cov.rule)}">${zh}</span>`);
     }
     const rv = dq.revisions || {};
-    if (rv.checked === true) {
-      const nr = rv.fills_on_revised_bar, nc = rv.quote_vs_bar;
+    const en = LANG === "en";
+    // bar revisions and quote-vs-bar are checks on 5-minute STOCK bars; the crypto close records neither, and every
+    // crypto round used to say "unknown: this runner build does not write it" about a check that does not apply
+    if (STATE.crypto && !dq.revisions) { /* not applicable */ }
+    else if (rv.checked === true) {
+      const nr = rv.fills_on_revised_bar;
       bits.push(isNum(nr) && nr > 0
-        ? `⚠️ ${nr} 笔成交所依据的 5 分钟柱事后被数据源修订（成交价按首次看到的柱计算，冻结规则不回溯）`
-        : "成交所依据的柱已核对：无事后修订");
-      if (isNum(nc) && nc > 0) bits.push(`⚠️ ${nc} 笔成交的柱与同时段报价矛盾`);
+        ? (en ? `⚠️ ${nr} ${nr === 1 ? "fill was" : "fills were"} priced on a 5-minute bar the source later revised (fills are priced on the bar as first seen; the frozen rule does not go back)`
+              : `⚠️ ${nr} 笔成交所依据的 5 分钟柱事后被数据源修订（成交价按首次看到的柱计算，冻结规则不回溯）`)
+        : tr("成交所依据的柱已核对：无事后修订"));
+      bits.push(quoteVsBarWords(rv));
     } else if (rv.error) {
-      bits.push(`柱修订核对未完成：${esc(rv.error)}`);
+      bits.push(`${tr("柱修订核对未完成")}${col()}${esc(rv.error)}`);
     } else if (rv.checked === false) {
       bits.push(tr("柱修订核对：未知（收盘记录没有这一项）"));
     } else {
@@ -5450,10 +6198,71 @@ function roundDisclosures(r) {
       // nothing was revised" - the project's recurring bug class, in the one place that reports data revisions.
       bits.push(tr("柱修订核对：未知（这个 runner 版本不写这一项）"));
     }
+    const lc = lateCloseWords(dq);
+    if (lc) bits.push(lc);
   } else if (r.outcome) {
-    bits.push("数据质量记录：未知（没有对应的收盘事件）");
+    bits.push(tr("数据质量记录：未知（没有对应的收盘事件）"));
   }
   return bits.length ? `<div class="disc">${bits.map(b => `<div>${b}</div>`).join("")}</div>` : "";
+}
+
+/* a session code in words (the same words the server's session_zh uses, so they share its I18N entries) */
+const SESSION_WORD = { pre: "盘前", regular: "常规盘", post: "盘后", overnight: "夜盘", closed: "休市" };
+
+/* The quote-vs-bar check, only as far as it is evidence (audit 2026-09-23 #6). Before rule 2 the window was compared
+   as strings - a UTC print against a NY-offset bar, four hours apart - so an old event's count (arena-screen-20260918:
+   "25 of 34 fills contradicted") says nothing either way: unknown. Under rule 2, a day where no fill had an in-window
+   print compared nothing, and that is unknown too, never "no contradiction". */
+function quoteVsBarWords(rv) {
+  const en = LANG === "en";
+  const rule = rv.quote_vs_bar_rule, nc = rv.quote_vs_bar, ck = rv.quote_vs_bar_checked, nf = rv.fills;
+  if (!(isNum(rule) && rule >= 2)) return tr("报价核对：未知（这一天的记录来自旧的字符串比较，计数不作为证据）");
+  if (!isNum(ck) || ck === 0) {
+    return isNum(nf) && nf > 0 ? tr("报价核对：未知（当日成交的柱时段内没有可比对的报价）") : tr("报价核对：当日无成交");
+  }
+  const of = isNum(nf) ? `${ck}/${nf}` : String(ck);
+  if (isNum(nc) && nc > 0) {
+    const d = (rv.quote_vs_bar_detail || [])[0];
+    const eg = d ? ` · ${esc(d.symbol || "")} ${esc(hm12(d.bar_start_ny))}${d.field === "last_non_reg" ? par(en ? "extended-hours print" : "非常规时段报价") : ""}` : "";
+    return en ? `⚠️ ${nc} ${nc === 1 ? "fill's bar" : "fills' bars"} contradicted by an in-window quote (compared ${of} fills)${eg}`
+              : `⚠️ ${nc} 笔成交的柱与同时段报价矛盾（比对了 ${of} 笔）${eg}`;
+  }
+  return en ? `quote check: no contradiction (${of} fills had an in-window quote to compare)`
+            : `报价核对：无矛盾（${of} 笔成交有同时段报价可比对）`;
+}
+
+/* A final processed after its due instant (audit #9/#34): it is valued as of the instant it was due, and says so.
+   `late_close` null is on time; an event from an older runner has no key at all, which says nothing. */
+/* True only when the record says a close was actually processed late - not when a slot was merely unreadable. */
+/* an order status in words (the raw code stays in the title): the protective-exit list printed 'filled' / 'cancelled'
+   on the Chinese page (page review) */
+const PX_STATUS_ZH = { filled: "已成交", cancelled: "已撤销", partial: "部分成交", expired: "已过期", rejected: "被拒绝",
+                       submitted: "已提交", working: "挂单中" };
+
+function lateCloseIsLate(lc) {
+  if (!lc || typeof lc !== "object") return false;
+  if (lc.per_slot && typeof lc.per_slot === "object") return Object.values(lc.per_slot).some(v => v && typeof v === "object");
+  return true;
+}
+
+function lateCloseWords(dq) {
+  const lc = dq && dq.late_close;
+  if (!lc || typeof lc !== "object") return "";
+  const en = LANG === "en";
+  if (lc.per_slot && typeof lc.per_slot === "object") {
+    // a slot whose final could not be READ is stored as the string "unknown": unknown, not late (page review)
+    const ents = Object.entries(lc.per_slot);
+    const late = ents.filter(([, v]) => v && typeof v === "object").map(([k]) => k).sort();
+    const unk = ents.filter(([, v]) => !(v && typeof v === "object")).map(([k]) => k).sort();
+    const bits = [];
+    if (late.length) bits.push(`⏱ ${tr("部分槽位的收盘晚于到期时刻处理")}${col()}${esc(late.join(" "))}${par(tr("各按自己的到期时刻估值"))}`);
+    if (unk.length) bits.push(`${tr("收盘时读不到这些槽位")}${col()}${esc(unk.join(" "))}${par(tr(UNK))}`);
+    return bits.join(LANG === "en" ? "; " : "；");
+  }
+  const late = isNum(lc.late_s) ? dur(lc.late_s) : tr(UNK);
+  return en
+    ? `⏱ late close: due ${esc(hm12(lc.boundary_ny))} ET, processed ${esc(mdhm(lc.processed_ny))} ET (${late} late); valued as of ${esc(hm12(lc.valued_as_of_ny))} ET, not when it ran`
+    : `⏱ 迟到的收盘：应在 ${esc(hm12(lc.boundary_ny))} ET 结算，实际 ${esc(mdhm(lc.processed_ny))} ET 处理（晚 ${late}）；按 ${esc(hm12(lc.valued_as_of_ny))} ET 估值，不是处理时的价格`;
 }
 
 function renderFooter(s) {
@@ -5509,6 +6318,7 @@ const REASON_ZH = {
   registry_unreadable: "读不到这个实验的资金槽名册（arena.sqlite 可能损坏）",
   slot_ledger_unreadable: "读不到这个资金槽的账本文件（缺失或损坏）——这不表示它没有交易过",
   bad_slot_id: "资金槽编号不合法",
+  retired: "此实验已停止发布",            // a published folder the publisher has since retired
 };
 
 /* ============================================================ slot sheet */
@@ -5648,6 +6458,28 @@ $("scrim").addEventListener("click", () => closeSheet());
 $("shClose").addEventListener("click", () => closeSheet());
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
 
+/* What a frozen day's own record says about its day figure (group B, 8b94839 / 0864abe):
+   - prev_source 'gap:<source>': the previous day had no final when this one was frozen, so this "day" return spans
+     more than one session - a two-day move printed as one day unless it is said;
+   - the final's notes.late_close: processed after its due instant and valued as of that instant;
+   - notes.later_fills_excluded: fills of a later trading day already in the ledger, left out of this day's freeze. */
+function dayScoreTags(r, d) {
+  const out = [];
+  const ps = String(r.prev_source || "");
+  if (ps.startsWith("gap:")) out.push(`<span class="ftag" title="${esc(tr("冻结这一天时，前一个交易日还没有收盘记录，所以这一天的收益跨越了不止一个交易日"))}">${tr("跨多日")}</span>`);
+  const dc = ((d && d.daily_close) || []).find(x => x && x.trading_day === r.trading_day);
+  const n = (dc && dc.notes && typeof dc.notes === "object") ? dc.notes : null;
+  if (n && n.late_close && typeof n.late_close === "object") {
+    out.push(`<span class="ftag" title="${esc(lateCloseWords({ late_close: n.late_close }).replace(/<[^>]*>/g, ""))}">${tr("迟结算")}</span>`);
+  }
+  if (n && isNum(n.later_fills_excluded) && n.later_fills_excluded > 0) {
+    out.push(`<span class="ftag" title="${esc(LANG === "en"
+      ? `${n.later_fills_excluded} fill${n.later_fills_excluded === 1 ? "" : "s"} of a later trading day, already in the ledger when this day was frozen, left out of it`
+      : `冻结这一天时账本里已有 ${n.later_fills_excluded} 笔属于之后交易日的成交，未计入这一天`)}">+${n.later_fills_excluded}</span>`);
+  }
+  return out.length ? " " + out.join(" ") : "";
+}
+
 function renderSheet(d, fetched) {
   const a = d.slot, params = a.params || {}, diff = a.mutation_diff || {};
   $("shTitle").textContent = `${a.slot_id} · ${a.candidate_key || "?"} g${a.generation != null ? a.generation : "?"}`;
@@ -5664,7 +6496,7 @@ function renderSheet(d, fetched) {
       <div class="eyebrow">实时净值</div>
       <div class="big sm num" style="margin-top:2px">${usd(a.live_equity_cents)}</div>
       <div class="delta">
-        <span class="chg s num ${signCls(a.live_day_pnl_cents)}">${isNum(a.live_day_pnl_cents) ? usd(a.live_day_pnl_cents, { sign: true }) + " · " + bpPct(a.live_day_return_bp) : UNK}</span><span class="muted" title="${a.prev_close_source === "principal_no_close" ? "上一日没有冻结收盘价（可能错过了 20:10 结算），基准退回本金，这实际上是建仓以来收益" : a.prev_close_source === "principal_first_day" ? "本槽今天首日运行，本金即当日基准" : "基准：" + esc(a.prev_close_day || "上一日冻结收盘")}">${a.prev_close_source === "principal_no_close" ? "自建仓起" : "今日"}</span>
+        <span class="chg s num ${signCls(a.live_day_pnl_cents)}">${isNum(a.live_day_pnl_cents) ? usd(a.live_day_pnl_cents, { sign: true }) + " · " + bpPct(a.live_day_return_bp) : UNK}</span><span class="muted" title="${esc(dayBasis(a).tip)}">${esc(dayBasis(a).k)}</span>
         <span class="chg s num ${signCls(a.live_pnl_cents)}">${isNum(a.live_pnl_cents) ? bpPct(a.live_return_bp) : UNK}</span><span class="muted">累计</span>
         ${isNum(a.live_tenure_return_bp) ? `<span class="chg s num ${signCls(a.live_tenure_return_bp)}">${bpPct(a.live_tenure_return_bp)}</span><span class="muted">任内</span>` : ""}
       </div>
@@ -5672,8 +6504,10 @@ function renderSheet(d, fetched) {
       <dl class="kv" style="margin-top:14px">
         ${kv("现金", `<span class="num">${usd(a.cash_cents)}</span>`)}
         ${kv("持仓市值", `<span class="num">${usd(a.live_positions_value_cents)}</span>`)}
-        ${kv("未实现", `<span class="num">${usd(a.live_unrealized_cents)}</span>`)}
-        ${kv("已实现累计", `<span class="num">${usd(a.realized_total_cents)}</span>`)}
+        ${/* crypto (finding 29): realized is net of BOTH fees and unrealized net of the buy fee still carried, so the
+             two add up to the live P&L; the labels say which fees each figure has had taken off */ ""}
+        ${kv(a.realized_basis === "net_of_all_fees" ? "未实现（扣除买入费）" : "未实现", `<span class="num">${usd(a.live_unrealized_cents)}</span>`)}
+        ${kv(a.realized_basis === "net_of_all_fees" ? "已实现累计（扣除全部费用）" : "已实现累计", `<span class="num">${usd(a.realized_total_cents)}</span>`)}
         ${kv("账本净值（冻结）", `<span class="num">${usd(a.ledger_equity_cents)}</span> <span class="muted">${esc(a.ledger_day || "")}</span>`)}
         ${kv("任内起点", `<span class="num">${usd(a.tenure_start_equity_cents)}</span> <span class="muted">${esc(mdhm(a.activation_ny))}</span>`)}
         ${kv("继承持仓贡献", `<span class="num">${usd(a.inherited_pnl_cents)}</span>`)}
@@ -5686,7 +6520,9 @@ function renderSheet(d, fetched) {
 
     <div class="box">
       <h3>策略版本</h3>
-      <div class="instr">${esc(a.instruction || "—")}</div>
+      ${/* what the strategy IS, in words, before the instruction text: the card says it and the drawer did not */ ""}
+      ${a.label_zh ? `<div class="instr"><b>${esc(a.candidate_key || "")}</b> · ${esc(phraseWords(a.label_zh))}</div>` : ""}
+      <div class="instr"${a.label_zh ? ` style="margin-top:6px"` : ""}>${esc(a.instruction || "—")}</div>
       ${a.hypothesis ? `<div class="instr" style="margin-top:8px;color:var(--ink3)">${LANG === "en" ? "Hypothesis: " : "假设："}${esc(a.hypothesis)}</div>` : ""}
       <div class="parm">${Object.entries(params).map(([k, v]) => `<span class="${diff && diff[k] ? "diff" : ""}">${esc(k)}=${esc(Array.isArray(v) ? v.join("/") : v)}</span>`).join("")}</div>
       ${Object.keys(diff || {}).length ? `<div class="instr" style="margin-top:9px">相对父代变异：${Object.entries(diff).map(([k, v]) => `<b>${esc(k)}</b> ${esc(v.from)} → ${esc(v.to)}`).join(" · ")}</div>` : ""}
@@ -5701,7 +6537,7 @@ function renderSheet(d, fetched) {
 
     ${(a.positions || []).length ? `<div class="box"><h3>当前持仓</h3><div class="tw"><table class="tape">
       <thead><tr><th>${tr(symWord())}</th><th>数量</th><th>成本</th><th>实时价</th><th>市值</th><th>未实现</th><th>止损/目标</th></tr></thead>
-      <tbody>${a.positions.map(p => `<tr><td data-k="${symWord()}"><b>${esc(p.symbol)}</b></td><td class="num" data-k="数量">${p.qty}</td><td class="num" data-k="成本">${px(p.avg_cost)}</td>
+      <tbody>${a.positions.map(p => `<tr><td data-k="${symWord()}"><b>${esc(p.symbol)}</b></td><td class="num" data-k="数量">${p.qty}</td><td class="num" data-k="成本">${pxFull(p.avg_cost)}</td>
         <td class="num" data-k="实时价">${px(p.live_price)} <span class="muted">${esc(({ fresh: "", stale: "陈旧", unknown: "未知" })[p.price_status] || "")}</span></td><td class="num" data-k="市值">${usd(p.market_value_cents)}</td>
         <td class="num" data-k="未实现" style="color:${isNum(p.unrealized_cents) ? (p.unrealized_cents > 0 ? cssVar("--green-ink") : p.unrealized_cents < 0 ? cssVar("--red-ink") : "") : ""}">${usd(p.unrealized_cents, { sign: isNum(p.unrealized_cents) && p.unrealized_cents > 0 })}</td>
         <td class="num muted" data-k="止损/目标">${px(p.stop_price)} / ${px(p.target_price)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
@@ -5709,14 +6545,24 @@ function renderSheet(d, fetched) {
     ${(d.fills || []).length ? `<div class="box"><h3>成交记录</h3><div class="tw"><table class="tape">
       <thead><tr><th>时间</th><th>方向</th><th>${tr(symWord())}</th><th>数量</th><th>价格</th><th>已实现</th><th>意图</th></tr></thead>
       <tbody>${d.fills.slice(0, 30).map(f => `<tr><td class="num" data-k="时间">${esc(mdhm(f.confirmed_ny))}</td><td><span class="side ${esc(f.side)}">${esc(f.side)}</span></td>
-        <td data-k="${symWord()}">${esc(f.symbol)}</td><td class="num" data-k="数量">${f.qty}</td><td class="num" data-k="价格">${px(f.price)}</td>
-        <td class="num" data-k="已实现" style="color:${isNum(f.realized_pnl_cents) && f.realized_pnl_cents !== 0 ? (f.realized_pnl_cents > 0 ? cssVar("--green-ink") : cssVar("--red-ink")) : ""}">${f.side === "SELL" ? usd(f.realized_pnl_cents, { sign: isNum(f.realized_pnl_cents) && f.realized_pnl_cents > 0 }) : "—"}</td>
-        <td class="muted" data-k="意图">${esc(f.intent || "")}</td></tr>`).join("")}</tbody></table></div></div>` : `<div class="box"><h3>成交记录</h3><div class="muted">暂无成交</div></div>`}
+        <td data-k="${symWord()}">${esc(f.symbol)}</td><td class="num" data-k="数量">${f.qty}</td><td class="num" data-k="价格">${pxFull(f.price)}</td>
+        <td class="num" data-k="已实现" style="color:${isNum(realOf(f)) && realOf(f) !== 0 ? (realOf(f) > 0 ? cssVar("--green-ink") : cssVar("--red-ink")) : ""}">${f.side === "SELL" ? usd(realOf(f), { sign: isNum(realOf(f)) && realOf(f) > 0 }) : "—"}</td>
+        <td class="muted icell" data-k="意图">${esc(f.intent || "")}${fillTags(f)}</td></tr>`).join("")}</tbody></table></div></div>` : `<div class="box"><h3>成交记录</h3><div class="muted">暂无成交</div></div>`}
+
+    ${(d.protective_exits || []).length ? `<div class="box"><h3>${tr("盘中止损/止盈（修订 2）")}</h3>
+      <div class="muted" style="margin-bottom:6px">${tr("止损/止盈在每次行情轮询时检查，不等整点决策；这些单没有决策记录，触发价写在原因里")}</div>
+      ${/* one line per order rather than another table: it wraps on a phone with nothing to swipe */ ""}
+      ${d.protective_exits.slice(0, 12).map(o => {
+        const m = /last=([^@;]+)@([^;]+)/.exec(String(o.reason || ""));
+        return `<div class="num"><b>${esc(o.candidate)}</b> · ${esc(mdhm(o.created_ny))} · ${esc(o.intent || "")}`
+          + ` · <span title="${esc(((o.status || "") + " " + (o.status_reason || "")).trim())}">${esc(tr(PX_STATUS_ZH[o.status] || o.status || UNK))}</span>`
+          + (m ? ` · ${tr("触发")} ${pxFull(m[1])}` : "") + `</div>`;
+      }).join("")}</div>` : ""}
 
     ${(d.daily_scores || []).length ? `<div class="box"><h3>每日评分（账本冻结）</h3><div class="tw"><table class="tape">
       <thead><tr><th>交易日</th><th>净值</th><th>当日</th><th>累计</th><th>任内</th><th>可评分</th></tr></thead>
       <tbody>${d.daily_scores.slice(0, 14).map(r => `<tr><td class="num" data-k="交易日">${esc(r.trading_day)}</td><td class="num" data-k="净值">${usd(r.equity_cents)}</td>
-        <td class="num" data-k="当日" style="color:${isNum(r.day_return_bp) ? (r.day_return_bp > 0 ? cssVar("--green-ink") : r.day_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${bpPct(r.day_return_bp)}</td>
+        <td class="num" data-k="当日" style="color:${isNum(r.day_return_bp) ? (r.day_return_bp > 0 ? cssVar("--green-ink") : r.day_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${bpPct(r.day_return_bp)}${dayScoreTags(r, d)}</td>
         <td class="num" data-k="累计">${bpPct(r.cum_return_bp)}</td><td class="num" data-k="任内">${bpPct(r.tenure_return_bp)}</td>
         <td class="muted" data-k="可评分">${r.scorable ? tr("是") : esc(r.unscorable_reason || tr("否"))}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 
