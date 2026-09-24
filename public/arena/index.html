@@ -677,6 +677,17 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
 .btsess{margin-top:5px;padding-left:10px;border-left:2px solid var(--hair)}
 .btsess div+div{margin-top:2px}
 .oc.fin{background:color-mix(in srgb,var(--ink3) 18%,transparent);color:var(--ink2)}
+/* each agent's own switches (2026-09-24): one row under the strategy chip, only on a board whose versions carry them (a
+   stock board's overnight / earnings switches, a crypto board's own cooldown). The chips wrap inside themselves like
+   已结束, so the row can never widen a 375px card; the test measures its longest PAIR against the 313px content box.
+   `hidden` must win over the flex display, or an empty row would still take the column's row-gap. */
+.swrow{display:flex;flex-wrap:wrap;gap:6px;min-width:0;max-width:100%}
+.swrow[hidden]{display:none}
+.swchip{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:600;padding:2px 7px;border-radius:6px;min-width:0;
+  max-width:100%;background:var(--hair2);color:var(--ink2);white-space:normal;overflow-wrap:anywhere}
+.swchip.night{background:color-mix(in srgb,var(--purple) 14%,transparent);color:var(--purple-ink)}
+.swchip.cool{background:color-mix(in srgb,var(--blue) 12%,transparent);color:var(--blue-ink)}
+.swchip.unk{background:var(--hair2);color:var(--ink3)}
 @keyframes sh{to{background-position:-220% 0}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;
   transition-duration:.01ms!important}}
@@ -767,7 +778,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   .big{font-size:34px}
   .stat .v.s{font-size:14px;line-height:1.4}
   .statgrid.tight{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .tag,.gen,.vchip,.oc{padding:1px 6px}
+  .tag,.gen,.vchip,.oc,.swchip{padding:1px 6px}
   .hint,.aglegend{line-height:var(--lh-cjk);text-wrap:pretty}
   footer>div:first-child{font-size:13px;font-weight:500;color:var(--ink2);line-height:var(--lh-cjk)}
   #footmeta{font-size:12px;line-height:1.7}
@@ -1084,7 +1095,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-24T14:23:54Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-24T14:23:54Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-24T15:30:48Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-24T15:30:48Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1917,6 +1928,17 @@ const I18N = {
     "财报前未清仓": "not flattened before a report", "日历迟列": "listed late", "财报禁区清仓": "flattened for the earnings blackout",
     "收盘前平仓：可能是策略参数 eod_cleanup=true，也可能是本实验的财报禁区在财报日前后清仓；Agent 详情的决策记录会标出是哪一种":
       "Pre-close flatten: either the version's eod_cleanup=true, or this experiment's earnings blackout flattening around a report; the agent's decision list says which",
+    // a CLEANUP fill's hover where versions carry their own carry_overnight switch (cleanupTipOf, 2026-09-24)
+    "收盘前平仓：这个 Agent 自己的开关 carry_overnight=false——每个交易日到清仓时间都平仓，从不持仓过夜（它优先于 eod_cleanup）":
+      "Pre-close flatten: this agent's own switch carry_overnight=false - it is flattened at the cleanup time every trading day and never holds overnight (this switch wins over eod_cleanup)",
+    "收盘前平仓：这个 Agent 的 eod_cleanup=true——休市前（周五、节假日前、最后一天）平仓；不在 24 小时名单上的股票每个交易日收盘前平仓":
+      "Pre-close flatten: this agent's eod_cleanup=true - flattened before a market closure (Friday, the eve of a holiday, the last day); a stock not on the 24-hour list is flattened before every close",
+    "收盘前平仓：可能是这个 Agent 的 eod_cleanup=true（休市前——周五、节假日前、最后一天——平仓；不在 24 小时名单上的股票每个交易日平仓），也可能是它回避财报、被财报禁区在财报前清仓；Agent 详情的决策记录会标出财报禁区清仓":
+      "Pre-close flatten: either this agent's eod_cleanup=true (flattened before a market closure - Friday, the eve of a holiday, the last day - and before every close for a stock not on the 24-hour list), or the earnings blackout flattening it before a report, since it avoids earnings; the agent's decision list marks a blackout flatten",
+    "收盘前平仓，原因由这个 Agent 自己的开关决定：carry_overnight=false 的每个交易日都在收盘前平仓；eod_cleanup=true 的在休市前（周五、节假日前、最后一天）平仓，不在 24 小时名单上的股票每个交易日平仓":
+      "Pre-close flatten, for a reason this agent's own switches decide: with carry_overnight=false it is flattened before every close; with eod_cleanup=true before a market closure (Friday, the eve of a holiday, the last day), and before every close for a stock not on the 24-hour list",
+    "收盘前平仓，原因由这个 Agent 自己的开关决定：carry_overnight=false 的每个交易日都在收盘前平仓；eod_cleanup=true 的在休市前（周五、节假日前、最后一天）平仓，不在 24 小时名单上的股票每个交易日平仓；回避财报的还会被财报禁区在财报前清仓。Agent 详情的决策记录会标出财报禁区清仓":
+      "Pre-close flatten, for a reason this agent's own switches decide: with carry_overnight=false it is flattened before every close; with eod_cleanup=true before a market closure (Friday, the eve of a holiday, the last day), and before every close for a stock not on the 24-hour list; an agent that avoids earnings is also flattened by the earnings blackout before a report. The agent's decision list marks a blackout flatten",
     // the fee-tier shadow
     "按真实费率档重算": "re-priced at the Kraken tier", "按真实费率档重算（仅显示）": "Re-priced at the Kraken tier (display only)",
     "规则、边界与费率表": "Rule, edges and the fee schedule", "费率表": "schedule", "核对于": "checked",
@@ -1929,6 +1951,54 @@ const I18N = {
     "止盈后不回补": "no buy-back after a take-profit", "止盈后不回补（逐日）": "No buy-back after a take-profit, per day",
     "读不到：未知，不代表没有拒绝": "could not be read: unknown, not 'nothing refused'",
     "这条规则还没有拒绝过买单": "this rule has not refused a buy yet",
+    "这个 Agent 自己的冷却时间：未知（读不到它当前版本的参数）": "this agent's own cooldown: unknown (its current version's parameters could not be read)",
+    "这个 Agent 自己的设置（reentry_after_tp_hours = 0，可进化）：止盈后可立即买回；下面若有拒绝，来自这个槽之前的版本":
+      "this agent's own setting (reentry_after_tp_hours = 0, evolvable): it may buy back right after a take-profit; any refusal below was made by an earlier version in this slot",
+    // each agent's own switches (2026-09-24, user: no board-wide hard rules - each agent's strategy decides, evolution tunes)
+    "不跨夜": "flat overnight", "工作日可隔夜": "holds weeknights", "周末也持有": "holds weekends too", "隔夜：未知": "overnight: unknown",
+    "回避财报": "avoids earnings", "财报照常持有": "no earnings blackout", "财报：未知": "earnings: unknown",
+    "止盈后可立即买回": "may buy back right after a take-profit", "止盈后冷却：未知": "take-profit cooldown: unknown",
+    "止盈后冷却": "Take-profit cooldown", "转弱离场：未知": "exits on weakness: unknown",
+    "这个 Agent 自己的开关": "This agent's own switches", "隔夜持仓": "Overnight", "财报": "Earnings",
+    "版本设定": "set by the version", "默认": "default", "可进化": "evolvable", "不进化": "not evolved",
+    "夜盘不开新仓（这个 Agent 不跨夜）": "no entry in the overnight session (this agent holds nothing overnight)",
+    "读不到这个版本的参数：是否持仓过夜未知。": "This version's parameters could not be read: whether it holds overnight is unknown.",
+    "工作日可隔夜：周一至周四可以把持仓带过收盘，夜盘照常盯止损/止盈；周五、节假日前和最后一天收盘前平仓。只对 24 小时市场名单里的股票，其他股票每天收盘前平仓。":
+      "Holds weeknights: Monday to Thursday a position may be carried past the close, with its stop and target watched overnight; it is flattened before the close on Friday, the eve of a holiday and the last day. Only for stocks on the 24-hour list; any other stock is flattened before every close.",
+    "eod_cleanup=false：收盘前不清仓，工作日的夜里和周末、节假日都可以持有。":
+      "eod_cleanup=false: no flatten before the close, so it may hold through weeknights, weekends and holidays.",
+    "carry_overnight=false：每个交易日到收盘前的清仓时间就平仓，夜盘（20:00–07:00）也不开新仓，所以从不持仓过夜；盘前与常规盘照常入场，当天平掉。":
+      "carry_overnight=false: flattened at the day's pre-close cleanup time every trading day, and no entry in the overnight session (20:00-07:00), so it never holds overnight; pre-market and regular entries go on and are flattened the same day.",
+    "eod_cleanup=true：每个交易日收盘前平仓，不持仓过夜。": "eod_cleanup=true: flattened before the close every trading day; it never holds overnight.",
+    "它由这个 Agent 自己的开关决定（carry_overnight / eod_cleanup），进化可以改变。":
+      "This agent's own switches decide it (carry_overnight / eod_cleanup), and evolution may change them.",
+    "它由这个 Agent 自己的开关决定（carry_overnight / eod_cleanup，未设置的按默认 true）；在这个实验里进化不会改变它。":
+      "This agent's own switches decide it (carry_overnight / eod_cleanup, true where unset); evolution does not change them in this experiment.",
+    "读不到这个版本的参数：是否回避财报未知。": "This version's parameters could not be read: whether it avoids earnings is unknown.",
+    "avoid_earnings=false：像没有财报禁区时一样持仓、开仓，财报夜也照常。":
+      "avoid_earnings=false: it holds and enters as if there were no earnings blackout, report nights included.",
+    "avoid_earnings=true，但它的 eod_cleanup=false：它按自己的选择跨夜持仓，财报夜也不例外——对它只适用财报禁区里不开新仓的那一半，财报前不清仓。":
+      "avoid_earnings=true, but its eod_cleanup=false: it carries overnight by its own choice, report nights included - only the no-entry half of the blackout applies to it, and it is not flattened before a report.",
+    "avoid_earnings=true：它本来每天收盘前平仓，财报夜不会持仓；财报禁区对它只多挡住财报前后的开仓。":
+      "avoid_earnings=true: it flattens before every close anyway, so it never holds through a report; for it the blackout only adds the block on entries around a report.",
+    "上面的说明写于这个策略创建时；它自己的开关（是否跨夜、是否回避财报、止盈后冷却、趋势转弱是否离场）以卡片和下面的参数为准，进化可能已经改变了它们。":
+      "The text above was written when this strategy was created; its own switches (holding overnight, stepping aside for earnings, the take-profit cooldown, exiting on trend weakness) are what the card and the parameters below say - evolution may have changed them.",
+    "avoid_earnings=true：财报日前后按财报禁区清仓、不开新仓。":
+      "avoid_earnings=true: around a report the earnings blackout flattens it and keeps it out of new entries.",
+    "它由这个 Agent 自己的开关 avoid_earnings 决定，进化可以改变。": "This agent's own avoid_earnings switch decides it, and evolution may change it.",
+    "它由这个 Agent 自己的开关 avoid_earnings 决定（未设置即为 true）；在这个实验里进化不会改变它。":
+      "This agent's own avoid_earnings switch decides it (true where unset); evolution does not change it in this experiment.",
+    "读不到这个版本的参数：止盈后的冷却时间未知。": "This version's parameters could not be read: its cooldown after a take-profit is unknown.",
+    "这个 Agent 自己的参数 reentry_after_tp_hours = 0：止盈后不设冷却，可以立即买回同一个币；进化可以调整它。":
+      "This agent's own parameter reentry_after_tp_hours = 0: no cooldown after a take-profit, so it may buy the same coin straight back; evolution may tune it.",
+    "止盈后多久不买回同一个币不在上面的统一风控里：它是每个 Agent 自己的参数（reentry_after_tp_hours，0 = 不限制），进化可以调整；每张卡上写着它当前的设置。":
+      "How long an agent waits before buying a coin back after a take-profit is not one of the shared limits above: it is each agent's own parameter (reentry_after_tp_hours, 0 = no wait), and evolution may tune it; each card shows its current setting.",
+    "在这个实验里，上面的隔夜做法只是默认：是否持仓过夜是每个 Agent 自己的开关——carry_overnight=false 的每个交易日收盘前平仓、夜盘不开新仓；eod_cleanup=false 的周末和节假日也持有；进化可以改变这些开关。每张卡上写着它当前的做法。":
+      "In this experiment the overnight practice above is only the default: holding overnight is each agent's own switch - carry_overnight=false flattens before every close and takes no overnight entry; eod_cleanup=false holds through weekends and holidays too; evolution may change these switches. Each card shows its current practice.",
+    "在这个实验里，上面的隔夜做法只是默认：是否持仓过夜是每个 Agent 自己的开关——carry_overnight=false 的每个交易日收盘前平仓、夜盘不开新仓；eod_cleanup=false 的周末和节假日也持有；这个实验的进化不会改变这些开关。每张卡上写着它当前的做法。":
+      "In this experiment the overnight practice above is only the default: holding overnight is each agent's own switch - carry_overnight=false flattens before every close and takes no overnight entry; eod_cleanup=false holds through weekends and holidays too; evolution does not change these switches in this experiment. Each card shows its current practice.",
+    "按 Agent 自己的开关 avoid_earnings 执行：true（未设置即为 true）时适用上面的规则；false 的 Agent 像没有财报禁区时一样持仓、开仓。":
+      "Applied per agent, by its own avoid_earnings switch: true (also when a version does not set it) puts the agent under the rule above; an agent with false holds and enters as if there were no blackout.",
     // a published page that has fallen behind its own site (2026-09-24): the banner when one automatic reload was not enough
     "页面有新版本": "A newer version of this page is available", "点此刷新": "reload",
   },
@@ -2909,13 +2979,17 @@ function renderHero(s) {
   // with the others - only when the frozen config switched it on (hours > 0); 0 or absent adds nothing
   const reH = STATE.crypto && isNum(ex.reentry_after_take_profit_hours) && ex.reentry_after_take_profit_hours > 0
     ? ex.reentry_after_take_profit_hours : null;
-  $("sidehint").textContent = LANG === "en"
+  // "per_version" (2026-09-24, user: no board-wide hard rule): the cooldown is NOT one of the shared limits - each agent's
+  // own parameter decides it, and each card shows its current value. A frozen number, or none, reads as before
+  const reOwn = reentryPerVersion(s) ? tr(REENTRY_OWN_ZH) : "";
+  $("sidehint").textContent = (LANG === "en"
     ? `Risk limits (identical for every agent, not modifiable by a strategy): at most ${risk.max_positions} position · ` +
       `${usd(risk.max_position_notional_cents, { cents: false })} per position · ${risk.max_entries_per_trading_day} entries per day · ` +
       `breakers at ${usd(risk.daily_loss_stop_cents, { cents: false })} daily / ${usd(risk.cum_loss_stop_cents, { cents: false })} cumulative loss.` +
       (reH ? ` No buy-back of a coin within ${reH}h of a take-profit on it (a stop or a trend exit does not count).` : "")
     : `风控（所有 Agent 相同、不可被策略修改）：最多 ${risk.max_positions} 个持仓 · 单仓 ≤ ${usd(risk.max_position_notional_cents, { cents: false })} · 每日 ≤ ${risk.max_entries_per_trading_day} 次入场 · 日亏 ${usd(risk.daily_loss_stop_cents, { cents: false })} / 累计 ${usd(risk.cum_loss_stop_cents, { cents: false })} 熔断。` +
-      (reH ? `止盈卖出一个币后 ${reH} 小时内不再买回它（止损、趋势出场不算）。` : "");
+      (reH ? `止盈卖出一个币后 ${reH} 小时内不再买回它（止损、趋势出场不算）。` : ""))
+    + (reOwn ? (LANG === "en" ? " " : "") + reOwn : "");
 }
 
 /* runner + feed chips: both are AGE readouts, so they must keep updating on a clock-only tick */
@@ -3073,6 +3147,10 @@ function renderTicker(s, keep) {
       : is24
         ? tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈）：盘前、常规盘、盘后，以及 Robinhood 24 小时市场的夜盘；周一至周四持仓可跨收盘持有，周五、节假日前和最后一天收盘前平仓。每笔成交不超过该 5 分钟 K 线成交量的 1%，夜盘成交量小，多数出场会等到盘前或开盘。")
         : tr("入场：仅常规盘 09:45–15:30。出场（止损/止盈/收盘前平仓）：盘前、常规盘、盘后。夜盘与休市一律不可执行。");
+    // where each agent's own switches decide the overnight practice, the policy above is only the default - the same
+    // words the 交易时段 row appends (carry_overnight=false agents take no overnight entry and carry nothing across a
+    // close). Nothing on any other board, the running stock-research-20260924 included
+    if (is24 && nightOwnOf(s)) chip.title += " " + tr(switchBoard(s).nightEvolves ? NIGHT_OWN_EVO_ZH : NIGHT_OWN_FIXED_ZH);
     // on a phone an empty tape outside the entry window reads as "the agents did nothing" -- the exact misreading
     // this chip exists to prevent, and until now the rule behind it was reachable only by hovering
     if (!chip.dataset.wired) {
@@ -3246,7 +3324,7 @@ function renderStockPool(s) {
   // behind it is current. Nothing at all on a board frozen without the key
   const ebn = $("ebbox");
   if (ebn) {
-    const h = ex.earnings_blackout ? earningsHtml(ex.earnings_blackout) : "";
+    const h = ex.earnings_blackout ? earningsHtml(ex.earnings_blackout, s) : "";
     if (ebn.dataset.sig !== h) { ebn.dataset.sig = h; ebn.innerHTML = h; }
     ebn.hidden = !h;
   }
@@ -3617,6 +3695,8 @@ const BLOCK_ZH = {
   // the top-level outcome of one check ('pre'): a slot-level skip, a refusal before any strategy ran, or the result
   signal: "出现信号", no_signal: "没有策略给出信号",
   "skip:position_occupied": "已有持仓（每槽最多 1 个）", "skip:flatten_day": "收盘前清仓时段，不再开仓",
+  // carry_overnight=false (2026-09-24): the agent holds nothing overnight, so it takes no entry in the overnight session
+  "skip:no_overnight_carry": "夜盘不开新仓（这个 Agent 不跨夜）",
   "skip:extended_quota": "非常规时段的入场次数已用完", "skip:extended_order_quota": "非常规时段的入场单已用完",
   "skip:no_new_bar": "没有新 K 线", benchmark_symbol_not_tradable: "基准不可交易", no_strategy_enabled: "没有启用的策略",
   session_ineligible: "这个时段不评估入场", session_calendar_missing: "缺少时段日历", "data_fault:bars": "K 线数据故障",
@@ -3860,11 +3940,22 @@ function ebUnknown(list) {
     .join(LANG === "en" ? ", " : "、");
 }
 
-function earningsHtml(eb) {
+function earningsHtml(eb, s) {
   if (!eb) return "";
   const en = LANG === "en", L = [];
   L.push(`<div title="${esc(en ? eb.disclosure_en : eb.disclosure_zh)}"><b>${tr("财报禁区")}</b> v${esc(eb.version)}${col()}`
     + `${esc(en ? eb.rule_en : eb.rule_zh)}</div>`);
+  // 2026-09-24: on a board whose versions carry avoid_earnings the rule is each agent's own - whose, and how many are under
+  // it, with the server's own words (earnings.view `switch`) in the hover. The names below are the calendar's, for anyone
+  // under the rule. A board whose versions carry no switch (`s` absent, or none set) reads as before
+  const sb = s ? switchBoard(s) : null;
+  if (sb && sb.on && sb.avoid) {
+    const sw = eb.switch && typeof eb.switch === "object" ? (en ? eb.switch.en : eb.switch.zh) : "";
+    const mix = switchMix(s, a => earnChip(a, true), EARN_ORDER);
+    L.push(`<div title="${esc(sw || tr(EARN_OWN_ZH))}">${esc(en
+      ? `applies only to the agents whose own avoid_earnings switch is on${sb.avoidEvolves ? " (evolvable)" : ""}: ${mix}`
+      : `只对自己的开关 avoid_earnings 打开的 Agent 适用${sb.avoidEvolves ? "（可进化）" : ""}：${mix}`)}</div>`);
+  }
   if (eb.available !== true) {
     L.push(`<div class="miss">${esc((en ? eb.note_en : eb.note_zh) || tr(UNK))}</div>`);
     return L.join("");
@@ -4037,11 +4128,19 @@ function feeShadowFillCell(f, byId) {
    A BUY refused because the slot took profit on the same coin within the frozen window. The refusal carries the exit
    it answers to, so every label says when the take-profit was and when the gate lifts (UTC, as the crypto board
    stamps its decisions). A board frozen without the key never writes one. */
-function reentryWhen(tp) {
+function reentryWhen(tp, own) {
   const x = tp || {};
+  // per_version (2026-09-24): the window is the deciding version's own, recorded with the refusal (`hours`) - said, since
+  // another agent on the same board may wait 0h or 48h. A frozen board's window is the rules box's, and reads as before
+  const h = own && isNum(x.hours) ? x.hours : null;
   return LANG === "en"
-    ? ` (take-profit ${whenWords(x.exit_utc)}${x.protective ? " between rounds" : ""}, lifts ${whenWords(x.until_utc)})`
-    : `（${whenWords(x.exit_utc)} ${x.protective ? "盘中" : ""}止盈，${whenWords(x.until_utc)} 解除）`;
+    ? ` (take-profit ${whenWords(x.exit_utc)}${x.protective ? " between rounds" : ""}${h != null ? `, its own ${h}h cooldown` : ""}, lifts ${whenWords(x.until_utc)})`
+    : `（${whenWords(x.exit_utc)} ${x.protective ? "盘中" : ""}止盈，${h != null ? `按它当时自己的 ${h} 小时冷却，` : ""}${whenWords(x.until_utc)} 解除）`;
+}
+
+/* the experiment hands the take-profit cooldown to each version (crypto/web.reentry_experiment_field) */
+function reentryPerVersion(s) {
+  return !!STATE.crypto && (((s || {}).experiment || {}).reentry_after_take_profit_hours === "per_version");
 }
 
 function reentryCardLine(a) {
@@ -4054,11 +4153,20 @@ function reentryCardLine(a) {
             : `今日止盈后不回补拦下 ${rr.n} 笔买单${c ? `（${c}）` : ""}${only}`;
 }
 
-function reentryDaysBox(list, hours) {
-  if (!(isNum(hours) && hours > 0)) return "";
+/* `own` (2026-09-24): the experiment hands the cooldown to each version (reentry_after_take_profit_hours = "per_version"),
+   and `hours` is THIS slot's current version's (slot_detail.reentry_after_tp_hours). The box is then always shown - a
+   slot whose version has 0 can still list refusals its predecessor made - and its rule line is the agent's own
+   setting; unknown stays unknown. Without `own` the frozen board reads exactly as before. */
+function reentryDaysBox(list, hours, own) {
+  if (!own && !(isNum(hours) && hours > 0)) return "";
   const en = LANG === "en";
   const head = `<h3>${tr("止盈后不回补（逐日）")}</h3>`;
-  const rule = `<div class="muted" style="margin-bottom:6px">${en ? `no buy-back of a coin within ${hours}h of taking profit on it` : `止盈卖出后 ${hours} 小时内不再买回同一个币`}</div>`;
+  const rule = `<div class="muted" style="margin-bottom:6px">${!own
+    ? (en ? `no buy-back of a coin within ${hours}h of taking profit on it` : `止盈卖出后 ${hours} 小时内不再买回同一个币`)
+    : !isNum(hours) ? tr("这个 Agent 自己的冷却时间：未知（读不到它当前版本的参数）")
+    : hours > 0 ? (en ? `this agent's own setting (reentry_after_tp_hours, evolvable): no buy-back of a coin within ${hours}h of taking profit on it`
+                      : `这个 Agent 自己的设置（reentry_after_tp_hours，可进化）：止盈卖出后 ${hours} 小时内不再买回同一个币`)
+    : tr("这个 Agent 自己的设置（reentry_after_tp_hours = 0，可进化）：止盈后可立即买回；下面若有拒绝，来自这个槽之前的版本")}</div>`;
   if (!Array.isArray(list)) return `<div class="box">${head}${rule}<div class="instr">${tr("读不到：未知，不代表没有拒绝")}</div></div>`;
   if (!list.length) return `<div class="box">${head}${rule}<div class="instr">${tr("这条规则还没有拒绝过买单")}</div></div>`;
   return `<div class="box">${head}${rule}` + list.slice(0, 14).map(d => `<div class="num">${esc(d.scoring_day)}${col()}`
@@ -4074,12 +4182,13 @@ function reentryDaysBox(list, hours) {
 function decisionWhy(x) {
   const out = [];
   const eb = x && x.earnings_blackout;
+  const own = reentryPerVersion(STATE.snap);
   if (eb && eb.code) out.push({ w: `${tr("财报禁区清仓")}${col()}${blockWord(eb.code)}`, raw: eb.code });
   ((x && x.blocked_by) || []).forEach(b => {
     if (b && typeof b === "object") {
       const why = (b.blocked_by || []).map(c => tr(REASON_WORDS[String(c).split(":")[0]] || c)).join(" / ");
       out.push({ w: `${b.candidate || "?"}${b.side ? " " + b.side : ""}${col()}${why || tr(UNK)}`
-                  + (b.reentry_after_take_profit ? reentryWhen(b.reentry_after_take_profit) : ""),
+                  + (b.reentry_after_take_profit ? reentryWhen(b.reentry_after_take_profit, own) : ""),
                  raw: (b.blocked_by || []).join(" ") });
     } else {
       out.push({ w: STATE.crypto ? reasonWord(b) : blockWord(b), raw: String(b) });
@@ -4089,6 +4198,201 @@ function decisionWhy(x) {
   // spans became an item of its own on a line of its own
   const sep = LANG === "en" ? ";" : "；";
   return out.map((o, i) => `<span title="${esc(o.raw)}">${esc(o.w)}${i < out.length - 1 ? sep : ""}</span>`).join(" ");
+}
+
+/* ---- each agent's own switches (2026-09-24) ------------------------------------------------------------------------
+   User 2026-09-24: 应该没有硬性规定一定要24 小时持仓，或者止盈后 24 小时内不买回同一个币，一切都是以最佳策略为主 - no
+   board-wide rule decides for every agent: each agent's own strategy does, and evolution tunes it.
+     stock   each slot's agent_switches (web.agent_switches, the helpers the engine calls): `overnight` - what the carry
+             switches add up to (execution.overnight_mode: flatten_daily | carry_weeknights | carry_always) - and
+             avoid_earnings, whose report-night flatten does not act under eod_cleanup=false (applies_flatten, the
+             precedence earnings.applies_flatten documents) while its entry half does.
+     crypto  each slot's reentry_after_tp_hours, when the experiment hands the cooldown to its versions ("per_version").
+   KEYED so a board whose versions carry none of the opt-in switches - the running stock-research-20260924, frozen with
+   the 24h policy and the blackout for every agent alike - and a crypto board with a frozen (or no) cooldown - the running
+   crypto-kraken-20260924 - render exactly as before: its card keeps the one 可隔夜 chip, its rules read as they did.
+   A value the server could not read (None) is unknown, never the default. */
+const REENTRY_OWN_ZH = "止盈后多久不买回同一个币不在上面的统一风控里：它是每个 Agent 自己的参数（reentry_after_tp_hours，0 = 不限制），进化可以调整；每张卡上写着它当前的设置。";
+const NIGHT_ZH = { flatten_daily: "不跨夜", carry_weeknights: "工作日可隔夜", carry_always: "周末也持有" };
+// the per-agent switches a version may carry in its own params (stock and crypto)
+const OWN_SWITCH_KEYS = ["carry_overnight", "avoid_earnings", "eod_cleanup", "reentry_after_tp_hours", "exit_on_trend_loss"];
+const NIGHT_ORDER = ["flatten_daily", "carry_weeknights", "carry_always"];
+const EARN_ORDER = ["avoid", "hold"];
+
+/* Which opt-in per-version switches this board's versions carry (set_by_version), and whether evolution can reach them.
+   `on` is the key every rendering below is gated on; nothing is inferred from a switch no version sets. */
+function switchBoard(s) {
+  const out = { on: false, carry: false, avoid: false, nightEvolves: false, avoidEvolves: false };
+  if (STATE.crypto) return out;
+  const sws = ((s || {}).slots || []).map(a => a && a.agent_switches).filter(x => x && typeof x === "object");
+  const any = (k, f) => sws.some(x => !!(x[k] && typeof x[k] === "object" && x[k][f] === true));
+  out.carry = any("carry_overnight", "set_by_version");
+  out.avoid = any("avoid_earnings", "set_by_version");
+  out.on = out.carry || out.avoid;
+  out.nightEvolves = any("carry_overnight", "in_mutation_reach") || any("eod_cleanup", "in_mutation_reach");
+  out.avoidEvolves = any("avoid_earnings", "in_mutation_reach");
+  return out;
+}
+
+/* One slot's overnight practice as a chip {k, cls, text, title}: the word, and in the hover what it means and whose switch
+   it is. A mode this page has no word for prints as itself; no readable version -> unknown. */
+function nightChip(a) {
+  const sw = (a || {}).agent_switches;
+  const mode = sw && typeof sw === "object" ? sw.overnight : null;
+  if (mode == null || mode === "") {
+    return { k: "unknown", cls: "night unk", text: tr("隔夜：未知"), title: tr("读不到这个版本的参数：是否持仓过夜未知。") };
+  }
+  const co = sw.carry_overnight || {}, eod = sw.eod_cleanup || {};
+  const why = mode === "carry_weeknights"
+    ? "工作日可隔夜：周一至周四可以把持仓带过收盘，夜盘照常盯止损/止盈；周五、节假日前和最后一天收盘前平仓。只对 24 小时市场名单里的股票，其他股票每天收盘前平仓。"
+    : mode === "carry_always" ? "eod_cleanup=false：收盘前不清仓，工作日的夜里和周末、节假日都可以持有。"
+    : mode === "flatten_daily" ? (co.value === false
+        ? "carry_overnight=false：每个交易日到收盘前的清仓时间就平仓，夜盘（20:00–07:00）也不开新仓，所以从不持仓过夜；盘前与常规盘照常入场，当天平掉。"
+        : "eod_cleanup=true：每个交易日收盘前平仓，不持仓过夜。")
+    : "";
+  const evo = (co.in_mutation_reach === true || eod.in_mutation_reach === true)
+    ? "它由这个 Agent 自己的开关决定（carry_overnight / eod_cleanup），进化可以改变。"
+    : "它由这个 Agent 自己的开关决定（carry_overnight / eod_cleanup，未设置的按默认 true）；在这个实验里进化不会改变它。";
+  return { k: NIGHT_ZH[mode] ? mode : "other", cls: "night", text: NIGHT_ZH[mode] ? tr(NIGHT_ZH[mode]) : String(mode),
+           title: [why ? tr(why) : "", tr(evo)].filter(Boolean).join(LANG === "en" ? " " : "") };
+}
+
+/* One slot's earnings switch as a chip, or null where the experiment froze no earnings calendar (the switch acts on
+   nothing). Under eod_cleanup=false the rule is still the agent's but only its ENTRY half acts - the chip keeps its word
+   and the hover (and the drawer) says which half. */
+function earnChip(a, ebOn) {
+  if (!ebOn) return null;
+  const sw = (a || {}).agent_switches;
+  const ae = sw && typeof sw === "object" ? sw.avoid_earnings : null;
+  if (ae && ae.in_force === false) return null;
+  if (!ae || typeof ae.value !== "boolean") {
+    return { k: "unknown", cls: "earn unk", text: tr("财报：未知"), title: tr("读不到这个版本的参数：是否回避财报未知。") };
+  }
+  // review of the switches page (note 1): carry_overnight=false never runs the blackout's flatten hook - its own daily
+  // flatten already keeps it out of every report night - so for such an agent the rule only adds the entry block
+  const daily = sw.overnight === "flatten_daily" && (sw.carry_overnight || {}).value === false;
+  const why = ae.value === false ? "avoid_earnings=false：像没有财报禁区时一样持仓、开仓，财报夜也照常。"
+    : daily ? "avoid_earnings=true：它本来每天收盘前平仓，财报夜不会持仓；财报禁区对它只多挡住财报前后的开仓。"
+    : ae.applies_flatten === false
+      ? "avoid_earnings=true，但它的 eod_cleanup=false：它按自己的选择跨夜持仓，财报夜也不例外——对它只适用财报禁区里不开新仓的那一半，财报前不清仓。"
+      : "avoid_earnings=true：财报日前后按财报禁区清仓、不开新仓。";
+  const evo = ae.in_mutation_reach === true ? "它由这个 Agent 自己的开关 avoid_earnings 决定，进化可以改变。"
+    : "它由这个 Agent 自己的开关 avoid_earnings 决定（未设置即为 true）；在这个实验里进化不会改变它。";
+  return { k: ae.value ? "avoid" : "hold", cls: "earn", text: tr(ae.value ? "回避财报" : "财报照常持有"),
+           title: tr(why) + (LANG === "en" ? " " : "") + tr(evo), entryOnly: ae.value === true && ae.applies_flatten === false };
+}
+
+/* One crypto slot's own cooldown after a take-profit (reentry_after_tp_hours, the window the engine's gate applies to its
+   CURRENT version; None = unknown) */
+function cooldownChip(a) {
+  const h = (a || {}).reentry_after_tp_hours, en = LANG === "en";
+  if (!isNum(h)) return { k: "unknown", cls: "cool unk", text: tr("止盈后冷却：未知"), title: tr("读不到这个版本的参数：止盈后的冷却时间未知。") };
+  if (h <= 0) return { k: 0, cls: "cool", text: tr("止盈后可立即买回"),
+                       title: tr("这个 Agent 自己的参数 reentry_after_tp_hours = 0：止盈后不设冷却，可以立即买回同一个币；进化可以调整它。") };
+  return { k: h, cls: "cool", text: en ? `${h}h cooldown after a take-profit` : `止盈后冷却 ${h}h`,
+           title: en ? `This agent's own parameter reentry_after_tp_hours = ${h}: no buy-back of a coin within ${h}h of a take-profit on it (a stop or a trend exit does not count); evolution may tune it.`
+                     : `这个 Agent 自己的参数 reentry_after_tp_hours = ${h}：止盈卖出一个币后 ${h} 小时内不再买回它（止损、趋势出场不算）；进化可以调整它。` };
+}
+
+/* The card's one board-wide 可隔夜 chip, exactly as it has always been decided: two different reasons a version may hold
+   overnight - its own eod_cleanup=false, or the experiment's 24h policy, under which every version carries a position
+   across the close on weekdays - and the hover says which. Hidden on a board whose versions carry their own switches,
+   where the row of the agent's own switches says it per agent instead. */
+function nightChipLegacy(a, s, sb) {
+  const ownNight = ((a || {}).params || {}).eod_cleanup === false;
+  const exNight = !STATE.crypto && !!(((s || {}).experiment || {}).trading_hours);
+  return { show: !(sb && sb.on) && (ownNight || exNight),
+           title: ownNight ? tr("该版本参数 eod_cleanup=false：收盘前不清仓，允许把持仓留到第二天")
+             : tr("24 小时市场：周一至周四持仓可跨收盘持有，夜盘照常盯止损/止盈；周五、节假日前和最后一天收盘前平仓") };
+}
+
+/* The card's row of an agent's own switches: [] wherever the board has none of its own (the row stays hidden) */
+function cardSwitchChips(a, s, sb) {
+  if (STATE.crypto) return reentryPerVersion(s) ? [cooldownChip(a)] : [];
+  const b = sb || switchBoard(s);
+  if (!b.on) return [];
+  return [nightChip(a), earnChip(a, !!(((s || {}).experiment || {}).earnings_blackout))].filter(Boolean);
+}
+
+/* the crypto board's cooldowns as "0h ×3 · 24h ×7" (hours ascending, unknown last) */
+function cooldownMix(s) {
+  const n = new Map();
+  ((s || {}).slots || []).forEach(a => {
+    const h = (a || {}).reentry_after_tp_hours, k = isNum(h) ? h : null;
+    n.set(k, (n.get(k) || 0) + 1);
+  });
+  return [...n.keys()].sort((x, y) => (x == null) - (y == null) || (x || 0) - (y || 0))
+    .map(k => `${k == null ? tr(UNK) : `${k}h`} ×${n.get(k)}`).join(" · ");
+}
+
+// the 交易时段 row's hover, where each agent's own switches decide the overnight practice
+const NIGHT_OWN_EVO_ZH = "在这个实验里，上面的隔夜做法只是默认：是否持仓过夜是每个 Agent 自己的开关——carry_overnight=false 的每个交易日收盘前平仓、夜盘不开新仓；eod_cleanup=false 的周末和节假日也持有；进化可以改变这些开关。每张卡上写着它当前的做法。";
+const NIGHT_OWN_FIXED_ZH = "在这个实验里，上面的隔夜做法只是默认：是否持仓过夜是每个 Agent 自己的开关——carry_overnight=false 的每个交易日收盘前平仓、夜盘不开新仓；eod_cleanup=false 的周末和节假日也持有；这个实验的进化不会改变这些开关。每张卡上写着它当前的做法。";
+// the 财报禁区 row's hover where the server sends no `switch` block of its own
+const EARN_OWN_ZH = "按 Agent 自己的开关 avoid_earnings 执行：true（未设置即为 true）时适用上面的规则；false 的 Agent 像没有财报禁区时一样持仓、开仓。";
+
+/* whether this board's overnight practice is each agent's own: a version carries carry_overnight, evolution reaches a carry
+   switch, or the agents already differ. The 交易时段 row and the session chip's hover both say so, from this one test */
+function nightOwnOf(s, swb) {
+  const b = swb || switchBoard(s);
+  return b.on && (b.carry || b.nightEvolves || switchMix(s, nightChip, NIGHT_ORDER).includes(" · "));
+}
+
+/* "word ×n · word ×n" over the board's slots, in a fixed order (unknown and unnamed last) */
+function switchMix(s, chipOf, order) {
+  const n = new Map(), words = new Map();
+  ((s || {}).slots || []).forEach(a => {
+    const c = chipOf(a);
+    if (!c) return;
+    const k = String(c.k);
+    n.set(k, (n.get(k) || 0) + 1);
+    words.set(k, c.text);
+  });
+  const rank = k => { const i = (order || []).map(String).indexOf(k); return i < 0 ? (k === "unknown" ? 1e9 : 1e6) : i; };
+  return [...n.keys()].sort((x, y) => rank(x) - rank(y) || (x < y ? -1 : 1)).map(k => `${words.get(k)} ×${n.get(k)}`).join(" · ");
+}
+
+/* The drawer's box of an agent's own switches (stock), on a board whose versions carry them: the two practices in words,
+   then each switch as the engine reads it - its value, whether the version set it or runs at the default, and whether
+   evolution can reach it. An unreadable version is unknown throughout. */
+function switchSheetBox(a, s) {
+  if (STATE.crypto) return "";
+  const sb = switchBoard(s);
+  if (!sb.on) return "";
+  const sw = (a || {}).agent_switches, ok = sw && typeof sw === "object";
+  const kv = (k, v) => `<dt>${esc(k)}</dt><dd>${v}</dd>`;
+  const nc = nightChip(a), ec = earnChip(a, !!(((s || {}).experiment || {}).earnings_blackout));
+  const one = key => {
+    const x = ok ? sw[key] : null;
+    if (x && x.in_force === false) return "";                   // nothing to act on in this experiment
+    if (!x || typeof x.value !== "boolean") return kv(key, `<span class="num">${tr(UNK)}</span>`);
+    const set = typeof x.set_by_version !== "boolean" ? tr(UNK) : tr(x.set_by_version ? "版本设定" : "默认");
+    const evo = typeof x.in_mutation_reach !== "boolean" ? tr(UNK) : tr(x.in_mutation_reach ? "可进化" : "不进化");
+    return kv(key, `<span class="num">${x.value}</span> <span class="muted">${esc(par(set).trim())} · ${esc(evo)}</span>`);
+  };
+  return `<div class="box"><h3>${tr("这个 Agent 自己的开关")}</h3><dl class="kv">`
+    + kv(tr("隔夜持仓"), esc(nc.text)) + (ec ? kv(tr("财报"), esc(ec.text)) : "")
+    + one("carry_overnight") + one("eod_cleanup") + one("avoid_earnings")
+    + `</dl><div class="instr" style="margin-top:9px">${esc(nc.title)}</div>`
+    + (ec ? `<div class="instr" style="margin-top:6px">${esc(ec.title)}</div>` : "") + `</div>`;
+}
+
+/* A crypto personality label may STATE a trend-exit behaviour ("不因转弱离场", population v6), and exit_on_trend_loss is a
+   parameter evolution may move (the next experiment lets it). So that clause is never taken from the fixed label: it is
+   dropped there and said from the version's CURRENT params - false -> the clause, true (also absent: the strategies'
+   default) -> nothing, an unreadable version -> unknown, where the label had claimed one. A label and params that agree -
+   every running board, which excludes the dimension from mutation - read exactly as before. */
+const TREND_HOLD_ZH = "不因转弱离场";
+function labelZhOf(a) {
+  const lbl = String((a || {}).label_zh || "");
+  if (!lbl) return "";
+  const all = lbl.split(" · "), parts = all.filter(p => p !== TREND_HOLD_ZH);
+  const stated = parts.length !== all.length;
+  const p = (a || {}).params;
+  const known = !!(a && a.version_id) && p != null && typeof p === "object" && !Array.isArray(p);
+  if (known ? p.exit_on_trend_loss === false : false) parts.push(TREND_HOLD_ZH);
+  else if (!known && stated) parts.push("转弱离场：未知");
+  return parts.join(" · ");
 }
 
 /* ---- where the frozen lists came from --------------------------------------------------------------------------- */
@@ -4150,6 +4454,7 @@ function renderAgents(s) {
   // (evolution.run_round). On a board frozen without the key nothing is finished, nRep is replace_bottom, the test is
   // 2 * nRep ranked slots, and every line below reads exactly as it always did.
   const latched = exr.latched_slots === "finished_v1";
+  const swb = switchBoard(s);                   // each agent's own switches (2026-09-24): off on every running board
   const fin = new Set(latched ? byIndex.filter(a => finishedOf(a, s)).map(a => a.slot_id) : []);
   const byRank = byIndex.filter(a => isNum(a.live_rank) && !fin.has(a.slot_id)).sort((a, b) => a.live_rank - b.live_rank);
   const nRep = latched ? Math.min(nCfg, Math.floor(byRank.length / 2)) : nCfg;
@@ -4191,7 +4496,7 @@ function renderAgents(s) {
         // varies from card to card, so 原版 / 初代 / 末位·待替换 landed on a different line and a different
         // side on every card and the eye could not scan a column of them. Row 1 carries the chips at constant
         // positions; row 2 carries the only variable-length thing, where its wrapping moves nothing.
-        n.innerHTML = `<div class="ahead"><div class="ahtop"><span class="rank"></span><span class="slotid"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="finchip" hidden></span><span class="riskchip" hidden></span><span class="tag"></span></div><span class="vchip"></span></div>
+        n.innerHTML = `<div class="ahead"><div class="ahtop"><span class="rank"></span><span class="slotid"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="finchip" hidden></span><span class="riskchip" hidden></span><span class="tag"></span></div><span class="vchip"></span><div class="swrow" hidden></div></div>
           <div class="aeqrow"><div class="aeq num"></div><div class="acash" hidden></div></div><div class="arow"></div><svg class="spark"></svg><div class="posbox"></div><div class="warnbox"></div>`;
         n.addEventListener("click", () => openSheet(a.slot_id));
         n.setAttribute("role", "button");
@@ -4259,10 +4564,11 @@ function renderAgents(s) {
       // the two parts first: "R01 · " with nothing after it is a separator pointing at an absence, and an
       // absent personality label is merely absent - it is not a fact worth a dangling 「·」
       const ckey = a.candidate_key || "?";
-      const clbl = phraseWords(a.label_zh || "");
+      // the label's trend-exit clause comes from the version's current params, never from the fixed label (labelZhOf)
+      const clbl = phraseWords(labelZhOf(a));
       vc.textContent = clbl ? `${ckey} · ${clbl}` : ckey;
       // this tooltip IS the card's accessible description, and it was raw Chinese on the English page
-      vc.title = `${tr("策略")} ${a.candidate_key || "?"}${a.label_zh ? par(phraseWords(a.label_zh)) : ""} · ${tr("版本")} ${a.version_id || "?"}`
+      vc.title = `${tr("策略")} ${a.candidate_key || "?"}${clbl ? par(clbl) : ""} · ${tr("版本")} ${a.version_id || "?"}`
         + (a.parent_version_id ? ` · ${tr("由")} ${a.parent_version_id} ${tr("变异而来")}` : "");
       const g = n.querySelector(".gen");
       g.textContent = gen === 0 ? tr("原版") : gen != null ? (LANG === "en" ? `gen ${gen}` : `第 ${gen} 代`) : "?";
@@ -4273,13 +4579,23 @@ function renderAgents(s) {
             : `进化产生的第 ${gen} 代：每一代在上一代基础上随机改动 1–2 个白名单参数`);
       // Two different reasons a version may hold overnight: its own eod_cleanup=false, or the experiment's 24h
       // policy, under which every version carries a position across the close on weekdays. Say which.
-      const ownNight = (a.params || {}).eod_cleanup === false;
-      const exNight = !STATE.crypto && !!((s.experiment || {}).trading_hours);
+      // 2026-09-24: on a board whose versions carry their own switches, the practice is each agent's and the row below
+      // says it (不跨夜 / 工作日可隔夜 / 周末也持有, and the earnings switch) - the one board-wide chip would be wrong for
+      // some of them. Every other board keeps this chip exactly as it was (nightChipLegacy).
+      const swChips = cardSwitchChips(a, s, swb);
+      const nl = nightChipLegacy(a, s, swb);
       const nt = n.querySelector(".gen.night");
-      nt.style.display = (ownNight || exNight) ? "" : "none";
-      nt.title = ownNight
-        ? tr("该版本参数 eod_cleanup=false：收盘前不清仓，允许把持仓留到第二天")
-        : tr("24 小时市场：周一至周四持仓可跨收盘持有，夜盘照常盯止损/止盈；周五、节假日前和最后一天收盘前平仓");
+      nt.style.display = nl.show ? "" : "none";
+      nt.title = nl.title;
+      let sr = n.querySelector(".swrow");
+      if (!sr) {                                             // a card built before this row existed
+        sr = el("div", "swrow");
+        const hd = n.querySelector(".ahead");
+        if (hd) hd.appendChild(sr);
+      }
+      const srh = swChips.map(c => `<span class="swchip ${c.cls}" title="${esc(c.title)}">${esc(c.text)}</span>`).join("");
+      if (sr.dataset.sig !== srh) { sr.dataset.sig = srh; sr.innerHTML = srh; }
+      sr.hidden = !srh;
       const tag = n.querySelector(".tag");
       tag.textContent = tr(({ new: "新生", kept: "保留", init: "初代" })[a.round_status] || "");
       tag.className = "tag " + (a.round_status || "");
@@ -4354,7 +4670,7 @@ function renderAgents(s) {
         // a buy the re-entry gate refused says which take-profit it answers to and when the gate lifts; a board frozen
         // without risk.reentry_after_take_profit_hours never records the key, so its line is unchanged
         if ((d.blocked || []).length) dec += ` · ${tr("被风控拦下")} ${d.blocked.map(b => b.candidate + "(" + (b.blocked_by || []).map(x => tr(REASON_WORDS[String(x).split(":")[0]] || x)).join("/") + ")"
-          + (b.reentry_after_take_profit ? reentryWhen(b.reentry_after_take_profit) : "")).join(", ")}`;
+          + (b.reentry_after_take_profit ? reentryWhen(b.reentry_after_take_profit, reentryPerVersion(s)) : "")).join(", ")}`;
       }
       // 2026-09-24: why no trade (stock), the re-entry gate's refusals today, the fee-tier shadow (crypto) and a
       // finished record - each empty unless the server sent it, so an older payload renders the card as before
@@ -4392,9 +4708,19 @@ function renderAgents(s) {
     const codes = [...new Set(byIndex.map(a => a.candidate_key).filter(Boolean))].sort();
     const sr = ids.length > 1 ? `${ids[0]}–${ids[ids.length - 1]}` : (ids[0] || "S01–S10");
     const cr = codes.length > 1 ? `${codes[0]}–${codes[codes.length - 1]}` : (codes[0] || "");
+    // the one clause the card row of an agent's own switches changes (2026-09-24); every other board reads as before
+    const own = swb.on ? "switches" : reentryPerVersion(s) ? "cooldown" : null;
+    // the earnings chip exists only where the experiment froze a calendar (cardSwitchChips): a carry-only board's legend
+    // names the overnight switch alone
+    const earnLg = !!((s.experiment || {}).earnings_blackout);
+    const nightEn = own === "switches" ? (earnLg ? "whether it holds overnight and avoids earnings (its own switches)"
+                                                 : "whether it holds overnight (its own switches)")
+      : own === "cooldown" ? "whether it may hold overnight · its own cooldown after a take-profit" : "whether it may hold overnight";
+    const nightZh = own === "switches" ? (earnLg ? "是否跨夜、是否回避财报（它自己的开关）" : "是否跨夜（它自己的开关）")
+      : own === "cooldown" ? "是否可隔夜 · 它自己的止盈后冷却" : "是否可隔夜";
     lg.textContent = LANG === "en"
-      ? `Each card: rank · capital slot (${sr}, permanent) · current strategy (${cr ? `${cr} is its code, then` : "its code, then"} its personality) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.`
-      : `每张卡：名次 · 资金槽（${sr}，永久）· 当前策略（${cr ? `${cr} 是策略编号` : "策略编号"}，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。`;
+      ? `Each card: rank · capital slot (${sr}, permanent) · current strategy (${cr ? `${cr} is its code, then` : "its code, then"} its personality) · original or Nth generation · ${nightEn} · kept or newly seeded this round.`
+      : `每张卡：名次 · 资金槽（${sr}，永久）· 当前策略（${cr ? `${cr} 是策略编号` : "策略编号"}，后面是策略性格）· 原版或第几代变异 · ${nightZh} · 本轮是保留还是新生。`;
   }
   /* The fee-tier shadow's board-level explanation, under the cards and after them: what it is, the ten-slot totals,
      that it never feeds ranking, and (folded) the rule, its two edges, the footnote and the schedule with its source.
@@ -4684,6 +5010,23 @@ function experimentBrief(s) {
 
   // the two rules a reader needs before reading any curve: when the agents may trade, and how often they evolve
   const th = ex.trading_hours;
+  // 2026-09-24 (user: no board-wide hard rule): where this board's versions carry their own switches, the overnight
+  // practice and the earnings blackout are each agent's - the rows say so, with how many agents do which today. A board
+  // whose versions carry none (the running stock-research-20260924) reads exactly as before
+  const swb = switchBoard(s);
+  const en = LANG === "en";
+  const nightMix = swb.on ? switchMix(s, nightChip, NIGHT_ORDER) : "";
+  const nightOwn = nightOwnOf(s, swb);
+  const nightV = !nightOwn ? "" : " · " + esc(en
+    ? `overnight is each agent's own switch${swb.nightEvolves ? " (evolvable)" : ""}: ${nightMix}`
+    : `是否隔夜由各 Agent 自己的开关决定${swb.nightEvolves ? "（可进化）" : ""}：${nightMix}`);
+  const nightTip = !nightOwn ? "" : " " + tr(swb.nightEvolves ? NIGHT_OWN_EVO_ZH : NIGHT_OWN_FIXED_ZH);
+  if (STATE.crypto && reentryPerVersion(s)) {
+    // the crypto board's counterpart: the cooldown after a take-profit, each agent's own parameter (per_version)
+    out.push({ k: tr("止盈后冷却"),
+               v: esc(en ? `each agent's own parameter (evolvable): ${cooldownMix(s)}` : `各 Agent 自己的参数（可进化）：${cooldownMix(s)}`),
+               tip: tr(REENTRY_OWN_ZH) });
+  }
   if (!STATE.crypto && th) {
     const allS = th.entries === "all_sessions";
     const q = th.extended_entries_per_day, qMax = th.max_entries_per_day;
@@ -4704,19 +5047,28 @@ function experimentBrief(s) {
       : `入场单上限：夜盘成交量薄，那里的入场单大多到期也成交不了，但每张都占用当天的下单次数——审计回放里 60 个槽日有 28 个`
         + `在常规盘开盘前就用完了当天的下单额度。所以非常规时段每天最多提交 ${qo} 张入场单。`);
     out.push({ k: tr("交易时段"),
-               v: allS
+               v: (allS
                  ? `${tr("24 小时交易")} ${th.n_all_day}/${th.n_universe} · ${tr("所有时段入场与出场")}${quota}${oquota}`
-                 : `${tr("24 小时市场")} ${th.n_all_day}/${th.n_universe} · ${tr("入场 09:45–15:30")} · ${tr("夜盘可出场")}`,
-               tip: allS
+                 : `${tr("24 小时市场")} ${th.n_all_day}/${th.n_universe} · ${tr("入场 09:45–15:30")} · ${tr("夜盘可出场")}`) + nightV,
+               tip: (allS
                  ? tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票在盘前、常规盘、盘后和夜盘都会评估入场与出场：三个策略的规则不变，只是开盘区间、VWAP 和涨跌幅从所在时段的开盘算起。周一至周四持仓可跨收盘持有；周五、节假日前和最后一天收盘前平仓，之后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%，所以非常规时段的仓位小、也常成交不了。") + otip
-                 : tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。") });
+                 : tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。")) + nightTip });
   }
   // the opt-in earnings blackout's rule, beside the trading hours it partly overrides (2026-09-24); the names it keeps
-  // out today and the calendar behind it are in the tradable list's card. Nothing on a board frozen without the key
+  // out today and the calendar behind it are in the tradable list's card. Nothing on a board frozen without the key.
+  // Where versions carry avoid_earnings the rule is each agent's own: said, with the count, and the server's `switch`
+  // words (earnings.view) in the hover
   const ebx = ex.earnings_blackout;
   if (!STATE.crypto && ebx) {
-    out.push({ k: tr("财报禁区"), v: esc(LANG === "en" ? (ebx.rule_en || "") : (ebx.rule_zh || "")),
-               tip: (LANG === "en" ? ebx.disclosure_en : ebx.disclosure_zh) || "" });
+    const earnOwn = swb.on && swb.avoid;
+    const sw = ebx.switch && typeof ebx.switch === "object" ? (en ? ebx.switch.en : ebx.switch.zh) : "";
+    out.push({ k: tr("财报禁区"),
+               v: esc(LANG === "en" ? (ebx.rule_en || "") : (ebx.rule_zh || ""))
+                 + (!earnOwn ? "" : " · " + esc(en
+                   ? `whether it applies is each agent's own avoid_earnings switch${swb.avoidEvolves ? " (evolvable)" : ""}: ${switchMix(s, a => earnChip(a, true), EARN_ORDER)}`
+                   : `是否适用由各 Agent 自己的开关 avoid_earnings 决定${swb.avoidEvolves ? "（可进化）" : ""}：${switchMix(s, a => earnChip(a, true), EARN_ORDER)}`)),
+               tip: [(LANG === "en" ? ebx.disclosure_en : ebx.disclosure_zh) || "", earnOwn ? (sw || tr(EARN_OWN_ZH)) : ""]
+                 .filter(Boolean).join(" ") });
   }
   // How THIS board evolves, from its own frozen selection block - both boards, never one board's rule printed on
   // the other. The crypto board evolves every UTC day and the stock board once a week; each states its own.
@@ -4925,7 +5277,7 @@ function renderSlotFilter() {
   slots.forEach(sid => {
     const a = ((STATE.snap || {}).slots || []).find(x => x.slot_id === sid) || {};
     const c = counts[sid] || 0;
-    const who = a.label_zh ? `${a.candidate_key} ${phraseWords(a.label_zh)}` : (a.candidate_key || "");
+    const who = a.label_zh ? `${a.candidate_key} ${phraseWords(labelZhOf(a))}` : (a.candidate_key || "");
     chip(sid, `${sid}${a.candidate_key ? " · " + a.candidate_key : ""}`, c,
          // built from pieces: a whole sentence with an agent name and a count in it can never match an entry
          (who ? `${sid} ${tr("当前策略")}${col()}${who}` : "")
@@ -4956,6 +5308,38 @@ function fillTags(t) {
   return out.length ? " " + out.join(" ") : "";
 }
 
+/* The hover of a CLEANUP fill: why the position was flattened before the close (review of the switch page, 2026-09-24).
+   A board whose versions carry no carry_overnight switch - the running stock-research-20260924, and every older board -
+   reads exactly as before: the version's eod_cleanup=true, or the frozen earnings blackout. Where versions carry it,
+   execution.manage_position decides in this order: carry_overnight=false flattens at the cleanup time EVERY trading day
+   (and beats both eod_cleanup and the blackout hook); eod_cleanup=false never flattens; eod_cleanup=true flattens before
+   a real closure (Friday, a holiday eve, the last day) and daily for a stock off the 24h list; the blackout flattens
+   before a report an agent with avoid_earnings=true could otherwise carry. So the words come from the fill's slot's
+   agent_switches when the fill was made by that slot's CURRENT version; a fill of an earlier version (or an unreadable
+   one) gets every cause this board can have, and none of them claims that flipping eod_cleanup lets it hold overnight. */
+const CLEAN_CARRY_ZH = "收盘前平仓：这个 Agent 自己的开关 carry_overnight=false——每个交易日到清仓时间都平仓，从不持仓过夜（它优先于 eod_cleanup）";
+const CLEAN_WEEK_ZH = "收盘前平仓：这个 Agent 的 eod_cleanup=true——休市前（周五、节假日前、最后一天）平仓；不在 24 小时名单上的股票每个交易日收盘前平仓";
+const CLEAN_WEEK_EB_ZH = "收盘前平仓：可能是这个 Agent 的 eod_cleanup=true（休市前——周五、节假日前、最后一天——平仓；不在 24 小时名单上的股票每个交易日平仓），也可能是它回避财报、被财报禁区在财报前清仓；Agent 详情的决策记录会标出财报禁区清仓";
+const CLEAN_ANY_ZH = "收盘前平仓，原因由这个 Agent 自己的开关决定：carry_overnight=false 的每个交易日都在收盘前平仓；eod_cleanup=true 的在休市前（周五、节假日前、最后一天）平仓，不在 24 小时名单上的股票每个交易日平仓";
+const CLEAN_ANY_EB_ZH = "收盘前平仓，原因由这个 Agent 自己的开关决定：carry_overnight=false 的每个交易日都在收盘前平仓；eod_cleanup=true 的在休市前（周五、节假日前、最后一天）平仓，不在 24 小时名单上的股票每个交易日平仓；回避财报的还会被财报禁区在财报前清仓。Agent 详情的决策记录会标出财报禁区清仓";
+function cleanupTipOf(t, s) {
+  const ex = (s || {}).experiment || {};
+  if (STATE.crypto || !switchBoard(s).carry) {
+    return ex.earnings_blackout
+      ? tr("收盘前平仓：可能是策略参数 eod_cleanup=true，也可能是本实验的财报禁区在财报日前后清仓；Agent 详情的决策记录会标出是哪一种")
+      : tr("策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜");
+  }
+  const a = ((s || {}).slots || []).find(x => x && x.slot_id === (t || {}).slot_id) || {};
+  const sw = a.agent_switches;
+  const mine = !!(sw && typeof sw === "object" && t && t.version_id && a.version_id && t.version_id === a.version_id);
+  if (mine && sw.overnight === "flatten_daily" && (sw.carry_overnight || {}).value === false) return tr(CLEAN_CARRY_ZH);
+  if (mine && sw.overnight === "carry_weeknights") {
+    const ae = sw.avoid_earnings || {};
+    return tr(ex.earnings_blackout && ae.applies_flatten !== false ? CLEAN_WEEK_EB_ZH : CLEAN_WEEK_ZH);
+  }
+  return tr(ex.earnings_blackout ? CLEAN_ANY_EB_ZH : CLEAN_ANY_ZH);
+}
+
 function renderTape() {
   const body = $("tradebody");
   wireTapeControls();
@@ -4979,10 +5363,13 @@ function renderTape() {
   // the "recent" fallback holds earlier days: both printed a bare time that read as this afternoon.
   const calToday = String(((STATE.snap || {}).market || {}).clock_ny || "").slice(0, 10);
   // a CLEANUP is the version's own eod_cleanup - unless the board froze the opt-in earnings blackout, which flattens at
-  // the same 15:50 before a report; the tape cannot tell the two apart, the drawer's decision list can (2026-09-24)
-  const cleanupTip = ((STATE.snap || {}).experiment || {}).earnings_blackout
-    ? tr("收盘前平仓：可能是策略参数 eod_cleanup=true，也可能是本实验的财报禁区在财报日前后清仓；Agent 详情的决策记录会标出是哪一种")
-    : tr("策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜");
+  // the same 15:50 before a report; the tape cannot tell the two apart, the drawer's decision list can (2026-09-24).
+  // Where versions carry their own carry_overnight switch the words are the fill's agent's (cleanupTipOf)
+  const snapNow = STATE.snap || {};
+  const swCarry = !STATE.crypto && switchBoard(snapNow).carry;
+  // which version holds each slot, and what it does overnight: the hover of an older fill changes when a slot's version
+  // does, so on such a board it belongs in the signature ("" everywhere else, where the hover never depends on it)
+  const tipSig = swCarry ? (snapNow.slots || []).map(a => `${a.slot_id}:${a.version_id}:${(a.agent_switches || {}).overnight}`).join(",") : "";
   const dated = t => showDate || !calToday || String(t.confirmed_ny || "").slice(0, 10) !== calToday;
   $("tradenote").textContent = note || "";
   // the signature must be written on EVERY path, blank included: otherwise the blank render leaves the
@@ -4990,7 +5377,7 @@ function renderTape() {
   // a phone row is three lines tall, so 60 of them is a 4000px scroll; the cap is disclosed either way, below
   const SHOWN = window.innerWidth <= 700 ? 30 : 60;
   const sigNow = (STATE.tradeDay || "today") + "|" + STATE.tradeSlot + "|" + (STATE.tradeGroup ? "G" : "-") + (STATE.tradeColor ? "C" : "-")
-    + "|" + (failed ? "ERR" : "") + list.length + "|" + SHOWN + "|" + calToday + "|" + LANG + "|" + list.map(t => t.fill_id).join(",");
+    + "|" + (failed ? "ERR" : "") + list.length + "|" + SHOWN + "|" + calToday + "|" + LANG + "|" + list.map(t => t.fill_id).join(",") + (tipSig ? "|" + tipSig : "");
   if (body.dataset.sig === sigNow) return;
   body.dataset.sig = sigNow;
   if (!list.length) {
@@ -5032,7 +5419,7 @@ function renderTape() {
       hr.dataset.slot = group;
       hr.style.setProperty("--slotc", slotColor(group));
       // realized is summed only over the SELL fills that carry a figure; if none do, it is unknown
-      hr.innerHTML = `<td colspan="9"><b>${esc(tr(group))}</b>${a.label_zh ? `<span class="gmeta">${esc(phraseWords(a.label_zh))}</span>` : (a.candidate_key ? `<span class="gmeta">${esc(a.candidate_key)}</span>` : "")}` +
+      hr.innerHTML = `<td colspan="9"><b>${esc(tr(group))}</b>${a.label_zh ? `<span class="gmeta">${esc(phraseWords(labelZhOf(a)))}</span>` : (a.candidate_key ? `<span class="gmeta">${esc(a.candidate_key)}</span>` : "")}` +
         `<span class="gmeta">${mine.length} ${tr("笔")}</span><span class="gmeta">${tr("已实现")} ${realized.length ? usd(sum, { sign: sum > 0 }) : tr(UNK)}</span></td>`;
       hr.style.cursor = "pointer";
       hr.addEventListener("click", () => openSheet(group));
@@ -5056,7 +5443,7 @@ function renderTape() {
       <td class="num" data-k="成交价">${pxFull(t.price)}</td>
       <td class="num" data-k="金额">${usd(t.notional_cents)}</td>
       <td class="num" data-k="已实现" style="color:${isNum(r) && r !== 0 ? (r > 0 ? cssVar("--green-ink") : cssVar("--red-ink")) : ""}">${t.side === "SELL" && isNum(r) ? usd(r, { sign: r > 0 }) : "—"}</td>
-      <td class="muted icell" data-k="意图"><span title="${t.intent === "CLEANUP" ? esc(cleanupTip) : ""}">${esc(t.intent || "")}</span>${fillTags(t)}</td>`;
+      <td class="muted icell" data-k="意图"><span title="${t.intent === "CLEANUP" ? esc(cleanupTipOf(t, snapNow)) : ""}">${esc(t.intent || "")}</span>${fillTags(t)}</td>`;
     row.addEventListener("click", () => openSheet(t.slot_id));
     row.style.cursor = "pointer";
     const pill = row.querySelector(".slotpill");
@@ -7591,8 +7978,16 @@ function renderSheet(d, fetched) {
   const fsBox = STATE.crypto ? feeShadowSheetBox(a, fsb, d.fee_shadow) : "";
   const fsFills = (STATE.crypto && fsb && fsb.applicable === true && d.fee_shadow && d.fee_shadow.status === "known"
                    && Array.isArray(d.fee_shadow.fills)) ? new Map(d.fee_shadow.fills.map(f => [String(f.fill_id), f])) : null;
-  const reBox = STATE.crypto ? reentryDaysBox(d.reentry_refusals, ((STATE.snap || {}).experiment || {}).reentry_after_take_profit_hours) : "";
+  // under per_version the box's rule is THIS slot's current version's cooldown (slot_detail.reentry_after_tp_hours, else
+  // the board slot's), not the experiment field - which is the string "per_version" there and hid the box altogether
+  const reOwn = reentryPerVersion(STATE.snap);
+  const reHours = !reOwn ? ((STATE.snap || {}).experiment || {}).reentry_after_take_profit_hours
+    : (d.reentry_after_tp_hours !== undefined ? d.reentry_after_tp_hours : a.reentry_after_tp_hours);
+  const reBox = STATE.crypto ? reentryDaysBox(d.reentry_refusals, reHours, reOwn) : "";
   const btBox = STATE.crypto ? "" : blockTallyBox(d.block_tally);
+  // each agent's own switches (stock, 2026-09-24): "" on a board whose versions carry none
+  const swBox = switchSheetBox(a, STATE.snap);
+  const lblZh = labelZhOf(a);
   body.innerHTML = `
     <div class="box">
       <div class="eyebrow">实时净值</div>
@@ -7625,8 +8020,13 @@ function renderSheet(d, fetched) {
     <div class="box">
       <h3>策略版本</h3>
       ${/* what the strategy IS, in words, before the instruction text: the card says it and the drawer did not */ ""}
-      ${a.label_zh ? `<div class="instr"><b>${esc(a.candidate_key || "")}</b> · ${esc(phraseWords(a.label_zh))}</div>` : ""}
-      <div class="instr"${a.label_zh ? ` style="margin-top:6px"` : ""}>${esc(a.instruction || "—")}</div>
+      ${lblZh ? `<div class="instr"><b>${esc(a.candidate_key || "")}</b> · ${esc(phraseWords(lblZh))}</div>` : ""}
+      <div class="instr"${lblZh ? ` style="margin-top:6px"` : ""}>${esc(a.instruction || "—")}</div>
+      ${/* review of the switches page (note 6): the instruction is prose from when the strategy was created; a switch
+         evolution may have changed since (overnight carry, earnings, the cooldown, the trend exit) is read from the card
+         and the parameters below, never from this text */ ""}
+      ${OWN_SWITCH_KEYS.some(k => Object.prototype.hasOwnProperty.call(params || {}, k))
+        ? `<div class="instr" style="margin-top:6px;color:var(--ink3)">${tr("上面的说明写于这个策略创建时；它自己的开关（是否跨夜、是否回避财报、止盈后冷却、趋势转弱是否离场）以卡片和下面的参数为准，进化可能已经改变了它们。")}</div>` : ""}
       ${a.hypothesis ? `<div class="instr" style="margin-top:8px;color:var(--ink3)">${LANG === "en" ? "Hypothesis: " : "假设："}${esc(a.hypothesis)}</div>` : ""}
       <div class="parm">${Object.entries(params).map(([k, v]) => `<span class="${diff && diff[k] ? "diff" : ""}">${esc(k)}=${esc(Array.isArray(v) ? v.join("/") : v)}</span>`).join("")}</div>
       ${Object.keys(diff || {}).length ? `<div class="instr" style="margin-top:9px">相对父代变异：${Object.entries(diff).map(([k, v]) => `<b>${esc(k)}</b> ${esc(v.from)} → ${esc(v.to)}`).join(" · ")}</div>` : ""}
@@ -7637,7 +8037,7 @@ function renderSheet(d, fetched) {
         ${kv("激活", esc(mdhm(a.activation_ny)))}
         ${kv("任内日数", a.tenure_sessions != null ? a.tenure_sessions : UNK)}
       </dl>
-    </div>
+    </div>${swBox}
 
     ${(a.positions || []).length ? `<div class="box"><h3>当前持仓</h3><div class="tw"><table class="tape">
       <thead><tr><th>${tr(symWord())}</th><th>数量</th><th>成本</th><th>实时价</th><th>市值</th><th>未实现</th><th>止损/目标</th></tr></thead>
