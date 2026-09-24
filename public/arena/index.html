@@ -1076,7 +1076,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-24T07:22:41Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-24T07:22:41Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924","experiments":["stock-research-20260924","crypto-kraken-20260924"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-24T07:25:01Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-24T07:25:01Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924","experiments":["stock-research-20260924","crypto-kraken-20260924"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -2484,6 +2484,13 @@ const UNLISTED_TRUST_S = 7200;
    told plainly which link they opened and which board this is. Static pages only (the live dashboard serves every
    experiment it can read); only a target the marker's own published list names; once per page load, so two markers
    can never bounce a reader between them. */
+// a replacement reason is prose from the operator: past 120 characters it is cut with an ellipsis, never mid-word silently
+function clipWhy(x) {
+  const t = String(x);
+  if (t.length <= 120) return t;
+  const cut = t.slice(0, 119), sp = cut.lastIndexOf(" ");
+  return (sp > 80 ? cut.slice(0, sp) : cut) + "…";
+}
 function retiredTarget(s, st, exp) {
   if (!st || !s || s.retired !== true) return null;
   const to = typeof s.default === "string" ? s.default : "";
@@ -2502,9 +2509,9 @@ function followedBanner(s, add) {
   const f = STATE.followed;
   if (!f || !s || s.experiment_id !== f.to) return;
   const crypto = s.asset_class === "crypto_spot" || (s.experiment && s.experiment.asset_class === "crypto_spot");
-  const why = f.why ? `（${esc(String(f.why).slice(0, 120))}）` : "";
+  const why = f.why ? `（${esc(clipWhy(f.why))}）` : "";
   add("", LANG === "en"
-    ? `<span>↪</span><span>The link you opened names <b>${esc(f.from)}</b>, which is no longer published${f.why ? ` (${esc(String(f.why).slice(0, 120))})` : ""}. This is the current ${crypto ? "crypto" : "stock"} board, <b>${esc(f.to)}</b>, and it keeps updating.</span>`
+    ? `<span>↪</span><span>The link you opened names <b>${esc(f.from)}</b>, which is no longer published${f.why ? ` (${esc(clipWhy(f.why))})` : ""}. This is the current ${crypto ? "crypto" : "stock"} board, <b>${esc(f.to)}</b>, and it keeps updating.</span>`
     : `<span>↪</span><span>你打开的链接指向 <b>${esc(f.from)}</b>，该实验已停止发布${why}。这里显示的是当前的${crypto ? "加密货币" : "股票"}实验 <b>${esc(f.to)}</b>，数据持续更新。</span>`);
 }
 function retiredBanner(s, add, st) {
@@ -2526,7 +2533,7 @@ function retiredBanner(s, add, st) {
   const def = (s && s.default) || ((!pub.length || pub.includes(S.default)) ? (S.default || "") : "");
   const link = def ? `<a href="?experiment=${encodeURIComponent(def)}">${esc(def)}</a>` : "";
   if (s && s.retired === true) {
-    const why = s.retired_why ? par(esc(String(s.retired_why).slice(0, 120))) : "";
+    const why = s.retired_why ? par(esc(clipWhy(s.retired_why))) : "";
     add("err", `<span>📦</span><span><b>${tr("此实验已停止发布")}</b>${why}${col()}${tr("这里的数据不再更新")}`
       + (link ? ` · ${tr("当前实验")}${col()}${link}` : "") + `</span>`);
     return;
