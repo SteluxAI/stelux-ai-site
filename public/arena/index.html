@@ -639,6 +639,38 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-size:var(--fs-note);color:var(--ink3);line-height:1.65}
 .skel{background:linear-gradient(100deg,var(--hair2) 30%,var(--hair) 50%,var(--hair2) 70%);background-size:220% 100%;
   animation:sh 1.4s linear infinite;border-radius:var(--r-sm);color:transparent!important}
+
+/* ---- 2026-09-24 (page group): what a card, the drawer and a round gained ------------------------------------------
+   Why an agent did not trade, a finished record, the fee-tier shadow and the re-entry gate. Every one of these WRAPS
+   (normal white-space, overflow-wrap:anywhere, min-width:0), so none can widen a card past a 375px phone: the card's
+   content box there is 313px (375 - 2 x 16 gutter - 2 x 15 card padding), and a chip that could not wrap is exactly
+   how 「末位 · 待替换」 once pushed its neighbour 11px outside the card. The one chip, 已结束, wraps inside itself;
+   test_arena_page_20260924 measures its longest label against that box with the probe's text model. */
+.finchip{font-size:var(--fs-chip);line-height:var(--lh-chip);font-weight:700;padding:2px 7px;border-radius:6px;
+  background:color-mix(in srgb,var(--ink3) 18%,transparent);color:var(--ink2);white-space:normal;overflow-wrap:anywhere;
+  max-width:100%}
+.agent.finished .aeq{color:var(--ink3)}
+.btline{margin-top:8px;font-size:var(--fs-note);line-height:1.45;color:var(--ink3);overflow-wrap:anywhere;min-width:0}
+.btline b{color:var(--ink2);font-weight:600}
+/* the fee-tier shadow is SECONDARY to the official tier-0 figures above it: smaller, grey, under a dashed rule */
+.fsline{margin-top:8px;padding-top:7px;border-top:1px dashed var(--hair);font-size:var(--fs-note);line-height:1.45;
+  color:var(--ink3);overflow-wrap:anywhere;min-width:0}
+.fsnote{margin:12px 0 0;font-size:var(--fs-note);color:var(--ink3);line-height:1.6;overflow-wrap:anywhere;min-width:0}
+.fsnote b{color:var(--ink2)}
+.fsnote summary{cursor:pointer;color:var(--ink2);font-weight:600;margin-top:4px}
+.fsnote details div{margin-top:4px}
+.ebbox{margin:4px 2px 0;font-size:var(--fs-note);line-height:1.6;color:var(--ink2);overflow-wrap:anywhere;min-width:0}
+.ebbox div+div{margin-top:3px}
+.ebbox .bad{color:var(--red-ink);font-weight:600}
+.ebbox .miss{color:var(--orange-ink);font-weight:600}
+.ebbox .ebmore{margin-top:3px}
+.ebbox .ebmore summary{cursor:pointer;color:var(--ink3);font-weight:600}
+.ebbox .ebmore div{margin-top:3px}
+.btday{margin-top:9px;font-size:12.5px;line-height:1.55;color:var(--ink2);overflow-wrap:anywhere}
+.btday:first-of-type{margin-top:0}
+.btsess{margin-top:5px;padding-left:10px;border-left:2px solid var(--hair)}
+.btsess div+div{margin-top:2px}
+.oc.fin{background:color-mix(in srgb,var(--ink3) 18%,transparent);color:var(--ink2)}
 @keyframes sh{to{background-position:-220% 0}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;
   transition-duration:.01ms!important}}
@@ -703,8 +735,10 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   table.tape tr.grp{display:block;padding:9px 14px}
   table.tape tr.grp td{display:block;position:static;white-space:normal}
   table.tape td.blank{flex:1 1 100%;text-align:center;white-space:normal;padding:22px 12px}
-  /* an intent can carry a tag or two (protective exit, partial): that cell wraps instead of pushing the row wide */
-  table.tape td.icell{white-space:normal;flex-wrap:wrap}
+  /* an intent can carry a tag or two (protective exit, partial): that cell wraps instead of pushing the row wide. The
+     drawer's 阻断原因 cell (.wrapcell) too - measured 2026-09-24 at 375px: the rule above left it nowrap, so a decision
+     blocked twice ran 316px past the drawer's edge, and its reasons now read as words, which are longer than codes */
+  table.tape td.icell,table.tape td.wrapcell{white-space:normal;flex-wrap:wrap}
   /* --- the crypto pool table: same row-card treatment ------------------------------------------------------ */
   .crtw{overflow-x:visible}
   .crtable thead{display:none}
@@ -939,6 +973,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="card pad" id="stpool" style="display:none">
     <button class="crmore" id="sttoggle" type="button" aria-expanded="false" aria-controls="stdetail">
       <span class="ar">›</span><span class="crsum" id="stsum"></span><span class="crmx" id="sttoggletxt">展开名单</span></button>
+    <div class="ebbox" id="ebbox" hidden></div>
     <div id="stdetail" hidden>
       <div id="stwhy" class="crwhy"></div>
       <div class="stsyms" id="stsyms"></div>
@@ -963,6 +998,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
     <button class="grpbtn" id="agsort" type="button" aria-pressed="true" title="按名次排列：领先的在前面。点一下改回按槽位 S01–S10 排列">按名次</button></div>
   <div class="aglegend" id="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
+  <div class="fsnote" id="feeshadow" hidden></div>
 
   <!-- Five shelves, and nothing on the board may be called "the best strategy". The ten agents above are the
        DAY LEADER shelf: whoever is ahead today in a live paper arena, which is a fact about today. Whether an
@@ -1040,7 +1076,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-23T20:11:59Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-23T20:11:59Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260923e","experiments":["stock-research-20260923e","crypto-kraken-20260923"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-24T03:31:16Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-24T03:31:16Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260923e","experiments":["stock-research-20260923e","crypto-kraken-20260924"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1559,6 +1595,8 @@ const I18N = {
     "按当日净收益比较": "judged on the day's net return", "按累计净收益比较": "judged on cumulative net return",
     "末位由自己的微调版本接替": "the bottom ones are taken over by tweaked versions of themselves",
     "各自的微调版本": "a tweaked version of each",
+    "末位由它自己的微调版本接替": "the bottom one is taken over by a tweaked version of itself",
+    "它自己的微调版本": "a tweaked version of itself",
     "每周最后一个交易日收盘 + 10 分钟后结算一轮": "a round settles 10 minutes after the close of the last trading day of each week",
     "每个板块按自己冻结的规则进化，股票与加密货币互不影响。": "Each board evolves under its own frozen rule; the stock and crypto boards do not affect each other.",
     "决策相同的 Agent，成交价和数量仍可能不同": "identical decisions can still fill at different prices and sizes",
@@ -1812,6 +1850,76 @@ const I18N = {
     "读不到这个实验": "Could not read this experiment",
     "加载失败": "Load failed",
     "上次读取": "the last read",
+    // ---- 2026-09-24 (page group): why no trade, finished records, the earnings blackout, the fee-tier shadow, the
+    // re-entry gate after a take-profit. BLOCK_ZH first: every reason code the stock entry path can record
+    "出现信号": "a signal", "没有策略给出信号": "no strategy fired", "已有持仓（每槽最多 1 个）": "already holding (one position per slot)",
+    "收盘前清仓时段，不再开仓": "the pre-close flatten window: no new entry", "非常规时段的入场次数已用完": "the extended-hours entry quota is spent",
+    "非常规时段的入场单已用完": "the extended-hours entry-order quota is spent", "没有新 K 线": "no new bar",
+    "基准不可交易": "a benchmark is not tradable", "没有启用的策略": "no strategy enabled", "这个时段不评估入场": "no entries evaluated in this session",
+    "缺少时段日历": "session calendar missing", "K 线数据故障": "bar data fault", "最近几根 K 线没有成交": "the last bars had no trades",
+    "还没有常规盘 K 线": "no regular-session bar yet", "这个时段还没有 K 线": "no bar in this session yet",
+    "不在信号时间窗内": "outside the signal window", "缺少成交量基线": "volume baseline missing", "VWAP 不可用": "VWAP unavailable",
+    "策略未采用": "strategy not adopted", "不在这个策略的评估时段": "outside this strategy's evaluation window", "未知策略": "unknown strategy",
+    "缺少大盘指数数据": "regime index data missing", "缺少大盘指数开盘价": "regime index open missing", "缺少大盘指数日历": "regime index calendar missing",
+    "大盘指数走弱（低于门槛）": "market regime weak (index below the threshold)", "开盘区间还没走完": "opening range not complete",
+    "10:05 之前": "before 10:05", "开盘后 35 分钟内": "within 35 minutes of the open",
+    "没有连续两根收在开盘区间上方": "no two closes above the opening range", "相对成交量不足": "relative volume too low",
+    "VWAP 没有上升": "VWAP not rising", "收盘价低于 VWAP": "close below VWAP", "算 ATR12 的 K 线不足": "too few bars for ATR12",
+    "缺少个股开盘价": "stock open missing", "相对强度不足": "relative strength too low", "没有突破": "no breakout",
+    "最近的 K 线有缺口": "gap in the recent bars", "不在上升趋势中": "not in an uptrend", "没有回踩 VWAP": "no pullback to VWAP",
+    "没有重新站上 VWAP": "no reclaim of VWAP", "入场区间无效": "invalid entry zone", "止损不低于限价": "stop not below the limit",
+    "止损太近": "stop too close", "可买数量为 0": "zero shares affordable", "仓位太小": "position too small",
+    "已提交入场单": "entry order submitted", "排在已提交的信号之后": "ranked below the one submitted", "已有持仓": "already holding",
+    "已有挂着的入场单": "an entry order is already working", "当日入场次数已满": "the day's entries are used up",
+    "当日入场单数已满": "the day's entry orders are used up", "单笔风险超出预算": "per-trade risk over budget", "资金不足": "not enough cash",
+    "日亏熔断": "daily-loss breaker", "累计/回撤熔断": "cumulative / drawdown breaker", "实验尚未开始": "the experiment has not started",
+    "实验最后一天": "the experiment's last day", "实验已结束": "the experiment has ended", "这根 K 线已经下过单": "an order was already placed on this bar",
+    "不在可交易名单内": "not in the tradable list", "交易已暂停": "trading paused", "财报禁区": "Earnings blackout",
+    "财报日历未知": "earnings calendar unknown", "风控上限": "risk limit", "跳过": "skipped",
+    "入场检查": "Entry checks", "拦下最多": "most blocked by", "其他": "other",
+    "一次检查 = 排序入场路径看过的一个（K 线，股票），或被槽位级跳过拦下的一个。拦下最多的是各策略自己的拒绝原因和槽位级原因，不含“没有策略给出信号”这个总括；逐时段、逐策略的明细在 Agent 详情里。":
+      "A check is one (bar, symbol) the ranked entry path looked at, or one a slot-level skip stopped. The top reasons are the strategies' own refusals and the slot-level ones, not the umbrella 'no strategy fired'; the per-session, per-strategy breakdown is in the agent's drawer.",
+    "为什么没交易（入场检查）": "Why it did not trade (entry checks)", "总体结果": "outcome", "信号去向": "what became of the signals",
+    "最后一根 K 线": "last bar", "还没有记录到任何一天": "no day recorded yet",
+    "这一天没有记录：runner 可能没在运行，或还是旧版本——未知，不是零次检查": "nothing recorded that day: the runner may not have been running, or was on an older build - unknown, not zero checks",
+    // finished records (selection.latched_slots = finished_v1)
+    "已结束 · 累计止损锁定": "finished · cumulative-loss stop latched", "已结束 · 回撤止损锁定": "finished · drawdown stop latched",
+    "已结束 · 永久止损锁定": "finished · permanent stop latched", "累计亏损止损": "cumulative-loss stop", "最大回撤止损": "drawdown stop",
+    "累计亏损或回撤止损": "cumulative-loss or drawdown stop", "已结束": "finished",
+    "已结束（不参评，既不繁殖也不被替换）": "finished (not ranked: neither bred from nor replaced)", "当时净值": "equity then",
+    "读不到这些槽的止损锁定状态，它们留在排名里": "these slots' latch state could not be read, so they stayed in the ranking",
+    "锁定时间": "Latched at", "止损类型": "Stop", "锁定时净值": "Equity at the latch", "锁定时盈亏": "P&L at the latch",
+    "锁定前成交 / 入场": "Fills / entries before it", "锁定时的版本": "Version at the latch", "记为已结束": "Finished since",
+    "下一轮": "the next round", "那一轮或更早": "round or earlier",
+    "当日净值收益率名次，仅作对照：这个槽已结束，不参加进化排名": "the day's net-return rank, for comparison only: this slot is finished and is not in the evolution ranking",
+    "永久止损锁定后这个槽不能再入场。按冻结规则 finished_v1，它不再参与排名：既不繁殖，也不被替换，现金和持仓原样留在槽里；每轮的替换名额按其余可比较的槽计算。":
+      "Once its permanent stop latched this slot can never enter again. Under the frozen rule finished_v1 it is no longer ranked: neither bred from nor replaced, its cash and positions stay in the slot, and each round's replacement quota is sized on the slots still compared.",
+    "第 1 名的后代顶替最后 1 名": "the top agent's offspring replaces the bottom one",
+    // the earnings blackout
+    "从未抓取": "never fetched", "最近的答案已过时": "the latest answer is stale", "抓取失败": "fetch failed", "无法识别的回应": "unrecognised response",
+    "超出日历覆盖范围": "beyond the calendar's coverage", "部分失败": "partly failed", "失败": "failed",
+    "进行中或被中断": "in progress or interrupted", "盘前发布": "before the open", "盘后发布": "after the close",
+    "日历未知，对所有股票生效": "calendar unknown, applies to every stock",
+    "今日与下一交易日：日历没有列出这些股票的财报": "today and the next trading day: the calendar lists no report for these stocks",
+    "财报日历": "Earnings calendar", "还没有抓取过": "never fetched yet", "未来日期里日历未知的": "future dates with an unknown calendar",
+    "这些日期对所有股票按可能有财报处理": "each is treated as a possible report date for every stock",
+    "应在财报前清仓但没有清掉": "the rule decided to flatten before a report and the position was still open",
+    "日历在 15:50 决定之后才列出（时点漏报，不是清仓失败）": "listed by the calendar only after the 15:50 decision (a point-in-time miss, not a failed flatten)",
+    "财报前未清仓": "not flattened before a report", "日历迟列": "listed late", "财报禁区清仓": "flattened for the earnings blackout",
+    "收盘前平仓：可能是策略参数 eod_cleanup=true，也可能是本实验的财报禁区在财报日前后清仓；Agent 详情的决策记录会标出是哪一种":
+      "Pre-close flatten: either the version's eod_cleanup=true, or this experiment's earnings blackout flattening around a report; the agent's decision list says which",
+    // the fee-tier shadow
+    "按真实费率档重算": "re-priced at the Kraken tier", "按真实费率档重算（仅显示）": "Re-priced at the Kraken tier (display only)",
+    "规则、边界与费率表": "Rule, edges and the fee schedule", "费率表": "schedule", "核对于": "checked",
+    "费率表核对记录（原文）": "source-check notes", "按冻结 $0+ 档记录的费用": "Fees recorded at the frozen $0+ tier",
+    "按真实费率档重算的费用": "Fees re-priced at the reached tier", "节省": "Saving", "当前费率档": "Tier now",
+    "30 天成交额": "30-day volume", "各档成交": "Fills by tier", "收盘盈亏（官方 → 重算）": "P&L at the close (official → re-priced)",
+    "当日不完整": "partial day", "还没有冻结的收盘": "no frozen close yet", "实时盈亏（官方 → 重算）": "Live P&L (official → re-priced)",
+    "逐笔费率档": "Per-fill tiers", "重算费率": "re-priced fee",
+    // the re-entry gate after a take-profit
+    "止盈后不回补": "no buy-back after a take-profit", "止盈后不回补（逐日）": "No buy-back after a take-profit, per day",
+    "读不到：未知，不代表没有拒绝": "could not be read: unknown, not 'nothing refused'",
+    "这条规则还没有拒绝过买单": "this rule has not refused a buy yet",
   },
 };
 const I18N_ATTRS = ["title", "aria-label", "placeholder", "data-k"];
@@ -2568,11 +2676,17 @@ function renderHero(s) {
   $("mRounds").textContent = (rDone != null && rTot != null) ? `${rDone}/${rTot}` : UNK;
   renderChips(s);                         // runner + feed: age readouts, also driven by the tick path
   const risk = ex.risk || {};
+  // the crypto board's opt-in re-entry gate after a take-profit is a risk rule every agent shares, so it is stated
+  // with the others - only when the frozen config switched it on (hours > 0); 0 or absent adds nothing
+  const reH = STATE.crypto && isNum(ex.reentry_after_take_profit_hours) && ex.reentry_after_take_profit_hours > 0
+    ? ex.reentry_after_take_profit_hours : null;
   $("sidehint").textContent = LANG === "en"
     ? `Risk limits (identical for every agent, not modifiable by a strategy): at most ${risk.max_positions} position · ` +
       `${usd(risk.max_position_notional_cents, { cents: false })} per position · ${risk.max_entries_per_trading_day} entries per day · ` +
-      `breakers at ${usd(risk.daily_loss_stop_cents, { cents: false })} daily / ${usd(risk.cum_loss_stop_cents, { cents: false })} cumulative loss.`
-    : `风控（所有 Agent 相同、不可被策略修改）：最多 ${risk.max_positions} 个持仓 · 单仓 ≤ ${usd(risk.max_position_notional_cents, { cents: false })} · 每日 ≤ ${risk.max_entries_per_trading_day} 次入场 · 日亏 ${usd(risk.daily_loss_stop_cents, { cents: false })} / 累计 ${usd(risk.cum_loss_stop_cents, { cents: false })} 熔断。`;
+      `breakers at ${usd(risk.daily_loss_stop_cents, { cents: false })} daily / ${usd(risk.cum_loss_stop_cents, { cents: false })} cumulative loss.` +
+      (reH ? ` No buy-back of a coin within ${reH}h of a take-profit on it (a stop or a trend exit does not count).` : "")
+    : `风控（所有 Agent 相同、不可被策略修改）：最多 ${risk.max_positions} 个持仓 · 单仓 ≤ ${usd(risk.max_position_notional_cents, { cents: false })} · 每日 ≤ ${risk.max_entries_per_trading_day} 次入场 · 日亏 ${usd(risk.daily_loss_stop_cents, { cents: false })} / 累计 ${usd(risk.cum_loss_stop_cents, { cents: false })} 熔断。` +
+      (reH ? `止盈卖出一个币后 ${reH} 小时内不再买回它（止损、趋势出场不算）。` : "");
 }
 
 /* runner + feed chips: both are AGE readouts, so they must keep updating on a clock-only tick */
@@ -2852,6 +2966,9 @@ const REASON_WORDS = {
   max_orders_per_day: "今日下单次数已满", position_cap_reached: "单仓上限", insufficient_cash: "现金不足", breaker: "熔断", paused: "已暂停",
   not_active_in_universe_version: "不在活跃池", product_not_online: "产品非 online", product_check_stale: "产品核验过期", market_data_stale: "行情过期",
   no_market_observation: "无行情观测", duplicate_working_order: "已有挂单", dust_below_ordermin: "余尘无法卖出", no_position: "无持仓",
+  // opt-in risk.reentry_after_take_profit_hours: `reentry_after_take_profit:<exit_utc>` (the exit's time rides in the
+  // refused order's reentry_after_take_profit record, and the card and the drawer print it with the lift time)
+  reentry_after_take_profit: "止盈后不回补",
 };
 const DECISION_STATUS_ZH = { ok: "已下单", hold: "持有不动", blocked: "未授权/被拦", error: "模型错误", timeout: "模型超时", invalid: "模型输出无效", budget_exhausted: "预算耗尽" };
 
@@ -2891,8 +3008,19 @@ function renderStockPool(s) {
   $("stwhy").innerHTML =
     `<div><b>${tr("这不是选股推荐。")}</b>${tr("名单是实验开始前用机械规则筛一次定下来的，之后不再变动——不会因为哪只涨了就加进来，也不会因为哪只跌了就踢出去。")}</div>
      <div>${tr("共计")} <b>${syms.length}</b> ${tr("只可交易")}${bm.length ? ` · ${tr("另有基准")} <b>${esc(bm.join(sep))}</b>${tr("，只用来判断大盘方向，永远不可买卖")}` : ""}${stop}</div>
-     <div>${tr("冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。")}</div>`;
+     <div>${tr("冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。")}</div>`
+    // where the list came from, when the frozen config says (arena init --universe-report): the screen's rule version
+    // and reference session. A board whose config names no source - 23e copied its list - says nothing new
+    + (universeSourceWords(ex.universe_source) ? `<div>${universeSourceWords(ex.universe_source)}</div>` : "");
   $("stsyms").innerHTML = syms.map(x => `<span>${esc(x)}</span>`).join("");
+  // the opt-in earnings blackout, OUTSIDE the fold: which names it keeps out today and next, and whether the calendar
+  // behind it is current. Nothing at all on a board frozen without the key
+  const ebn = $("ebbox");
+  if (ebn) {
+    const h = ex.earnings_blackout ? earningsHtml(ex.earnings_blackout) : "";
+    if (ebn.dataset.sig !== h) { ebn.dataset.sig = h; ebn.innerHTML = h; }
+    ebn.hidden = !h;
+  }
 
   /* Collapsed by default, same as the coin pool: the summary row answers "what may these agents trade", and the
      forty chips plus three paragraphs are the evidence behind it. Wired once - the button lives in the static
@@ -2976,24 +3104,65 @@ function renderCrypto(s) {
   /* The rule used to be one sentence carrying six thresholds, which is a specification and not an explanation.
      A reader's actual question is "why these coins and not others", and the answer is short: they are the ones
      that can be bought and sold without moving the price. That goes first; the numbers follow it. */
+  /* The depth the gate really asks (2026-09-24, crypto pool group): max(min ask depth, max order x
+     depth_multiple_of_max_order), the backend's effective_min_ask_depth_usd. The rule block's own floor
+     (min_ask_depth_usd_within_25bps) understates it once the multiple is declared - $30,000 at multiple 10 against a
+     printed $3,000 - so the floor is only the fallback for a server that does not send the effective figure. Every
+     board running today asks $3,000 either way, and reads exactly as before; the formula is added only where a
+     multiple was actually declared. */
+  const dreq = u.depth_requirement || null;
+  const depthUsd = isNum(u.effective_min_ask_depth_usd) ? u.effective_min_ask_depth_usd : el_.min_ask_depth_usd_within_25bps;
+  const depthTxt = Number(depthUsd || 0).toLocaleString("en-US");
+  // the order-cap product only where it IS the figure: when the floor is higher, max(floor, cap x m) is the floor, and
+  // "(the $3,000 order cap x 10)" beside a $50,000 requirement would name a formula that does not produce it
+  const dUsd = n => `$${Number(n).toLocaleString("en-US")}`;
+  const dMul = dreq ? Number(dreq.depth_multiple_of_max_order) : NaN;
+  const dProd = (dreq && isNum(dreq.max_order_usd) && isFinite(dMul)) ? dreq.max_order_usd * dMul : null;
+  // final review 2026-09-24: every crypto config declares the multiple, the running ones as 1.0, so "declared" alone
+  // printed "(the $3,000 order cap x 1)" on boards whose rule did not change; the formula appears only where the
+  // multiple actually changes the requirement
+  const depthWhy = (dreq && dreq.depth_multiple_declared && isFinite(dMul) && dMul !== 1 && dProd !== null && isNum(depthUsd))
+    ? par(Math.abs(dProd - depthUsd) < 0.005
+      ? (LANG === "en" ? `the ${dUsd(dreq.max_order_usd)} order cap × ${esc(dreq.depth_multiple_of_max_order)}`
+                       : `单笔上限 ${dUsd(dreq.max_order_usd)} × ${esc(dreq.depth_multiple_of_max_order)}`)
+      : (LANG === "en" ? `the higher of the ${dUsd(dreq.min_ask_depth_usd_within_25bps)} floor and the ${dUsd(dreq.max_order_usd)} order cap × ${esc(dreq.depth_multiple_of_max_order)}`
+                       : `取下限 ${dUsd(dreq.min_ask_depth_usd_within_25bps)} 与单笔上限 ${dUsd(dreq.max_order_usd)} × ${esc(dreq.depth_multiple_of_max_order)} 中较高者`)) : "";
+  // how many of the frozen candidates clear the turnover gate: the reason the pool is often smaller than its limit
+  // (22-25 of 40 on the 09-23 data), said with the unknown ones counted apart, never as below. crypto/web counts it on
+  // the version in force, else the latest one, so the line names whichever it was
+  const tg = u.turnover_gate || null;
+  const lim = u.active_limit != null ? u.active_limit : "—";
+  const tgInForce = !!(tg && tg.universe_version && (u.effective || {}).universe_version === tg.universe_version);
+  const tgLine = (tg && isNum(tg.n_clear)) ? (LANG === "en"
+      ? `In the ${tgInForce ? "pool version in force" : "latest pool version"} <b>${tg.n_clear}</b> of ${isNum(tg.n_candidates) ? tg.n_candidates : "?"} candidates cleared the $${Number(tg.threshold_usd || 0).toLocaleString("en-US")} turnover gate`
+        + (isNum(tg.n_below) && tg.n_below ? `, ${tg.n_below} fell short` : "") + (isNum(tg.n_unknown) && tg.n_unknown ? `, ${tg.n_unknown} unknown` : "")
+        + (isNum(u.active_limit) && tg.n_clear < u.active_limit ? ` - so fewer than ${u.active_limit} can be tradable, whatever the other gates say.` : ".")
+      : `按${tgInForce ? "现行" : "最新"}一版币池的数据，${isNum(tg.n_candidates) ? tg.n_candidates : "?"} 个候选里 <b>${tg.n_clear}</b> 个的成交额达到 $${Number(tg.threshold_usd || 0).toLocaleString("en-US")} 门槛`
+        + (isNum(tg.n_below) && tg.n_below ? `，${tg.n_below} 个没达到` : "") + (isNum(tg.n_unknown) && tg.n_unknown ? `，${tg.n_unknown} 个未知` : "")
+        + (isNum(u.active_limit) && tg.n_clear < u.active_limit ? `——所以就算其他门槛都过，可交易的也不到 ${u.active_limit} 个。` : "。"))
+    : "";
+  const csLine = candidatesSourceWords(u.candidates_source);
   const why = $("crwhy");
   if (why) {
     why.innerHTML = (LANG === "en" ? [
       "<b>These are not picks.</b> Nothing here is a view on which coin will go up - the pool is chosen purely on whether an order can be filled without moving the price.",
-      `A coin joins when all four hold: <b>$${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")}+</b> traded in 24h · spread <b>≤ ${el_.max_spread_bps} bps</b> · <b>$${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")}+</b> of asks within 25 bps · at least <b>${el_.warmup_candles_1h}</b> hourly candles of history.`,
-      `The top <b>${u.active_limit != null ? u.active_limit : "—"}</b> by turnover then spread are tradable; a coin already in keeps its seat until it falls more than <b>${rule.hysteresis_rank_band}</b> places past the line, so the pool does not churn on noise.`,
+      `A coin joins when all four hold: <b>$${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")}+</b> traded in 24h · spread <b>≤ ${el_.max_spread_bps} bps</b> · <b>$${depthTxt}+</b>${depthWhy} of asks within 25 bps · at least <b>${el_.warmup_candles_1h}</b> hourly candles of history.`,
+      // "the top 30 are tradable" read as a pool of 30; it is a ceiling, and on most days fewer pass
+      `Of the coins that pass, at most the top <b>${lim}</b> by turnover then spread are tradable - fewer when fewer pass, and no gate is lowered to fill the seats; a coin already in keeps its seat until it falls more than <b>${rule.hysteresis_rank_band}</b> places past the line, so the pool does not churn on noise.`,
+      tgLine, csLine,
       "Return, direction and what the agents would like to buy play no part in it.",
     ] : [
       "<b>这不是选币推荐。</b>这里没有任何「哪个币会涨」的判断——入池只看一件事：能不能顺利买进卖出而不把价格推走。",
-      `四个条件同时满足才进池：24 小时成交额 <b>$${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")}</b> 以上 · 买卖价差 <b>≤ ${el_.max_spread_bps} bps</b> · 挂单价上下 25bps 内有 <b>$${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")}</b> 以上的卖单 · 历史至少 <b>${el_.warmup_candles_1h}</b> 根小时线和 <b>${el_.warmup_candles_4h}</b> 根四小时线（少于 <b>${el_.min_samples}</b> 次采样不算数）。`,
-      `按成交额、再按价差排序，取前 <b>${u.active_limit != null ? u.active_limit : "—"}</b> 名可交易；已经在池里的币要掉出线外 <b>${rule.hysteresis_rank_band}</b> 名才会被换掉，免得池子天天抖动。`,
+      `四个条件同时满足才进池：24 小时成交额 <b>$${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")}</b> 以上 · 买卖价差 <b>≤ ${el_.max_spread_bps} bps</b> · 挂单价上下 25bps 内有 <b>$${depthTxt}</b>${depthWhy} 以上的卖单 · 历史至少 <b>${el_.warmup_candles_1h}</b> 根小时线和 <b>${el_.warmup_candles_4h}</b> 根四小时线（少于 <b>${el_.min_samples}</b> 次采样不算数）。`,
+      `通过的币按成交额、再按价差排序，最多取前 <b>${lim}</b> 名可交易——通过的不够时就少于这个数，不会为凑满而降低门槛；已经在池里的币要掉出线外 <b>${rule.hysteresis_rank_band}</b> 名才会被换掉，免得池子天天抖动。`,
+      tgLine, csLine,
       "涨跌、方向、Agent 想买什么，都不参与这个判断。",
-    ]).map(t => `<div>${t}</div>`).join("");
+    ]).filter(Boolean).map(t => `<div>${t}</div>`).join("");
     why.title = $("crrule").textContent || "";
   }
   const ruleFull = LANG === "en"
-    ? `Pool rule ${esc(eff.rule_version || "")}: online USD spot pair · ≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} rolling-24h turnover (median over the sample window) · spread ≤ ${el_.max_spread_bps} bps · ask depth within 25 bps ≥ $${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")} · ≥ ${el_.min_samples} samples · warm-up ${el_.warmup_candles_1h} × 1h and ${el_.warmup_candles_4h} × 4h candles. Ranked by turnover then spread; incumbents keep a seat within ${rule.hysteresis_rank_band} ranks of the limit. Liquidity and data quality only: no return, no direction, no agent preference.`
-    : `币池规则 ${esc(eff.rule_version || "")}：online 的 USD 现货对 · 滚动 24h 成交额（采样窗口中位数）≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} · 点差 ≤ ${el_.max_spread_bps} bps · 25bps 内卖盘深度 ≥ $${Number(el_.min_ask_depth_usd_within_25bps || 0).toLocaleString("en-US")} · 样本 ≥ ${el_.min_samples} · 预热 ${el_.warmup_candles_1h} 根 1h + ${el_.warmup_candles_4h} 根 4h。按成交额、点差排序；在池成员在上限 +${rule.hysteresis_rank_band} 名内保留席位。只看流动性与数据质量：不看收益、不看方向、不看 Agent 偏好。`;
+    ? `Pool rule ${esc(eff.rule_version || "")}: online USD spot pair · ≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} rolling-24h turnover (median over the sample window) · spread ≤ ${el_.max_spread_bps} bps · ask depth within 25 bps ≥ $${depthTxt}${depthWhy} · ≥ ${el_.min_samples} samples · warm-up ${el_.warmup_candles_1h} × 1h and ${el_.warmup_candles_4h} × 4h candles. Ranked by turnover then spread; incumbents keep a seat within ${rule.hysteresis_rank_band} ranks of the limit. Liquidity and data quality only: no return, no direction, no agent preference.`
+    : `币池规则 ${esc(eff.rule_version || "")}：online 的 USD 现货对 · 滚动 24h 成交额（采样窗口中位数）≥ $${Number(el_.min_turnover_24h_usd || 0).toLocaleString("en-US")} · 点差 ≤ ${el_.max_spread_bps} bps · 25bps 内卖盘深度 ≥ $${depthTxt}${depthWhy} · 样本 ≥ ${el_.min_samples} · 预热 ${el_.warmup_candles_1h} 根 1h + ${el_.warmup_candles_4h} 根 4h。按成交额、点差排序；在池成员在上限 +${rule.hysteresis_rank_band} 名内保留席位。只看流动性与数据质量：不看收益、不看方向、不看 Agent 偏好。`;
   // The exact specification, kept verbatim as provenance and folded to one line - the readable version above it
   // is a rewrite, and a rewrite should never be the only copy of the rule an experiment was frozen under.
   $("crrule").textContent = `${tr("规则")} ${esc(eff.rule_version || "")}`;
@@ -3065,9 +3234,22 @@ function renderCrypto(s) {
   const fmtUsd = v => v == null ? "—" : "$" + Number(v).toLocaleString("en-US", { maximumFractionDigits: 0 });
   const fmtBps = v => v == null ? "—" : Number(v).toFixed(1);
   const body = $("crbody");
-  const sig = rows.map(r => [r.candidate, r.state, r.rank, r.turnover_24h_usd, r.spread_bps, r.ask_depth_usd_25bps, r.n_samples, r.product_status, (r.reasons || []).join("|")].join(",")).join(";") + "|" + LANG;
+  const sig = rows.map(r => [r.candidate, r.state, r.rank, r.turnover_24h_usd, r.spread_bps, r.ask_depth_usd_25bps, r.n_samples, r.product_status, (r.reasons || []).join("|"),
+    r.window_since_utc, JSON.stringify(r.data_since_utc || null)].join(",")).join(";") + "|" + LANG;
   if (body.dataset.sig === sig) return;
   body.dataset.sig = sig;
+  // where a row's medians really start (2026-09-24, crypto pool group): the window the version names, and the first
+  // ticker / book observation inside it. Absent on versions generated before the field existed - then nothing is said
+  // rather than implying the whole window was covered
+  const sinceTip = r => {
+    const ds = r.data_since_utc;
+    if (!r.window_since_utc && !ds) return "";
+    const w = x => (x ? whenWords(x) : tr(UNK));
+    const t = LANG === "en"
+      ? `window from ${w(r.window_since_utc)} · tickers from ${w(ds && ds.tickers)} · books from ${w(ds && ds.books)}`
+      : `窗口起点 ${w(r.window_since_utc)} · ticker 数据起于 ${w(ds && ds.tickers)} · 盘口数据起于 ${w(ds && ds.books)}`;
+    return ` title="${esc(t)}"`;
+  };
   body.innerHTML = rows.map(r => `<tr>
     <td data-k="币种"><b class="${r.held ? "crheld" : ""}">${esc(r.candidate)}</b>${r.held ? ` <span class="muted">${tr("持有")}</span>` : ""}</td>
     <td data-k="分组" class="muted">${tr(r.group === "main" ? "主要" : "补充")}</td>
@@ -3076,7 +3258,7 @@ function renderCrypto(s) {
     <td data-k="24h 成交额" class="num">${fmtUsd(r.turnover_24h_usd)}</td>
     <td data-k="点差" class="num">${fmtBps(r.spread_bps)}</td>
     <td data-k="25bps 深度" class="num">${fmtUsd(r.ask_depth_usd_25bps)}</td>
-    <td data-k="样本" class="num">${r.n_samples != null ? r.n_samples : "—"}/${r.n_book_samples != null ? r.n_book_samples : "—"}</td>
+    <td data-k="样本" class="num"${sinceTip(r)}>${r.n_samples != null ? r.n_samples : "—"}/${r.n_book_samples != null ? r.n_book_samples : "—"}</td>
     <td data-k="产品" class="muted">${esc(r.altname || "—")} · ${esc(r.product_status || "?")}</td>
     <td data-k="原因" class="reasons">${(r.reasons || []).map(x => esc(x)).join("；") || "—"}</td></tr>`).join("")
     || `<tr><td colspan="10" class="blank"><span class="ico">🪙</span>${tr("活跃池为空")}<br><span class="muted">${tr("数据预热中，或没有候选通过流动性门槛；不会为凑数降低门槛")}</span></td></tr>`;
@@ -3188,6 +3370,529 @@ function breakerWords(br) {
   return tr("无");
 }
 
+/* ============================================================ 2026-09-24 (page group)
+   The display half of the approved changes: why an agent did not trade (the stock block tally), a slot whose permanent
+   breaker latched as a finished record (selection.latched_slots = finished_v1, both boards), the earnings blackout
+   (stock), the fee-tier shadow and the re-entry gate after a take-profit (crypto). Each helper returns a string and
+   reads only its arguments (and LANG), so the node probe runs every path in both languages without a DOM
+   (tests/test_arena_page_20260924.py). The keyed ones say nothing on a board frozen without their key: the running
+   experiments carry none of them, and their pages must read exactly as before. */
+
+/* ---- why no trade (stock): every reason code the entry path can record, in words --------------------------------
+   The tally (arena/block_tally.py) counts a check under the code the engine wrote, cut at its first '(' so the
+   measured value never reaches the key, and an earnings code cut to its prefix. Keyed exactly as engine/signals.py,
+   engine/risk.py, arena/engine.py and arena/earnings.py spell them; the codes that carry a number are the patterns in
+   blockWord. A code with no entry prints AS THE CODE, like every translator on this page: a new refusal must be
+   readable as itself rather than hidden behind a word it does not have, and the raw code is one hover away. */
+const BLOCK_ZH = {
+  // the top-level outcome of one check ('pre'): a slot-level skip, a refusal before any strategy ran, or the result
+  signal: "出现信号", no_signal: "没有策略给出信号",
+  "skip:position_occupied": "已有持仓（每槽最多 1 个）", "skip:flatten_day": "收盘前清仓时段，不再开仓",
+  "skip:extended_quota": "非常规时段的入场次数已用完", "skip:extended_order_quota": "非常规时段的入场单已用完",
+  "skip:no_new_bar": "没有新 K 线", benchmark_symbol_not_tradable: "基准不可交易", no_strategy_enabled: "没有启用的策略",
+  session_ineligible: "这个时段不评估入场", session_calendar_missing: "缺少时段日历", "data_fault:bars": "K 线数据故障",
+  no_recent_trades: "最近几根 K 线没有成交", no_regular_bar: "还没有常规盘 K 线", no_session_bar: "这个时段还没有 K 线",
+  outside_signal_window: "不在信号时间窗内", volume_baseline_missing: "缺少成交量基线", vwap_unavailable: "VWAP 不可用",
+  // a strategy's own refusal ('rule'); the regime gate reads SPY or QQQ (regime_symbol) under the same code
+  not_adopted: "策略未采用", outside_eval_window: "不在这个策略的评估时段", unknown_strategy: "未知策略", unknown: "未知",
+  spy_missing: "缺少大盘指数数据", spy_open_missing: "缺少大盘指数开盘价", spy_calendar_missing: "缺少大盘指数日历",
+  regime_spy_weak: "大盘指数走弱（低于门槛）", opening_range_incomplete: "开盘区间还没走完", "before_10:05": "10:05 之前",
+  before_open_plus_35m: "开盘后 35 分钟内", no_two_closes_above_range: "没有连续两根收在开盘区间上方",
+  rel_volume_low: "相对成交量不足", vwap_not_rising: "VWAP 没有上升", close_below_vwap: "收盘价低于 VWAP",
+  atr12_insufficient_bars: "算 ATR12 的 K 线不足", stock_open_missing: "缺少个股开盘价", relative_strength_low: "相对强度不足",
+  no_breakout: "没有突破", gap_in_recent_bars: "最近的 K 线有缺口", regime_not_uptrend: "不在上升趋势中",
+  no_pullback: "没有回踩 VWAP", no_reclaim: "没有重新站上 VWAP", invalid_zone: "入场区间无效",
+  "data_fault:valuation_unknown": "估值未知", "data_fault:cash_unknown": "现金未知", stop_not_below_limit: "止损不低于限价",
+  stop_too_close: "止损太近", qty_zero: "可买数量为 0", position_too_small: "仓位太小",
+  // what became of a signal once ranked ('gate')
+  submit_entry: "已提交入场单", ranked_below_submitted: "排在已提交的信号之后", position_occupied: "已有持仓",
+  "position_occupied:working_entry": "已有挂着的入场单", "risk_limit:entries": "当日入场次数已满",
+  "risk_limit:entry_orders": "当日入场单数已满", "risk_limit:per_trade": "单笔风险超出预算", funds: "资金不足",
+  "breaker:daily": "日亏熔断", "breaker:cum": "累计/回撤熔断", pre_start: "实验尚未开始", last_day: "实验最后一天",
+  ended: "实验已结束", duplicate_signal_bar: "这根 K 线已经下过单", "not_admitted:not_in_universe": "不在可交易名单内",
+  "paused:trading": "交易已暂停", earnings_blackout: "财报禁区", earnings_calendar_unknown: "财报日历未知",
+  // the heads of a family whose tail is printed as it was written
+  "risk_limit:*": "风控上限", "skip:*": "跳过", "breaker:*": "熔断",
+};
+
+function stratShort(sid) { return String(sid == null ? "" : sid).replace(/_v\d+$/, ""); }
+
+function blockWord(code) {
+  const k = String(code == null ? "" : code);
+  const en = LANG === "en";
+  let m;
+  if (BLOCK_ZH[k] !== undefined && !k.endsWith(":*")) return tr(BLOCK_ZH[k]);
+  // the opt-in earnings blackout names the instance: earnings_blackout:<S>:<D> / earnings_calendar_unknown:<date>
+  if ((m = k.match(/^earnings_blackout:([^:]+):(\d{4}-\d{2}-\d{2})$/)))
+    return en ? `earnings blackout: ${m[1]} reports ${m[2]}` : `财报禁区：${m[1]} 于 ${m[2]} 发财报`;
+  if ((m = k.match(/^earnings_calendar_unknown:(.+)$/)))
+    return en ? `earnings calendar unknown for ${m[1]} (applies to every stock)` : `${m[1]} 的财报日历未知（对所有股票生效）`;
+  // the ranked path's no_trade rows read `no_signal:<reason>` / `data_fault:<reason>`; the tally holds the reason alone
+  if ((m = k.match(/^(?:no_signal|data_fault):(.+)$/))) { const w = blockWord(m[1]); if (w !== m[1]) return w; }
+  // a measured value in brackets is not part of the reason: regime_spy_weak(-0.0123) is regime_spy_weak
+  const base = k.replace(/\(.*$/, "");
+  if (base && base !== k) { const w = blockWord(base); if (w !== base) return w; }
+  if ((m = k.match(/^no_(\d+)_closes_above_range$/)))
+    return en ? `no ${m[1]} closes above the opening range` : `没有连续 ${m[1]} 根收在开盘区间上方`;
+  if ((m = k.match(/^insufficient_bars_(\d+)$/))) return en ? `fewer than ${m[1]} bars` : `K 线不足 ${m[1]} 根`;
+  if ((m = k.match(/^volume_low_vs_(\d+)$/))) return en ? `volume below the ${m[1]}-bar mean` : `成交量低于前 ${m[1]} 根的均量`;
+  if ((m = k.match(/^unscorable_by:(.+)$/))) return en ? `could not be scored by ${m[1]}` : `无法按 ${m[1]} 打分`;
+  if ((m = k.match(/^(risk_limit|skip|breaker):(.+)$/))) return `${tr(BLOCK_ZH[m[1] + ":*"])}${col()}${m[2]}`;
+  return k;
+}
+
+/* The card's line: today's checks, signals, and the reasons that stopped the most of them (block_tally.summary). Only
+   when today HAS rows: a ledger no tally-writing build has opened, a day with nothing counted yet, or an unreadable
+   ledger stays silent here - the drawer says which, and silence is no claim that nothing was blocked. */
+function blockTallyLine(bt) {
+  if (!bt || bt.available !== true || bt.recorded !== true) return "";
+  const en = LANG === "en", n = v => (isNum(v) ? v.toLocaleString("en-US") : tr(UNK));
+  const top = (bt.top || []).map(t => `${esc(blockWord(t.reason))} ×${n(t.n)}`
+    + (t.strategy_id && t.strategy_id !== "-" ? par(esc(stratShort(t.strategy_id))) : ""));
+  return `<b>${tr("入场检查")}</b> `
+    + (en ? `today ${n(bt.checks)} · ${n(bt.signals)} ${bt.signals === 1 ? "signal" : "signals"}`
+          : `今日 ${n(bt.checks)} 次 · 信号 ${n(bt.signals)} 个`)
+    + (top.length ? ` · ${tr("拦下最多")}${col()}${top.join(en ? ", " : "、")}` : "");
+}
+
+/* one stage's top reasons, each with its count and its last raw code in the hover */
+function btTop(t) {
+  const x = t || {};
+  const items = (x.top || []).map(r => `<span title="${esc(r.example || r.reason)}">${esc(blockWord(r.reason))}</span> ×`
+    + (isNum(r.n) ? r.n.toLocaleString("en-US") : tr(UNK)));
+  if (isNum(x.n_other) && x.n_other > 0) items.push(`${tr("其他")} ×${x.n_other.toLocaleString("en-US")}`);
+  return items.length ? items.join(LANG === "en" ? ", " : "、") : "—";
+}
+
+/* The drawer's box: today and the latest earlier day with counts, per session and per strategy (block_tally.view), with
+   the unit and notes the server sends. A day with no rows is unknown - the runner may be down or on an older build -
+   and never "zero checks". */
+function blockTallyBox(bt) {
+  if (!bt) return "";                                   // an older server: the drawer reads as it did
+  const en = LANG === "en", n = v => (isNum(v) ? v.toLocaleString("en-US") : tr(UNK));
+  const pl = (v, one, many) => (en ? (v === 1 ? one : many) : "");
+  const head = `<h3>${tr("为什么没交易（入场检查）")}</h3>`;
+  if (bt.available !== true) return `<div class="box">${head}<div class="instr">${esc((en ? bt.note_en : bt.note_zh) || tr(UNK))}</div></div>`;
+  const days = (bt.days || []).map(d => {
+    if (d.recorded !== true) {
+      return `<div class="btday"><b>${esc(d.trading_day || "")}</b>${col()}${tr("这一天没有记录：runner 可能没在运行，或还是旧版本——未知，不是零次检查")}</div>`;
+    }
+    const ss = (d.sessions || []).map(s => {
+      const strat = (s.strategies || []).map(st => `<div>${esc(stratShort(st.strategy_id))}${col()}`
+        + (en ? `${n(st.checks)} evaluated · ${n(st.signals)} ${pl(st.signals, "signal", "signals")}`
+              : `评估 ${n(st.checks)} 次 · 信号 ${n(st.signals)} 个`)
+        + ` · ${tr("原因")} ${btTop(st.reasons)}`
+        + ((st.gate && (st.gate.top || []).length) ? ` · ${tr("信号去向")} ${btTop(st.gate)}` : "") + `</div>`).join("");
+      return `<div class="btsess"><div><b>${esc(tr(SESSION_WORD[s.session] || s.session || UNK))}</b> · `
+        + (en ? `${n(s.checks)} ${pl(s.checks, "check", "checks")} · ${n(s.signals)} ${pl(s.signals, "signal", "signals")}`
+              : `检查 ${n(s.checks)} 次 · 信号 ${n(s.signals)} 个`)
+        + (s.last_bar_ny ? ` · ${tr("最后一根 K 线")} ${esc(hm12(s.last_bar_ny))}` : "") + `</div>`
+        + `<div>${tr("总体结果")} ${btTop(s.outcomes)}</div>${strat}</div>`;
+    }).join("");
+    return `<div class="btday"><b>${esc(d.trading_day || "")}</b> · `
+      + (en ? `${n(d.checks)} ${pl(d.checks, "check", "checks")} · ${n(d.signals)} ${pl(d.signals, "signal", "signals")}`
+            : `检查 ${n(d.checks)} 次 · 信号 ${n(d.signals)} 个`) + `${ss}</div>`;
+  }).join("");
+  return `<div class="box">${head}${days || `<div class="instr">${tr("还没有记录到任何一天")}</div>`}`
+    + `<div class="muted" style="margin-top:8px">${esc((en ? bt.unit : bt.unit_zh) || "")}</div></div>`;
+}
+
+/* ---- a finished record (selection.latched_slots = "finished_v1", both boards) -----------------------------------
+   A slot whose PERMANENT loss breaker latched can never enter again. Under finished_v1 the round takes it out of the
+   cut as a finished record - never a parent, never a victim, never handed a new version - and the round's snapshot
+   carries the terminal record: when it latched, which stop, the equity and P&L then (None = unknown, never 0), the
+   fills and entries before it, the version that held it. The card says it as soon as the ledger says it latched (the
+   slot cannot trade from that moment); the record itself comes from the newest round that listed the slot. */
+const FINISHED_ZH = { cum_loss: "已结束 · 累计止损锁定", max_drawdown: "已结束 · 回撤止损锁定",
+                      cum_loss_or_max_drawdown: "已结束 · 永久止损锁定" };
+const LATCH_KIND_ZH = { cum_loss: "累计亏损止损", max_drawdown: "最大回撤止损", cum_loss_or_max_drawdown: "累计亏损或回撤止损" };
+
+/* a stamp with its own clock: the stock ledger stamps New York, the crypto breakers table and fee walk stamp UTC ('Z') */
+function whenWords(iso) {
+  if (!iso) return tr(UNK);
+  return `${mdhm(iso)} ${/Z$/.test(String(iso)) ? "UTC" : "ET"}`;
+}
+
+function finishedOf(a, s) {
+  const sn = s || STATE.snap || {};
+  if (!a || (sn.experiment || {}).latched_slots !== "finished_v1") return null;
+  // The record comes from the NEWEST round that lists the slot, the date it became a finished record from the OLDEST.
+  // Under finished_v1 every later round lists the slot again - the weekly stock board's daily 'cadence:weekly' skipped
+  // rows, every crypto daily round - so the first hit newest-first is simply the latest round, and a "since" taken from
+  // it moved forward every day (review 2026-09-24, reproduced: a slot listed by 8 rounds 09-11..09-22 read "since the
+  // 09-22 round").
+  const rs = Array.isArray(sn.rounds) ? sn.rounds : [];
+  const lists = r => r && Array.isArray(r.finished) && r.finished.some(x => x && x.slot_id === a.slot_id);
+  let rec = null, day = null, iOld = -1;
+  rs.forEach((r, i) => {                                    // newest first
+    if (!lists(r)) return;
+    if (!rec) rec = r.finished.find(x => x && x.slot_id === a.slot_id);
+    day = r.trading_day; iOld = i;
+  });
+  // The snapshot carries only the latest rounds (web: LIMIT 20). The oldest round listing the slot is the FIRST one only
+  // when an older round in the window read the slot and did not find it latched (it ran under the key and could read the
+  // slot - a latch_unreadable round proves nothing), or when the window holds every round the board ever ran
+  // (rounds_count.total). Otherwise nothing earlier was read, and the page says "on or before", not a start date.
+  const readNotLatched = r => r && Array.isArray(r.finished) && !lists(r)
+    && !(Array.isArray(r.latch_unreadable) && r.latch_unreadable.some(x => x && x.slot_id === a.slot_id));
+  const total = (sn.rounds_count || {}).total;
+  const dayExact = iOld >= 0 && (rs.slice(iOld + 1).some(readNotLatched) || (isNum(total) && total <= rs.length));
+  const br = a.breakers || {}, lat = br.latched || {};
+  if (!rec && !br.cum) return null;
+  // the record's own breaker; before any round, the crypto ledger's latch keys (the stock ledger keeps both stops in
+  // one column, so there it is "cumulative loss or drawdown" until the round reads which)
+  const kind = (rec && rec.breaker) ? rec.breaker
+    : (lat.cum_loss && (!lat.max_drawdown || String(lat.cum_loss) <= String(lat.max_drawdown))) ? "cum_loss"
+    : lat.max_drawdown ? "max_drawdown" : "cum_loss_or_max_drawdown";
+  // ...and the latch time of THAT stop. breakers.cum is cum_loss's stamp whenever both latched (crypto/web.py fills it
+  // cum_loss first), so a drawdown at 14:00Z followed by a cumulative loss at 20:00Z read "drawdown stop latched" beside
+  // 8:00 PM - the other stop's time. The stock ledger has one column, so there lat is empty and breakers.cum is the one.
+  return { rec, day, dayExact, nRounds: rs.length, kind,
+           at: rec ? (rec.latched_ny || rec.latched_utc || null) : (lat[kind] || br.cum) };
+}
+
+/* "since the <day> round", or "on or before" it when the rounds the page holds cannot show an earlier one did not list
+   the slot (finishedOf.dayExact) */
+function finishedSince(f) {
+  if (!f || !f.day) return "";
+  const en = LANG === "en";
+  if (f.dayExact) return en ? `a finished record since the ${f.day} round` : `自 ${f.day} 那一轮起记为已结束`;
+  return en ? `a finished record since the ${f.day} round or earlier` : `最晚自 ${f.day} 那一轮起记为已结束`;
+}
+
+function finishedChipText(f) {
+  return f ? (FINISHED_ZH[f.kind] ? tr(FINISHED_ZH[f.kind]) : `${tr("已结束")} · ${f.kind}`) : "";
+}
+
+function finishedWords(f) {
+  if (!f) return "";
+  const en = LANG === "en", r = f.rec, kind = tr(LATCH_KIND_ZH[f.kind] || f.kind);
+  if (!r) {
+    return en ? `permanent loss stop (${kind}) latched ${whenWords(f.at)}: from the next round this slot is a finished record - neither bred from nor replaced`
+              : `永久止损（${kind}）于 ${whenWords(f.at)} 锁定：从下一轮起这个槽记为已结束，既不繁殖也不被替换`;
+  }
+  const pnl = isNum(r.pnl_at_latch_cents) ? usd(r.pnl_at_latch_cents, { sign: r.pnl_at_latch_cents > 0 }) : tr(UNK);
+  const nf = isNum(r.trades_before_latch) ? r.trades_before_latch : tr(UNK);
+  const ne = isNum(r.entries_before_latch) ? r.entries_before_latch : tr(UNK);
+  const v = versionWords(r.version_at_latch) || tr(UNK);
+  return en ? `${kind} latched ${whenWords(f.at)} · equity then ${usd(r.equity_at_latch_cents)} (${pnl}) · ${nf} fills and ${ne} entries before it · version ${v} · ${finishedSince(f)}`
+            : `${kind}于 ${whenWords(f.at)} 锁定 · 当时净值 ${usd(r.equity_at_latch_cents)}（${pnl}）· 锁定前 ${nf} 笔成交、${ne} 次入场 · 当时版本 ${v} · ${finishedSince(f)}`;
+}
+
+/* A round's finished list, its replacement quota and the slots it could not check, in words. All three exist only on
+   a round run under finished_v1; every other round has none of them and gets no line.
+   Not the list or the quota on a SKIPPED round (review 2026-09-24): run_round writes both into every row, and on the
+   weekly stock board that is each day's 'cadence:weekly' row - "replacement quota ... 3 this round" under a round in
+   which nobody was replaced, four days a week (the protected_young rule below says the same). A skip that is ABOUT the
+   finished slots names them in its own reason (insufficient_ranked:1<2 (finished:...)). The unread latches stay: that
+   is true of any round, skipped or not. */
+function roundFinishedBits(r) {
+  const bits = [], en = LANG === "en", skipped = r.outcome === "skipped";
+  const fin = (!skipped && Array.isArray(r.finished)) ? r.finished : [];
+  if (fin.length) {
+    bits.push(`${tr("已结束（不参评，既不繁殖也不被替换）")}${col()}` + fin.map(f => {
+      const pnl = isNum(f.pnl_at_latch_cents) ? usd(f.pnl_at_latch_cents, { sign: f.pnl_at_latch_cents > 0 }) : tr(UNK);
+      return `${esc(f.slot_id || "?")}${par(esc(`${tr(LATCH_KIND_ZH[f.breaker] || f.breaker || UNK)} ${whenWords(f.latched_ny || f.latched_utc)} · `
+        + `${tr("当时净值")} ${usd(f.equity_at_latch_cents)} · ${pnl}`))}`;
+    }).join(en ? "; " : "；"));
+  }
+  const rb = skipped ? null : r.replace_bottom;
+  if (rb && typeof rb === "object" && isNum(rb.configured)) {
+    const c = rb.configured, nl = isNum(rb.n_live) ? rb.n_live : "?", e = isNum(rb.effective) ? rb.effective : "?";
+    const at = rb.after_tie_rule;
+    bits.push((en ? `replacement quota: ${c} configured, ${nl} live, ${e} this round (min(${c}, floor(${nl} / 2)))`
+                  : `替换名额：配置 ${c} 个，可比较的 ${nl} 个，本轮 ${e} 个（min(${c}, ⌊${nl}/2⌋)）`)
+      + (isNum(at) && at !== rb.effective ? (en ? `; ${at} after the tie rule` : `，按同分规则最后换了 ${at} 个`) : ""));
+  }
+  const lu = (Array.isArray(r.latch_unreadable) ? r.latch_unreadable : []).map(x => x && x.slot_id).filter(Boolean);
+  if (lu.length) bits.push(`⚠️ ${tr("读不到这些槽的止损锁定状态，它们留在排名里")}${col()}${esc(lu.join(" "))}`);
+  return bits;
+}
+
+/* ---- the earnings blackout (stock, opt-in earnings_blackout v1) --------------------------------------------------
+   From experiment.earnings_blackout (arena/earnings.py view()): the names flattened at today's 15:50 and kept out of
+   the sessions around a report, each with its report date; the calendar dates nobody can vouch for (they apply to
+   EVERY name); the last fetch; the point-in-time audit; and the two close records - a flatten the rule decided that
+   did not happen (red), and a listing that appeared only after the 15:50 decision (a calendar miss, NOT a failed
+   flatten). None on a board frozen without the key, which gets no block at all. */
+const EB_UNKNOWN_ZH = { never_fetched: "从未抓取", stale: "最近的答案已过时", fetch_failed: "抓取失败",
+                        unrecognised_response: "无法识别的回应", beyond_coverage_frontier: "超出日历覆盖范围" };
+const EB_RUN_ZH = { ok: "正常", partial: "部分失败", failed: "失败", in_progress_or_interrupted: "进行中或被中断" };
+const EB_TIME_ZH = { "time-pre-market": "盘前发布", "time-after-hours": "盘后发布" };
+const EB_SHOWN = 3;                  // close records kept in view per kind; the rest fold (earningsHtml)
+
+function ebNames(names) {
+  return (names || []).map(x => `${esc(x.symbol || "?")} ${esc(String(x.report_date || "").slice(5))}`
+    + (EB_TIME_ZH[x.time] ? par(tr(EB_TIME_ZH[x.time])) : "")).join(LANG === "en" ? ", " : "、");
+}
+
+function ebUnknown(list) {
+  return (list || []).map(u => `${esc(String(u.date || "").slice(5))}${par(esc(tr(EB_UNKNOWN_ZH[u.reason] || u.reason || UNK)))}`)
+    .join(LANG === "en" ? ", " : "、");
+}
+
+function earningsHtml(eb) {
+  if (!eb) return "";
+  const en = LANG === "en", L = [];
+  L.push(`<div title="${esc(en ? eb.disclosure_en : eb.disclosure_zh)}"><b>${tr("财报禁区")}</b> v${esc(eb.version)}${col()}`
+    + `${esc(en ? eb.rule_en : eb.rule_zh)}</div>`);
+  if (eb.available !== true) {
+    L.push(`<div class="miss">${esc((en ? eb.note_en : eb.note_zh) || tr(UNK))}</div>`);
+    return L.join("");
+  }
+  if (eb.note_zh || eb.note_en) L.push(`<div class="miss">${esc(en ? eb.note_en : eb.note_zh)}</div>`);
+  const side = (blk, label) => {
+    const nm = (blk && blk.names) || [], un = (blk && blk.unknown_dates) || [];
+    if (!nm.length && !un.length) return false;
+    L.push(`<div>${label}${col()}${nm.length ? ebNames(nm) : ""}`
+      + (un.length ? `${nm.length ? " · " : ""}<span class="miss">${tr("日历未知，对所有股票生效")}${par(ebUnknown(un))}</span>` : "") + `</div>`);
+    return true;
+  };
+  const t = eb.today, nx = eb.next;
+  let any = false;
+  if (t) {
+    any = side(t.open, en ? `today (${esc(t.trading_day)}) overnight and pre-market: no entry` : `今日（${esc(t.trading_day)}）夜盘与盘前不入场`) || any;
+    // a missing cleanup_start is said to be unknown, not printed as "from —"
+    const cs0 = (t.close || {}).cleanup_start_ny, cu = cs0 ? esc(hm12(cs0)) : null;
+    any = side(t.close, en ? (cu ? `today from ${cu}: flattened, no new entry` : `today before the close (time unknown): flattened, no new entry`)
+                           : (cu ? `今日 ${cu} 起清仓、不再入场` : `今日收盘前（时间未知）清仓、不再入场`)) || any;
+  }
+  if (nx) any = side(nx.open, en ? `next trading day (${esc(nx.trading_day)}) overnight and pre-market: no entry`
+                                  : `下一交易日（${esc(nx.trading_day)}）夜盘与盘前不入场`) || any;
+  if (!any) L.push(`<div>${tr("今日与下一交易日：日历没有列出这些股票的财报")}</div>`);
+  const lf = eb.last_fetch;
+  L.push(`<div>${tr("财报日历")}${col()}` + (lf
+    ? (en ? `last fetch ${whenWords(lf.finished_utc || lf.started_utc)} · ${tr(EB_RUN_ZH[lf.status] || lf.status || UNK)} · `
+            + `${isNum(lf.n_ok) ? lf.n_ok : "?"}/${isNum(lf.n_planned) ? lf.n_planned : "?"} dates`
+          : `最近一次抓取 ${whenWords(lf.finished_utc || lf.started_utc)} · ${tr(EB_RUN_ZH[lf.status] || lf.status || UNK)} · `
+            + `${isNum(lf.n_ok) ? lf.n_ok : "?"}/${isNum(lf.n_planned) ? lf.n_planned : "?"} 个日期`)
+      + (isNum(lf.n_failed) && lf.n_failed > 0 ? (en ? `, ${lf.n_failed} failed` : `，失败 ${lf.n_failed} 个`) : "")
+    : tr("还没有抓取过")) + `</div>`);
+  const ud = eb.unknown_dates || [];
+  if (ud.length) {
+    L.push(`<div class="miss">${tr("未来日期里日历未知的")}${col()}${ebUnknown(ud.slice(0, 8))}`
+      + `${ud.length > 8 ? ` ${tr("…共")} ${ud.length}` : ""}${par(tr("这些日期对所有股票按可能有财报处理"))}</div>`);
+  }
+  const ff = (eb.fetch_failures || [])[0];
+  if (ff) {
+    const at = isNum(ff.attempt) ? ff.attempt : "?";
+    L.push(`<div class="miss">${en ? `the daily re-fetch failed (attempt ${at})` : `日历的每日重新抓取失败（第 ${at} 次）`}`
+      + (ff.retry_at_ny ? (en ? `, retrying ${esc(mdhm(ff.retry_at_ny))} ET` : `，${esc(mdhm(ff.retry_at_ny))} ET 重试`) : "") + `</div>`);
+  }
+  const pos = p => `${esc(p.symbol || "?")} ×${esc(p.qty)}`;
+  // The two close records, newest first. The server sends up to 20 of each with no age limit, and this box is open on a
+  // phone without a tap - so the newest EB_SHOWN of each stay in view and the rest fold under a count
+  const evList = (list, line) => {
+    const xs = (list || []).map(line);
+    if (xs.length <= EB_SHOWN) return xs.join("");
+    return xs.slice(0, EB_SHOWN).join("") + `<details class="ebmore"><summary>${en ? `${xs.length - EB_SHOWN} earlier` : `更早的 ${xs.length - EB_SHOWN} 条`}</summary>`
+      + xs.slice(EB_SHOWN).join("") + `</details>`;
+  };
+  L.push(evList(eb.carried_across_report, ev => `<div class="bad">⚠️ ${tr("应在财报前清仓但没有清掉")}${col()}${esc(ev.slot_id || "?")} `
+      + `${(ev.positions || []).map(p => pos(p) + (p.code ? par(esc(blockWord(p.code))) : "")).join(en ? ", " : "、")} · ${esc(ev.trading_day || "")}</div>`));
+  L.push(evList(eb.listed_after_cleanup, ev => `<div class="miss">${tr("日历在 15:50 决定之后才列出（时点漏报，不是清仓失败）")}${col()}${esc(ev.slot_id || "?")} `
+      + `${(ev.positions || []).map(pos).join(en ? ", " : "、")} · ${esc(ev.trading_day || "")}</div>`));
+  const pa = eb.pit_audit;
+  if (pa && isNum(pa.audited) && pa.audited > 0) {
+    L.push(`<div>${en ? `point-in-time check: of ${pa.audited} reports confirmed after the fact, ${pa.listed_in_time} were listed before D-1's 15:50 decision and ${pa.n_missed} were missed`
+                      : `时点核对：事后确认的 ${pa.audited} 个财报里，${pa.listed_in_time} 个在 D-1 的 15:50 决定之前已列出，漏报 ${pa.n_missed} 个`}`
+      + (isNum(pa.n_missed_uncovered) && pa.n_missed_uncovered > 0
+        ? (en ? ` (${pa.n_missed_uncovered} beyond the calendar's coverage then)` : `（其中 ${pa.n_missed_uncovered} 个当时超出日历覆盖范围）`) : "") + `</div>`);
+  }
+  return L.join("");
+}
+
+/* ---- the fee-tier shadow (crypto, display only) ------------------------------------------------------------------
+   The same fills with the fees re-priced at the Kraken tier each slot's own paper volume reaches (crypto/web.py). The
+   official figures - the card's equity and P&L, the ranking, evolution, the breakers - stay on the frozen $0+ tier,
+   and this never feeds any of them: a volume discount rewards turnover. So it is drawn SECONDARY (the .fsline rule)
+   and says so. Live re-priced P&L is live_pnl_cents + fee_shadow.saving_cents, exactly crypto.fee_shadow.live_formula,
+   and unknown whenever either term is: a missing live price is never re-priced from a zero. */
+function fsLive(a) {
+  const x = a || {}, fs = x.fee_shadow || {};
+  return (isNum(x.live_pnl_cents) && isNum(fs.saving_cents)) ? x.live_pnl_cents + fs.saving_cents : null;
+}
+
+function fsSigned(v) { return usd(v, { sign: isNum(v) && v > 0 }); }
+
+function feeShadowLine(a, fsb) {
+  const fs = (a || {}).fee_shadow;
+  if (!fs || !fsb || fsb.applicable !== true) return "";
+  const en = LANG === "en", head = `${tr("按真实费率档重算")}${col()}`;
+  if (fs.status !== "known") return head + tr(UNK) + (fs.reason ? par(esc(fs.reason)) : "");
+  const cur = fs.current_tier || {}, c = fs.as_of_close;
+  const tier = `${esc(cur.tier || tr(UNK))}${isNum(cur.taker_bps) ? par(`${cur.taker_bps} bp`) : ""}`;
+  return head + (en
+    ? `fees ${usd(fs.recorded_fee_cents)} → ${usd(fs.shadow_fee_cents)}, saving ${usd(fs.saving_cents)} · now ${tier} · `
+      + `re-priced P&L ${fsSigned(fsLive(a))} live` + (c ? ` · ${fsSigned(c.repriced_pnl_cents)} at the ${esc(c.scoring_day)} close` : "")
+    : `费用 ${usd(fs.recorded_fee_cents)} → ${usd(fs.shadow_fee_cents)}，省 ${usd(fs.saving_cents)} · 当前 ${tier} · `
+      + `重算盈亏 实时 ${fsSigned(fsLive(a))}` + (c ? ` · ${esc(c.scoring_day)} 收盘 ${fsSigned(c.repriced_pnl_cents)}` : ""));
+}
+
+function feeShadowBoard(fsb) {
+  if (!fsb || fsb.applicable === false) return "";          // the recorded fees are not the $0+ row: nothing to re-price
+  const en = LANG === "en";
+  if (fsb.applicable !== true) {
+    return `<div><b>${tr("按真实费率档重算（仅显示）")}</b>${col()}${tr(UNK)}`
+      + `${fsb.not_applicable_reason ? par(esc(fsb.not_applicable_reason)) : ""}</div>`;
+  }
+  const sy = fsb.system || {}, sc = fsb.schedule || {};
+  const tot = en
+    ? `All ten slots: fees ${usd(sy.recorded_fee_cents)} → ${usd(sy.shadow_fee_cents)}, saving ${usd(sy.saving_cents)}`
+      + (sy.as_of_close_day ? `; at the ${esc(sy.as_of_close_day)} close the official P&L ${fsSigned(sy.official_pnl_cents)} re-prices to ${fsSigned(sy.repriced_pnl_cents)}` : "")
+    : `十槽合计：费用 ${usd(sy.recorded_fee_cents)} → ${usd(sy.shadow_fee_cents)}，省 ${usd(sy.saving_cents)}`
+      + (sy.as_of_close_day ? `；截至 ${esc(sy.as_of_close_day)} 收盘，官方盈亏 ${fsSigned(sy.official_pnl_cents)}，重算后 ${fsSigned(sy.repriced_pnl_cents)}` : "");
+  const tiers = (sc.tiers || []).map(t => `${esc(t.tier)} $${Number(t.min_volume_usd || 0).toLocaleString("en-US")}+ ${esc(t.taker_bps)} bp`).join(" · ");
+  const url = String(sc.source || "");
+  const src = /^https:\/\/[^\s"<>]+$/.test(url)
+    ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url.replace(/^https:\/\//, ""))}</a>` : esc(url || tr(UNK));
+  const stop = en ? ". " : "。";
+  return `<div><b>${tr("按真实费率档重算（仅显示）")}</b>${col()}${esc(en ? fsb.label_en : fsb.label_zh)}${stop}${tot}${stop}</div>`
+    + `<div>${esc(en ? fsb.guard_en : fsb.guard_zh)}</div>`
+    + `<details><summary>${tr("规则、边界与费率表")}</summary>`
+    + `<div>${esc(en ? fsb.rule_en : fsb.rule_zh)}</div><div>${esc(en ? fsb.edges_en : fsb.edges_zh)}</div>`
+    + `<div>${esc(en ? fsb.footnote_en : fsb.footnote_zh)}</div>`
+    + `<div>${tr("费率表")} ${esc(sc.table || "")} · ${esc(sc.schedule_version || "")}${col()}${tiers || tr(UNK)}</div>`
+    + `<div>${tr("来源")} ${src} · ${tr("核对于")} ${esc(String(sc.checked_at || "").slice(0, 10) || tr(UNK))}</div>`
+    + ((sc.disclosures || []).length ? `<div>${tr("费率表核对记录（原文）")}${col()}${(sc.disclosures || []).map(x => esc(x)).join(" ")}</div>` : "")
+    + `</details>`;
+}
+
+/* the drawer's summary box: the slot's recorded and re-priced fees, its tier now, and both P&L figures */
+function feeShadowSheetBox(a, fsb, dfs) {
+  const fs = (a || {}).fee_shadow;
+  if (!fs || !fsb || fsb.applicable !== true) return "";
+  const en = LANG === "en";
+  const row = (k, v) => `<dt>${esc(k)}</dt><dd>${v}</dd>`;
+  const head = `<h3>${tr("按真实费率档重算（仅显示）")}</h3>`;
+  if (fs.status !== "known") {
+    return `<div class="box">${head}<div class="instr">${tr(UNK)}${fs.reason ? par(esc(fs.reason)) : ""}</div></div>`;
+  }
+  const cur = fs.current_tier || {}, c = fs.as_of_close;
+  const bps = (fs.recorded_fee_bps_distinct || []).length ? par(`${fs.recorded_fee_bps_distinct.join("/")} bp`) : "";
+  const next = cur.next_tier
+    ? ` · ${en ? `next ${esc(cur.next_tier)} (${esc(cur.next_taker_bps)} bp) from ${usd(cur.next_at_volume_cents, { cents: false })}`
+               : `下一档 ${esc(cur.next_tier)}（${esc(cur.next_taker_bps)} bp）从 ${usd(cur.next_at_volume_cents, { cents: false })} 起`}` : "";
+  const perFill = dfs && dfs.status !== "known"
+    ? row(tr("逐笔费率档"), `${tr(UNK)}${dfs.reason ? par(esc(dfs.reason)) : ""}`) : "";
+  return `<div class="box">${head}<dl class="kv">`
+    + row(tr("按冻结 $0+ 档记录的费用"), `<span class="num">${usd(fs.recorded_fee_cents)}</span>${bps}`)
+    + row(tr("按真实费率档重算的费用"), `<span class="num">${usd(fs.shadow_fee_cents)}</span>`)
+    + row(tr("节省"), `<span class="num">${usd(fs.saving_cents)}</span>`)
+    + row(tr("当前费率档"), `${esc(cur.tier || tr(UNK))}${isNum(cur.taker_bps) ? ` · ${cur.taker_bps} bp` : ""} · `
+      + `${tr("30 天成交额")} ${usd(cur.volume_30d_cents)}${next}`)
+    + row(tr("各档成交"), (fs.by_tier || []).map(b => `${esc(b.tier)} ${esc(b.taker_bps)} bp × ${esc(b.n)}`).join(" · ") || "—")
+    + row(tr("收盘盈亏（官方 → 重算）"), c ? `<span class="num">${fsSigned(c.official_pnl_cents)} → ${fsSigned(c.repriced_pnl_cents)}</span> `
+      + `<span class="muted">${esc(c.scoring_day)}${c.partial ? " · " + tr("当日不完整") : ""}</span>` : tr("还没有冻结的收盘"))
+    + row(tr("实时盈亏（官方 → 重算）"), `<span class="num">${fsSigned((a || {}).live_pnl_cents)} → ${fsSigned(fsLive(a))}</span>`)
+    + perFill
+    + `</dl><div class="instr" style="margin-top:9px;color:var(--ink3)">${esc(en ? fsb.footnote_en : fsb.footnote_zh)} `
+    + `${esc(en ? fsb.guard_en : fsb.guard_zh)}</div></div>`;
+}
+
+/* one drawer fill's re-priced tier, paired by fill_id with the server's walk (never by position: the drawer lists by
+   confirmed_utc and the walk by observation_utc). An id the walk does not hold is unknown, never a made-up tier. */
+function feeShadowFillCell(f, byId) {
+  const x = byId && byId.get(String(f.fill_id));
+  // .icell: on a phone this cell wraps like the intent cell instead of pushing its row-card wider than the drawer
+  if (!x) return `<td class="num muted icell" data-k="重算费率">${tr(UNK)}</td>`;
+  // a legacy fill recorded without fee_bps has recorded_fee_bps None: unknown, never "null bp"
+  const bp = v => isNum(v) ? `${v} bp` : tr(UNK);
+  const t = LANG === "en"
+    ? `recorded ${usd(x.recorded_fee_cents)} at ${bp(x.recorded_fee_bps)}; 30-day volume before it ${usd(x.volume_30d_before_cents)}`
+    : `记录 ${usd(x.recorded_fee_cents)}（${bp(x.recorded_fee_bps)}）；此前 30 天成交额 ${usd(x.volume_30d_before_cents)}`;
+  return `<td class="num muted icell" data-k="重算费率" title="${esc(t)}">${esc(x.tier || tr(UNK))} · ${esc(bp(x.taker_bps))} · ${usd(x.shadow_fee_cents)}</td>`;
+}
+
+/* ---- the re-entry gate after a take-profit (crypto, opt-in risk.reentry_after_take_profit_hours) -------------------
+   A BUY refused because the slot took profit on the same coin within the frozen window. The refusal carries the exit
+   it answers to, so every label says when the take-profit was and when the gate lifts (UTC, as the crypto board
+   stamps its decisions). A board frozen without the key never writes one. */
+function reentryWhen(tp) {
+  const x = tp || {};
+  return LANG === "en"
+    ? ` (take-profit ${whenWords(x.exit_utc)}${x.protective ? " between rounds" : ""}, lifts ${whenWords(x.until_utc)})`
+    : `（${whenWords(x.exit_utc)} ${x.protective ? "盘中" : ""}止盈，${whenWords(x.until_utc)} 解除）`;
+}
+
+function reentryCardLine(a) {
+  const rr = (a || {}).reentry_refusals_today;
+  if (!rr || !isNum(rr.n) || rr.n <= 0) return "";
+  const en = LANG === "en", c = (rr.candidates || []).map(x => esc(x)).join(" ");
+  const only = isNum(rr.n_only_reason) && rr.n_only_reason !== rr.n
+    ? (en ? `, ${rr.n_only_reason} of them by this rule alone` : `，其中 ${rr.n_only_reason} 笔只因这条规则`) : "";
+  return en ? `the re-entry gate after a take-profit refused ${rr.n} ${rr.n === 1 ? "buy" : "buys"} today${c ? ` (${c})` : ""}${only}`
+            : `今日止盈后不回补拦下 ${rr.n} 笔买单${c ? `（${c}）` : ""}${only}`;
+}
+
+function reentryDaysBox(list, hours) {
+  if (!(isNum(hours) && hours > 0)) return "";
+  const en = LANG === "en";
+  const head = `<h3>${tr("止盈后不回补（逐日）")}</h3>`;
+  const rule = `<div class="muted" style="margin-bottom:6px">${en ? `no buy-back of a coin within ${hours}h of taking profit on it` : `止盈卖出后 ${hours} 小时内不再买回同一个币`}</div>`;
+  if (!Array.isArray(list)) return `<div class="box">${head}${rule}<div class="instr">${tr("读不到：未知，不代表没有拒绝")}</div></div>`;
+  if (!list.length) return `<div class="box">${head}${rule}<div class="instr">${tr("这条规则还没有拒绝过买单")}</div></div>`;
+  return `<div class="box">${head}${rule}` + list.slice(0, 14).map(d => `<div class="num">${esc(d.scoring_day)}${col()}`
+    + (en ? `${d.n} refused${isNum(d.n_only_reason) && d.n_only_reason !== d.n ? ` (${d.n_only_reason} by this rule alone)` : ""}`
+          : `拒绝 ${d.n} 笔${isNum(d.n_only_reason) && d.n_only_reason !== d.n ? `（其中 ${d.n_only_reason} 笔只因这条规则）` : ""}`)
+    + ` · ${(d.candidates || []).map(x => esc(x)).join(" ")}</div>`).join("") + `</div>`;
+}
+
+/* The drawer's 阻断原因 cell, for both boards. A stock row's codes go through blockWord, and a CLEANUP the earnings
+   blackout decided says so; a crypto row holds one object per refused order, which this cell used to join as
+   "[object Object]" - it is its coin, side and reasons, with the re-entry gate's exit and lift times. The raw code of
+   every item stays in its hover. */
+function decisionWhy(x) {
+  const out = [];
+  const eb = x && x.earnings_blackout;
+  if (eb && eb.code) out.push({ w: `${tr("财报禁区清仓")}${col()}${blockWord(eb.code)}`, raw: eb.code });
+  ((x && x.blocked_by) || []).forEach(b => {
+    if (b && typeof b === "object") {
+      const why = (b.blocked_by || []).map(c => tr(REASON_WORDS[String(c).split(":")[0]] || c)).join(" / ");
+      out.push({ w: `${b.candidate || "?"}${b.side ? " " + b.side : ""}${col()}${why || tr(UNK)}`
+                  + (b.reentry_after_take_profit ? reentryWhen(b.reentry_after_take_profit) : ""),
+                 raw: (b.blocked_by || []).join(" ") });
+    } else {
+      out.push({ w: STATE.crypto ? reasonWord(b) : blockWord(b), raw: String(b) });
+    }
+  });
+  // the separator rides inside each item: on a phone the cell is a wrapping flex row, and a bare "；" between two
+  // spans became an item of its own on a line of its own
+  const sep = LANG === "en" ? ";" : "；";
+  return out.map((o, i) => `<span title="${esc(o.raw)}">${esc(o.w)}${i < out.length - 1 ? sep : ""}</span>`).join(" ");
+}
+
+/* ---- where the frozen lists came from --------------------------------------------------------------------------- */
+function universeSourceWords(us) {
+  if (!us || typeof us !== "object") return "";
+  const en = LANG === "en";
+  const rv = isNum(us.rule_version) ? `v${us.rule_version}` : tr(UNK);
+  const gen = us.generated_utc ? whenWords(us.generated_utc) : tr(UNK);
+  return en ? `Source: a mechanical screen, rule ${rv}, reference session ${esc(us.reference_session || tr(UNK))}, run ${gen}`
+              + (isNum(us.n_user_requests) && us.n_user_requests > 0 ? `; ${us.n_user_requests} named by the user` : "") + "."
+            : `名单来源：机械筛选，规则 ${rv}，参考交易日 ${esc(us.reference_session || tr(UNK))}，运行于 ${gen}`
+              + (isNum(us.n_user_requests) && us.n_user_requests > 0 ? `；其中 ${us.n_user_requests} 只是用户点名加入的` : "") + "。";
+}
+
+/* the crypto candidates file, said only for a mechanical screen: the v1 list the running board uses reads as before */
+function candidatesSourceWords(cs) {
+  if (!cs || cs.kind !== "mechanical_screen") return "";
+  const en = LANG === "en";
+  const win = (cs.window_first_day && cs.window_last_day)
+    ? `${esc(cs.window_first_day)} – ${esc(cs.window_last_day)}` : tr(UNK);
+  const nd = isNum(cs.window_days) ? cs.window_days : "?";
+  const clear = isNum(cs.n_listed_clear_pool_turnover_gate) ? cs.n_listed_clear_pool_turnover_gate : "?";
+  // the counts the file itself carries (crypto/web.candidates_source), never a literal 40: the rule's seats are what
+  // the --include names left, and those names are said apart - they took a seat whatever they scored
+  const nl = isNum(cs.n_listed) ? cs.n_listed : isNum(cs.rule_n) ? cs.rule_n : "?";
+  const ns = isNum(cs.n_screen_seats) ? cs.n_screen_seats : isNum(cs.rule_n) ? cs.rule_n : "?";
+  const ur = Array.isArray(cs.user_requests) ? cs.user_requests.filter(Boolean) : [];
+  const urTxt = ur.length ? (en ? `, plus ${ur.length} named by the user (${esc(ur.join(" "))}), which take a seat whatever they score`
+                                : `，另有 ${ur.length} 个是用户点名的（${esc(ur.join(" "))}），不论排名都占一个席位`) : "";
+  return en ? `The ${nl} candidates are a mechanical screen, <b>${esc(cs.version || "")}</b> (rule ${esc(cs.rule_id || tr(UNK))}): the top ${ns} by median daily turnover over ${nd} complete UTC days, ${win}${urTxt}. ${clear} of them cleared the pool's turnover gate when it ran - the list is frozen, and the pool's daily gates still decide what is tradable.`
+            : `这 ${nl} 个候选来自机械筛选 <b>${esc(cs.version || "")}</b>（规则 ${esc(cs.rule_id || tr(UNK))}）：按 ${win} 共 ${nd} 个完整 UTC 日的日成交额中位数取前 ${ns} 名${urTxt}；筛选时其中 ${clear} 个达到币池的成交额门槛。名单冻结不变，每天能不能交易仍由币池的门槛决定。`;
+}
+
 function renderAgents(s) {
   const wrap = $("agents");
   // a slot that recovered must stop being reported as failed
@@ -3210,15 +3915,23 @@ function renderAgents(s) {
   // Only a LIVE RANKING can project it: where the server declined to rank (unknown day return), a fallback order
   // by cumulative return is explicitly not the competition ranking, and drawing a band on it would invent one.
   const exr = s.experiment || {};
-  const nRep = isNum(exr.replace_bottom) ? exr.replace_bottom : 0;
-  const byRank = byIndex.filter(a => isNum(a.live_rank)).sort((a, b) => a.live_rank - b.live_rank);
+  const nCfg = isNum(exr.replace_bottom) ? exr.replace_bottom : 0;
+  // selection.latched_slots = finished_v1 (2026-09-24): a finished slot is neither parent nor victim, so it is never in
+  // the band, and the quota is min(replace_bottom, floor(live / 2)) with a skip only below 2 live slots
+  // (evolution.run_round). On a board frozen without the key nothing is finished, nRep is replace_bottom, the test is
+  // 2 * nRep ranked slots, and every line below reads exactly as it always did.
+  const latched = exr.latched_slots === "finished_v1";
+  const fin = new Set(latched ? byIndex.filter(a => finishedOf(a, s)).map(a => a.slot_id) : []);
+  const byRank = byIndex.filter(a => isNum(a.live_rank) && !fin.has(a.slot_id)).sort((a, b) => a.live_rank - b.live_rank);
+  const nRep = latched ? Math.min(nCfg, Math.floor(byRank.length / 2)) : nCfg;
+  const enough = latched ? byRank.length >= 2 : byRank.length >= 2 * nRep;
   const sameMetric = (exr.metric || "daily_net_equity_return") === "daily_net_equity_return";
   // every reason run_round writes outcome=skipped and moves nobody
   const inert = [];
   if ((s.controls || {}).pause_evolution) inert.push(tr("进化已暂停"));
-  if (byRank.length < 2 * nRep) inert.push(tr("可排名的 Agent 不足"));
+  if (!enough) inert.push(tr("可排名的 Agent 不足"));
   if (byIndex.some(a => a.live_equity_status && a.live_equity_status !== "known")) inert.push(tr("有 Agent 估值未知"));
-  const riskIds = new Set(nRep > 0 && sameMetric && byRank.length >= 2 * nRep
+  const riskIds = new Set(nRep > 0 && sameMetric && enough
     ? byRank.slice(-nRep).map(a => a.slot_id) : []);
   if (btn) {
     btn.textContent = ranked ? tr("按名次") : tr("按槽位");
@@ -3249,7 +3962,7 @@ function renderAgents(s) {
         // varies from card to card, so 原版 / 初代 / 末位·待替换 landed on a different line and a different
         // side on every card and the eye could not scan a column of them. Row 1 carries the chips at constant
         // positions; row 2 carries the only variable-length thing, where its wrapping moves nothing.
-        n.innerHTML = `<div class="ahead"><div class="ahtop"><span class="rank"></span><span class="slotid"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="riskchip" hidden></span><span class="tag"></span></div><span class="vchip"></span></div>
+        n.innerHTML = `<div class="ahead"><div class="ahtop"><span class="rank"></span><span class="slotid"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="finchip" hidden></span><span class="riskchip" hidden></span><span class="tag"></span></div><span class="vchip"></span></div>
           <div class="aeqrow"><div class="aeq num"></div><div class="acash" hidden></div></div><div class="arow"></div><svg class="spark"></svg><div class="posbox"></div><div class="warnbox"></div>`;
         n.addEventListener("click", () => openSheet(a.slot_id));
         n.setAttribute("role", "button");
@@ -3266,6 +3979,18 @@ function renderAgents(s) {
       const atRisk = riskIds.has(a.slot_id);
       n.classList.toggle("atrisk", atRisk);
       n.classList.toggle("inert", atRisk && inert.length > 0);
+      // a finished record (finished_v1): the chip beside the rank, the record in its hover and on the card below
+      const fz = latched ? finishedOf(a, s) : null;
+      n.classList.toggle("finished", !!fz);
+      let fc = n.querySelector(".finchip");
+      if (!fc) {                                             // a card built before this chip existed
+        fc = el("span", "finchip");
+        const top = n.querySelector(".ahtop");
+        if (top) top.insertBefore(fc, n.querySelector(".riskchip"));
+      }
+      fc.hidden = !fz;
+      fc.textContent = fz ? finishedChipText(fz) : "";
+      fc.title = fz ? finishedWords(fz) : "";
       let rc = n.querySelector(".riskchip");
       if (!rc) {                                             // a card built before this chip existed
         rc = el("span", "riskchip");
@@ -3292,7 +4017,10 @@ function renderAgents(s) {
       rk.textContent = isNum(a.live_rank) ? a.live_rank : "–";
       // gild only a rank that performance actually earned; a tie-break rank stays neutral and says so
       rk.className = "rank" + (a.live_rank >= 1 && a.live_rank <= 3 && !a.live_rank_tied ? " r" + a.live_rank : "");
-      rk.title = tr(a.live_rank_tied ? "并列：当日收益相同，名次由预先固定的 tie-break 规则决定，不代表优劣"
+      // a finished slot keeps its day-return badge (its positions still move), but the hover says it is not in the
+      // evolution ranking - the chip beside it says "finished", and a bare rank read as "ranked"
+      rk.title = tr(fz ? "当日净值收益率名次，仅作对照：这个槽已结束，不参加进化排名"
+        : a.live_rank_tied ? "并列：当日收益相同，名次由预先固定的 tie-break 规则决定，不代表优劣"
         : "当日净值收益率名次（实时徽章始终按当日口径排序）");
       n.querySelector(".slotid").textContent = a.slot_id;
       // Personality in words, with the A-code in front of it: that code is the only cross-reference between a card
@@ -3394,8 +4122,18 @@ function renderAgents(s) {
         dec = st === "ok" ? `${when} · ${tr("评估")} ${d.n_active != null ? d.n_active : "?"} · ${tr("通过")} ${d.n_passed != null ? d.n_passed : "?"} · ${tr("下单")} ${sub || "—"}`
           : st === "hold" ? `${when} · ${tr("持有不动")}${why ? " · " + why : ""}`
           : `${when} · ${tr(DECISION_STATUS_ZH[st] || st)}${d.reason ? " · " + esc(String(d.reason).slice(0, 80)) : ""}`;
-        if ((d.blocked || []).length) dec += ` · ${tr("被风控拦下")} ${d.blocked.map(b => b.candidate + "(" + (b.blocked_by || []).map(x => tr(REASON_WORDS[String(x).split(":")[0]] || x)).join("/") + ")").join(", ")}`;
+        // a buy the re-entry gate refused says which take-profit it answers to and when the gate lifts; a board frozen
+        // without risk.reentry_after_take_profit_hours never records the key, so its line is unchanged
+        if ((d.blocked || []).length) dec += ` · ${tr("被风控拦下")} ${d.blocked.map(b => b.candidate + "(" + (b.blocked_by || []).map(x => tr(REASON_WORDS[String(x).split(":")[0]] || x)).join("/") + ")"
+          + (b.reentry_after_take_profit ? reentryWhen(b.reentry_after_take_profit) : "")).join(", ")}`;
       }
+      // 2026-09-24: why no trade (stock), the re-entry gate's refusals today, the fee-tier shadow (crypto) and a
+      // finished record - each empty unless the server sent it, so an older payload renders the card as before
+      const fzLine = fz ? finishedWords(fz) : "";
+      const reLine = STATE.crypto ? reentryCardLine(a) : "";
+      const btLine = STATE.crypto ? "" : blockTallyLine(a.block_tally);
+      const fsb = (s.crypto || {}).fee_shadow;
+      const fsLine = STATE.crypto ? feeShadowLine(a, fsb) : "";
       // Valued on a stale print: the number is right (the frozen rule counts a stale mark as known), the card just
       // has to say it is not 实时 in the sense the word promises. Orange, not the breaker red: it is a qualifier.
       const staleLine = a.live_price_status === "stale"
@@ -3404,7 +4142,11 @@ function renderAgents(s) {
         : "";
       wb.innerHTML = (warns.length ? `<div class="warnrow"><span>●</span><span>${esc(warns.join(" · "))}</span></div>` : "")
         + (staleLine ? `<div class="warnrow" style="color:var(--orange-ink)"><span>◦</span><span>${esc(staleLine)}</span></div>` : "")
-        + (dec ? `<div class="warnrow" style="color:var(--ink3)"><span>◦</span><span>${dec}</span></div>` : "");
+        + (dec ? `<div class="warnrow" style="color:var(--ink3)"><span>◦</span><span>${dec}</span></div>` : "")
+        + (fzLine ? `<div class="warnrow" style="color:var(--ink2)"><span>◦</span><span>${esc(fzLine)}</span></div>` : "")
+        + (reLine ? `<div class="warnrow" style="color:var(--orange-ink)"><span>◦</span><span>${reLine}</span></div>` : "")
+        + (btLine ? `<div class="btline" title="${esc(tr("一次检查 = 排序入场路径看过的一个（K 线，股票），或被槽位级跳过拦下的一个。拦下最多的是各策略自己的拒绝原因和槽位级原因，不含“没有策略给出信号”这个总括；逐时段、逐策略的明细在 Agent 详情里。"))}">${btLine}</div>` : "")
+        + (fsLine ? `<div class="fsline" title="${esc(LANG === "en" ? (fsb.guard_en || "") : (fsb.guard_zh || ""))}">${fsLine}</div>` : "");
     } catch (e) {
       RENDER_FAILS.set("agents:" + (a && a.slot_id || i), (e && e.message) || String(e));
       console.error("[render:agent]", a && a.slot_id, e);
@@ -3424,6 +4166,15 @@ function renderAgents(s) {
     lg.textContent = LANG === "en"
       ? `Each card: rank · capital slot (${sr}, permanent) · current strategy (${cr ? `${cr} is its code, then` : "its code, then"} its personality) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.`
       : `每张卡：名次 · 资金槽（${sr}，永久）· 当前策略（${cr ? `${cr} 是策略编号` : "策略编号"}，后面是策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。`;
+  }
+  /* The fee-tier shadow's board-level explanation, under the cards and after them: what it is, the ten-slot totals,
+     that it never feeds ranking, and (folded) the rule, its two edges, the footnote and the schedule with its source.
+     Rewritten only when its text changes, so a reader's open <details> is not closed by the next frame. */
+  const fsn = $("feeshadow");
+  if (fsn) {
+    const h = STATE.crypto ? feeShadowBoard((s.crypto || {}).fee_shadow) : "";
+    if (fsn.dataset.sig !== h) { fsn.dataset.sig = h; fsn.innerHTML = h; }
+    fsn.hidden = !h;
   }
   const ex = s.experiment || {};
   // say it plainly when the configured competition metric is not what the badges are showing
@@ -3648,17 +4399,41 @@ function evolutionDriftLine(s) {
   return shown.join(" · ") + (rows.length > 3 ? ` ${tr("等")} ${rows.length} ${tr("个参数")}` : "");
 }
 
+/* USER_DAILY_3's purpose line, composed from the frozen rule (9421e74). The running crypto board (2 a day, each taken
+   over by its own tuned version) reads exactly as that commit wrote it. What it could not say (2026-09-24):
+   - replace_bottom 1: "the bottom 1 are replaced by versions of themselves" - one agent, in the singular;
+   - selection.latched_slots = finished_v1, the new crypto design: a round replaces min(K, floor(live / 2)), so K is a
+     ceiling ("at most"), and the window it judges on is part of what the line means - one a day on a common 7-day
+     window is a different experiment from two a day on 3 days. Said only under that key, so every board frozen
+     without it keeps its sentence word for word. */
+function purposeWords(s) {
+  const ex = (s || {}).experiment || {}, R = evoRule(s);
+  const k = ex.replace_bottom, own = ex.breeding === "within_slot", one = k === 1, en = LANG === "en";
+  const tail = en ? " Does mutual elimination grow anything better?" : "看互相淘汰能不能长出更好的策略。";
+  if (!R.latched) {
+    if (!one) return en ? `The bottom ${k} are replaced daily by ${own ? "tweaked versions of themselves" : `tweaked offspring of the top ${k}`}.${tail}`
+                        : `每天替换末 ${k} 名，由${own ? "它们自己的微调版本" : `前 ${k} 名的微调后代`}接替。${tail}`;
+    return en ? `The bottom agent is replaced daily by ${own ? "a tweaked version of itself" : "a tweaked offspring of the top agent"}.${tail}`
+              : `每天替换末 1 名，由${own ? "它自己的微调版本" : "第 1 名的微调后代"}接替。${tail}`;
+  }
+  const win = R.metric === "rolling_net_equity_return" && isNum(R.win);
+  const by = own
+    ? (one ? (en ? "a tweaked version of itself" : "它自己的微调版本") : (en ? "tweaked versions of themselves" : "它们自己的微调版本"))
+    : (one ? (en ? "a tweaked offspring of the top agent" : "第 1 名的微调后代") : (en ? `tweaked offspring of the top ${k}` : `前 ${k} 名的微调后代`));
+  return en
+    ? `Each day${win ? `, judged on the last ${evoDays(R.win, R)},` : ""} at most the bottom ${one ? "agent is" : `${k} are`} replaced by ${by}; `
+      + `an agent whose loss stop latched is a finished record and is no longer ranked.${tail}`
+    : `每天${win ? `按最近 ${evoDays(R.win, R)}的净收益` : ""}最多替换末 ${k} 名，由${by}接替；止损锁定的 Agent 记为已结束，不再参评。${tail}`;
+}
+
 function experimentBrief(s) {
   const ex = s.experiment || {}, sys = s.system || {}, rc = s.rounds_count || {}, v = s.versions || {};
   const out = [];
   // USER_DAILY_3's fixed sentence ("the bottom three, offspring of the top three") was only ever true of the first
   // crypto boards: kraken-20260923 replaces 2 a day, each by its own tuned version. Composed from the frozen rule
   // when the block carries it; the fixed sentence stays for a server that does not send the rule.
-  const k = ex.replace_bottom, own = ex.breeding === "within_slot";
-  const composed = (ex.mode === "USER_DAILY_3" && isNum(k) && ex.breeding) ? (LANG === "en"
-      ? `The bottom ${k} are replaced daily by ${own ? "tweaked versions of themselves" : `tweaked offspring of the top ${k}`}. Does mutual elimination grow anything better?`
-      : `每天替换末 ${k} 名，由${own ? "它们自己的微调版本" : `前 ${k} 名的微调后代`}接替。看互相淘汰能不能长出更好的策略。`)
-    : null;
+  const k = ex.replace_bottom;
+  const composed = (ex.mode === "USER_DAILY_3" && isNum(k) && ex.breeding) ? purposeWords(s) : null;
   const purpose = MODE_PURPOSE[ex.mode];
   if (composed) out.push({ k: "目的", v: composed, tip: composed });
   else if (purpose) out.push({ k: "目的", v: tr(purpose), tip: tr(MODE_WHY[ex.mode] || purpose) });
@@ -3707,6 +4482,13 @@ function experimentBrief(s) {
                  ? tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票在盘前、常规盘、盘后和夜盘都会评估入场与出场：三个策略的规则不变，只是开盘区间、VWAP 和涨跌幅从所在时段的开盘算起。周一至周四持仓可跨收盘持有；周五、节假日前和最后一天收盘前平仓，之后当天不再开新仓。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%，所以非常规时段的仓位小、也常成交不了。") + otip
                  : tr("Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。") });
   }
+  // the opt-in earnings blackout's rule, beside the trading hours it partly overrides (2026-09-24); the names it keeps
+  // out today and the calendar behind it are in the tradable list's card. Nothing on a board frozen without the key
+  const ebx = ex.earnings_blackout;
+  if (!STATE.crypto && ebx) {
+    out.push({ k: tr("财报禁区"), v: esc(LANG === "en" ? (ebx.rule_en || "") : (ebx.rule_zh || "")),
+               tip: (LANG === "en" ? ebx.disclosure_en : ebx.disclosure_zh) || "" });
+  }
   // How THIS board evolves, from its own frozen selection block - both boards, never one board's rule printed on
   // the other. The crypto board evolves every UTC day and the stock board once a week; each states its own.
   if (ex.round_cadence) {
@@ -3721,10 +4503,14 @@ function experimentBrief(s) {
     } else if (R.metric === "cumulative_net_equity_return") {
       bits.push(tr("按累计净收益比较"));
     }
-    if (R.breeding === "within_slot") bits.push(tr("末位由自己的微调版本接替"));
-    else if (R.breeding === "competitive") bits.push(LANG === "en"
+    if (R.breeding === "within_slot") bits.push(tr(R.rep === 1 ? "末位由它自己的微调版本接替" : "末位由自己的微调版本接替"));
+    else if (R.breeding === "competitive") bits.push(R.rep === 1 ? tr("第 1 名的后代顶替最后 1 名") : LANG === "en"
       ? `offspring of the top ${isNum(R.rep) ? R.rep : "?"} replace the bottom ${isNum(R.rep) ? R.rep : "?"}`
       : `前 ${isNum(R.rep) ? R.rep : "?"} 名的后代顶替后 ${isNum(R.rep) ? R.rep : "?"} 名`);
+    // finished_v1: the configured quota is a ceiling, and a latched slot is out of the comparison for good
+    if (R.latched) bits.push(LANG === "en"
+      ? `at most ${isNum(R.rep) ? R.rep : "?"} replaced per round · latched agents are finished records`
+      : `每轮最多换 ${isNum(R.rep) ? R.rep : "?"} 个 · 止损锁定的记为已结束`);
     const tip = [evoRuleWords(s, true)];
     if (R.cadence === "weekly") tip.push(tr("只在每周最后一个交易日进行一轮进化，其余交易日只记录当日得分。所有 Agent 都按同样长度的最近窗口比较——得分是日收益之和，窗口长短不一就不公平。周五新繁殖的子代，到下周五正好有一周的记录。"));
     tip.push(tr("每个板块按自己冻结的规则进化，股票与加密货币互不影响。"));
@@ -3963,6 +4749,11 @@ function renderTape() {
   // holds the trading day's overnight fills from the evening BEFORE (9:35 PM on 09-22 for trading day 09-23), and
   // the "recent" fallback holds earlier days: both printed a bare time that read as this afternoon.
   const calToday = String(((STATE.snap || {}).market || {}).clock_ny || "").slice(0, 10);
+  // a CLEANUP is the version's own eod_cleanup - unless the board froze the opt-in earnings blackout, which flattens at
+  // the same 15:50 before a report; the tape cannot tell the two apart, the drawer's decision list can (2026-09-24)
+  const cleanupTip = ((STATE.snap || {}).experiment || {}).earnings_blackout
+    ? tr("收盘前平仓：可能是策略参数 eod_cleanup=true，也可能是本实验的财报禁区在财报日前后清仓；Agent 详情的决策记录会标出是哪一种")
+    : tr("策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜");
   const dated = t => showDate || !calToday || String(t.confirmed_ny || "").slice(0, 10) !== calToday;
   $("tradenote").textContent = note || "";
   // the signature must be written on EVERY path, blank included: otherwise the blank render leaves the
@@ -4036,7 +4827,7 @@ function renderTape() {
       <td class="num" data-k="成交价">${pxFull(t.price)}</td>
       <td class="num" data-k="金额">${usd(t.notional_cents)}</td>
       <td class="num" data-k="已实现" style="color:${isNum(r) && r !== 0 ? (r > 0 ? cssVar("--green-ink") : cssVar("--red-ink")) : ""}">${t.side === "SELL" && isNum(r) ? usd(r, { sign: r > 0 }) : "—"}</td>
-      <td class="muted icell" data-k="意图"><span title="${t.intent === "CLEANUP" ? esc(tr("策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜")) : ""}">${esc(t.intent || "")}</span>${fillTags(t)}</td>`;
+      <td class="muted icell" data-k="意图"><span title="${t.intent === "CLEANUP" ? esc(cleanupTip) : ""}">${esc(t.intent || "")}</span>${fillTags(t)}</td>`;
     row.addEventListener("click", () => openSheet(t.slot_id));
     row.style.cursor = "pointer";
     const pill = row.querySelector(".slotpill");
@@ -5746,6 +6537,17 @@ const SKIP_WORDS = [
   [/^day_incomplete$/, () => tr("当日行情数据不完整，这一轮不进化")],
   [/^paused$/, () => tr("进化已被手动暂停")],
   [/^already_closed$/, () => tr("这一天已经结算过了")],
+  // selection.latched_slots = finished_v1 (2026-09-24): fewer than two LIVE slots is no comparison; the finished ones
+  // are named in the code's tail, which the generic pattern below would drop. First, so it wins over that pattern
+  [/^insufficient_ranked:(\d+)<2 \(finished:([A-Z0-9,]+)\)/, m => (LANG === "en"
+    ? `only ${m[1]} live ${+m[1] === 1 ? "agent was" : "agents were"} left to compare (finished: ${m[2].split(",").join(" ")}), so nothing is replaced`
+    : `只剩 ${m[1]} 个可比较的 Agent（已结束：${m[2].split(",").join(" ")}），本轮不替换`)],
+  [/^finished:([A-Z0-9,]+)/, m => (LANG === "en"
+    ? `${m[1].split(",").join(" ")} finished (permanent loss stop latched): neither bred from nor replaced`
+    : `${m[1].split(",").join(" ")} 已结束（永久止损已锁定）：不参评，既不繁殖也不被替换`)],
+  [/^replace_bottom:(\d+)_of_(\d+)\(n_live=(\d+)\)/, m => (LANG === "en"
+    ? `only ${m[3]} agents could be compared, so ${m[1]} ${+m[1] === 1 ? "was" : "were"} replaced instead of ${m[2]} (min(${m[2]}, floor(${m[3]} / 2)))`
+    : `只有 ${m[3]} 个可比较的 Agent，本轮替换 ${m[1]} 个而不是 ${m[2]} 个（min(${m[2]}, ⌊${m[3]}/2⌋)）`)],
   [/^insufficient_ranked:(\d+)<(\d+)/, m => (LANG === "en"
     ? `only ${m[1]} agents could be ranked, fewer than the ${m[2]} required`
     : `能排名的 Agent 只有 ${m[1]} 个，少于需要的 ${m[2]} 个`)],
@@ -5938,6 +6740,7 @@ function evoRule(s) {
     windowEnd: ex.window_end_guard === "v1",
     common: ex.rolling_window === "frozen_days_v2",
     revision: num(ex.execution_revision),
+    latched: ex.latched_slots === "finished_v1",               // a latched slot is a finished record (2026-09-24)
   };
 }
 
@@ -5992,16 +6795,26 @@ function evoRuleWords(s, full) {
                                        : "；仍持有继承仓位的版本本轮也不参评");
   // who replaces whom
   const keep = q(R.keep), rep = q(R.rep), mid = (isNum(R.keep) && isNum(R.rep)) ? R.keep - R.rep : "?";
+  // replace_bottom 1 (the new crypto design) is one agent: "the bottom 1 are each taken over by ... themselves" is
+  // what the plural sentence printed for it, so the singular is its own sentence in both languages
+  const one = R.rep === 1;
   if (R.breeding === "within_slot") {
-    out.push(en ? `. The bottom ${rep} are each taken over by a tweaked version of themselves; the other ${keep} stay as they are`
-                : `。排在最后的 ${rep} 个各由自己的一个参数微调版本接替，其余 ${keep} 个原样留任`);
+    out.push(one ? (en ? `. The bottom agent is taken over by a tweaked version of itself; the other ${keep} stay as they are`
+                       : `。排在最后的 1 个由它自己的一个参数微调版本接替，其余 ${keep} 个原样留任`)
+      : (en ? `. The bottom ${rep} are each taken over by a tweaked version of themselves; the other ${keep} stay as they are`
+            : `。排在最后的 ${rep} 个各由自己的一个参数微调版本接替，其余 ${keep} 个原样留任`));
   } else if (R.breeding === "competitive") {
-    out.push(en ? `. The top ${rep} each copy themselves with one parameter tweaked, and those offspring displace the bottom `
-                  + `${rep}; the middle ${mid} stay as they are`
-                : `。前 ${rep} 名各复制出一个参数微调的后代，顶替掉后 ${rep} 名，中间的 ${mid} 个原样留任`);
+    out.push(one ? (en ? `. The top agent copies itself with one parameter tweaked, and that offspring displaces the bottom agent; `
+                         + `the middle ${mid} stay as they are`
+                       : `。第 1 名复制出一个参数微调的后代，顶替掉最后 1 名，中间的 ${mid} 个原样留任`)
+      : (en ? `. The top ${rep} each copy themselves with one parameter tweaked, and those offspring displace the bottom `
+              + `${rep}; the middle ${mid} stay as they are`
+            : `。前 ${rep} 名各复制出一个参数微调的后代，顶替掉后 ${rep} 名，中间的 ${mid} 个原样留任`));
   } else {
-    out.push(en ? `. The bottom ${rep} are taken over by new versions; the other ${keep} stay as they are`
-                : `。排在最后的 ${rep} 个由新版本接替，其余 ${keep} 个原样留任`);
+    out.push(one ? (en ? `. The bottom agent is taken over by a new version; the other ${keep} stay as they are`
+                       : `。排在最后的 1 个由新版本接替，其余 ${keep} 个原样留任`)
+      : (en ? `. The bottom ${rep} are taken over by new versions; the other ${keep} stay as they are`
+            : `。排在最后的 ${rep} 个由新版本接替，其余 ${keep} 个原样留任`));
   }
   // how a tie at the cut is settled - only when the server said which rule; silence is not "the slot-id rule"
   if (R.tieKnown) {
@@ -6009,6 +6822,13 @@ function evoRuleWords(s, full) {
       : R.tie === "skip_round" ? (en ? "; a tie at the cut line means nobody is replaced that round" : "；淘汰线上有同分时本轮不淘汰任何人")
       : (en ? "; a tie at the cut is broken by slot number, and disclosed as such" : "；淘汰线上的同分按槽位编号裁决，并如实标出"));
   }
+  // selection.latched_slots = finished_v1: who is out of the comparison for good, and what that does to the quota -
+  // in the short form too, because it changes how many are replaced on the day it matters
+  if (R.latched) out.push(en
+    ? `; an agent whose permanent loss stop has latched is a finished record - neither bred from nor replaced - so a round `
+      + `replaces min(${rep}, floor(live agents / 2)) and is skipped only when fewer than 2 agents are live`
+    : `；永久止损已锁定的 Agent 记为已结束：不参评，既不繁殖也不被替换；所以每轮替换 min(${rep}, ⌊可比较的 Agent 数 / 2⌋) 个，`
+      + `可比较的少于 2 个才跳过这一轮`);
   if (full && R.windowEnd) out.push(en ? ". Near the end of the window nothing is bred, because a child bred then could never be ranked"
                                : "。窗口最后几天不再繁殖：那时繁殖的版本到结束前排不上名次");
   out.push(en ? ". A replaced slot is not flattened and its principal is not reset - the new version takes over that "
@@ -6025,15 +6845,19 @@ function roundStory(r) {
   if (r.outcome === "skipped") return skipWordsFor(r.reason, r) || tr("这一轮没有进化");
   const top = (r.top || []), bot = (r.bottom || []);
   const sep = LANG === "en" ? ", " : "、";
+  // under finished_v1 (a round that recorded its `finished` list) "finished" names a latched slot, so the English
+  // story says where the others were RANKED; every other round keeps its wording
+  const fv = Array.isArray(r.finished);
   if (!bot.length || (r.breeding === "competitive" && !top.length)) {
     return LANG === "en" ? `kept ${r.n_kept}, replaced ${r.n_replaced}`
                          : `留下 ${r.n_kept} 个，换掉 ${r.n_replaced} 个`;
   }
   if (r.breeding === "within_slot") {
     return LANG === "en"
-      ? `${bot.join(sep)} finished at the bottom; each was taken over by a tweaked version of itself`
-        + par("the cash and positions in those slots stayed where they were")
-      : `${bot.join(sep)} 排在末位，各由自己的一个微调版本接替（这些槽位的现金和持仓原样留在原地）`;
+      ? `${bot.join(sep)} ${fv ? "ranked" : "finished"} at the bottom; ${bot.length === 1 ? "it was" : "each was"} taken over by a tweaked version of itself`
+        + par(bot.length === 1 ? "the cash and positions in that slot stayed where they were" : "the cash and positions in those slots stayed where they were")
+      : (bot.length === 1 ? `${bot.join(sep)} 排在末位，由它自己的一个微调版本接替（这个槽位的现金和持仓原样留在原地）`
+                          : `${bot.join(sep)} 排在末位，各由自己的一个微调版本接替（这些槽位的现金和持仓原样留在原地）`);
   }
   if (r.breeding !== "competitive") {
     return LANG === "en"
@@ -6041,12 +6865,23 @@ function roundStory(r) {
       : `${bot.join(sep)} 由新版本接替（这些槽位的现金和持仓原样留在原地）`;
   }
   if (LANG === "en") {
-    return `${top.join(sep)} finished on top; each left one tweaked offspring, which took over `
+    return `${top.join(sep)} ${fv ? "ranked" : "finished"} on top; each left one tweaked offspring, which took over `
          + `${bot.join(sep)}` + par("the cash and positions in those slots stayed where they were, now managed "
                                     + "by the offspring");
   }
   return `${top.join(sep)} 排在前列，各复制出一个微调后代，接手了 ${bot.join(sep)} 的槽位`
        + `（这些槽位的现金和持仓原样留在原地，由后代继续管）`;
+}
+
+/* The reason codes a completed round's line still has to say. A finished_v1 round writes 'finished:S10' and, when the
+   live slots shrank the quota, 'replace_bottom:1_of_3(n_live=3)' into its reason, and roundDisclosures says both again
+   from the structured record - with the latch time and equity the code does not carry. So the line drops the two codes
+   exactly when that record is there to say them (the raw reason stays in the hover); a round without it keeps them. */
+function roundReasonRest(r) {
+  const fin = Array.isArray(r.finished) && r.finished.length > 0;
+  const rb = r.replace_bottom && typeof r.replace_bottom === "object" && isNum(r.replace_bottom.configured);
+  return String(r.reason || "").split(";").map(x => x.trim()).filter(Boolean)
+    .filter(pt => !(fin && /^finished:/.test(pt)) && !(rb && /^replace_bottom:/.test(pt))).join("; ");
 }
 
 /* The round header's "who went where", by the round's own breeding rule. */
@@ -6056,7 +6891,7 @@ function roundFlow(r) {
   if (r.breeding === "competitive") {
     return top.length ? `top ${esc(top.join(" "))} → bottom ${esc(bot.join(" "))}` : "";
   }
-  if (r.breeding === "within_slot") return `${esc(bot.join(" "))} → ${tr("各自的微调版本")}`;
+  if (r.breeding === "within_slot") return `${esc(bot.join(" "))} → ${tr(bot.length === 1 ? "它自己的微调版本" : "各自的微调版本")}`;
   return `${tr("换")} ${esc(bot.join(" "))}`;
 }
 
@@ -6069,7 +6904,8 @@ function renderRounds(s) {
     (r.top || []).join("."), (r.bottom || []).join("."),
     (r.mutations || []).map(m => `${m.slot}${m.status}${m.child}${JSON.stringify(m.diff || {})}`).join(";"),
     JSON.stringify(r.cut_ties || null), JSON.stringify(r.distinct_records || null), JSON.stringify(r.data_quality || null),
-    r.breeding || "", JSON.stringify(r.protected_young || null)
+    r.breeding || "", JSON.stringify(r.protected_young || null),
+    JSON.stringify(r.finished || null), JSON.stringify(r.replace_bottom || null), JSON.stringify(r.latch_unreadable || null)
   ].join("~")).join("|") + "|" + LANG + "|" + JSON.stringify(evoRule(s));
   if (box.dataset.sig === sig) return;
   box.dataset.sig = sig;
@@ -6089,17 +6925,22 @@ function renderRounds(s) {
   box.innerHTML = rs.slice(0, 8).map(r => {
     const muts = (r.mutations || []).filter(m => m.status === "accepted");
     const flow = roundFlow(r);
+    // what the reason line still has to say once the finished record has said its part (roundReasonRest)
+    const rsn = skipWordsFor(roundReasonRest(r), r);
     return `<div class="round">
       <div class="rh"><span class="day num">${esc(r.trading_day)}</span>
         <span class="oc ${esc(r.outcome)}">${({ completed: "已完成", skipped: "未进化", partial: "部分完成" })[r.outcome] || esc(r.outcome)}</span>
         ${(r.data_quality && lateCloseIsLate(r.data_quality.late_close))
           ? `<span class="oc late" title="${esc(lateCloseWords(r.data_quality).replace(/<[^>]*>/g, ""))}">${tr("迟结算")}</span>` : ""}
+        ${/* not on a skipped row, for the reason roundFinishedBits gives: the weekly board's daily rows list them too */ ""}
+        ${(r.outcome !== "skipped" && Array.isArray(r.finished) && r.finished.length)
+          ? `<span class="oc fin" title="${esc(r.finished.map(f => f && f.slot_id).filter(Boolean).join(" "))}">${tr("已结束")} ${r.finished.length}</span>` : ""}
         ${r.outcome !== "skipped" ? `<span class="muted num">${tr("留")} ${r.n_kept} · ${tr("换")} ${r.n_replaced}</span>` : ""}
         ${flow ? `<span class="muted">${flow}</span>` : ""}
       </div>
       <div class="story" ${r.reason ? `title="${esc(r.reason)}"` : ""}>${esc(roundStory(r))}</div>
       ${/* on a skipped round the story IS the reason in words, so printing both says it twice */ ""}
-      ${(r.reason && r.outcome !== "skipped") ? `<div class="reason" title="${esc(r.reason)}">${esc(skipWordsFor(r.reason, r))}</div>` : ""}
+      ${((r.reason && r.outcome !== "skipped") && rsn) ? `<div class="reason" title="${esc(r.reason)}">${esc(rsn)}</div>` : ""}
       ${roundDisclosures(r)}
       ${muts.length ? `<div class="mut">${muts.map(m => `<div><b>${esc(m.slot)}</b> <span class="muted" title="${esc((m.parent || "") + " → " + (m.child || ""))}">${esc(versionWords(m.parent))}<span class="arrow">→</span>${esc(versionWords(m.child))}</span><br>${Object.entries(m.diff || {}).map(([k, v]) => `<span title="${esc(k)}">${esc(paramWord(k))}</span>: ${esc(v.from)}<span class="arrow">→</span><b>${esc(v.to)}</b>`).join(" · ") || par(tr("后代与亲代参数相同"))}</div>`).join("")}</div>` : ""}
     </div>`;
@@ -6111,7 +6952,8 @@ function renderRounds(s) {
    (regular-bar coverage, fills priced on a bar the source later revised, quote-vs-bar contradictions).
    Anything the record does not contain is said to be unknown, never implied to be clean. */
 function roundDisclosures(r) {
-  const bits = [];
+  // finished records (finished_v1) lead: who was out of the comparison for good, and what that did to the quota
+  const bits = roundFinishedBits(r);
   // What the eliminations were actually decided BY. Both boards already recorded the raw facts - who tied at the
   // cut line, how many distinct trade records the day produced - and neither said what they add up to. On the
   // stock arena's 2026-09-18 round that is: two slots went on their value and one went on its slot number.
@@ -6477,6 +7319,15 @@ function dayScoreTags(r, d) {
       ? `${n.later_fills_excluded} fill${n.later_fills_excluded === 1 ? "" : "s"} of a later trading day, already in the ledger when this day was frozen, left out of it`
       : `冻结这一天时账本里已有 ${n.later_fills_excluded} 笔属于之后交易日的成交，未计入这一天`)}">+${n.later_fills_excluded}</span>`);
   }
+  // the opt-in earnings blackout's close records (arena/earnings.close_record): a flatten the rule DECIDED that did not
+  // happen, and a listing that appeared only after the 15:50 decision - a calendar miss, not a failed flatten
+  const pos = x => (Array.isArray(x) ? x : []).map(p => `${p.symbol || "?"} ×${p.qty}`).join(" ");
+  if (n && Array.isArray(n.carried_over_blackout) && n.carried_over_blackout.length) {
+    out.push(`<span class="ftag" style="color:var(--red-ink)" title="${esc(`${tr("应在财报前清仓但没有清掉")}${col()}${pos(n.carried_over_blackout)}`)}">${tr("财报前未清仓")}</span>`);
+  }
+  if (n && Array.isArray(n.blackout_listed_after_cleanup) && n.blackout_listed_after_cleanup.length) {
+    out.push(`<span class="ftag" title="${esc(`${tr("日历在 15:50 决定之后才列出（时点漏报，不是清仓失败）")}${col()}${pos(n.blackout_listed_after_cleanup)}`)}">${tr("日历迟列")}</span>`);
+  }
   return out.length ? " " + out.join(" ") : "";
 }
 
@@ -6491,6 +7342,28 @@ function renderSheet(d, fetched) {
   const kv = (k, v) => `<dt>${esc(k)}</dt><dd>${v}</dd>`;
   const curve = curveVals(d.curve);
   const body = $("shBody");
+  // 2026-09-24 (page group). A finished record (finished_v1, both boards); the fee-tier shadow and the re-entry gate's
+  // refusals per day (crypto); why this agent did not trade (stock). Each is "" unless the server sent its data.
+  const fz = finishedOf(a, STATE.snap);
+  const fzr = fz && fz.rec;
+  const finBox = fz ? `<div class="box"><h3>${esc(finishedChipText(fz))}</h3><dl class="kv">`
+      + kv(tr("锁定时间"), esc(whenWords(fz.at)))
+      + kv(tr("止损类型"), esc(tr(LATCH_KIND_ZH[fz.kind] || fz.kind)))
+      + kv(tr("锁定时净值"), `<span class="num">${usd(fzr ? fzr.equity_at_latch_cents : null)}</span>`)
+      + kv(tr("锁定时盈亏"), `<span class="num">${fzr && isNum(fzr.pnl_at_latch_cents) ? fsSigned(fzr.pnl_at_latch_cents) : tr(UNK)}</span>`)
+      + kv(tr("锁定前成交 / 入场"), `<span class="num">${fzr && isNum(fzr.trades_before_latch) ? fzr.trades_before_latch : tr(UNK)} / ${fzr && isNum(fzr.entries_before_latch) ? fzr.entries_before_latch : tr(UNK)}</span>`)
+      + kv(tr("锁定时的版本"), `<span class="num vid">${esc((fzr && fzr.version_at_latch) || tr(UNK))}</span>`)
+      // the OLDEST round that listed it; "or earlier" when the rounds this page holds cannot show one before it did not
+      + kv(tr("记为已结束"), !fz.day ? tr("下一轮") : fz.dayExact ? esc(`${fz.day} ${tr("那一轮")}`)
+          : `<span title="${esc(LANG === "en" ? `this page reads only the latest ${fz.nRounds} rounds, and the oldest of them already lists this slot`
+                                              : `这一页只读到最近 ${fz.nRounds} 轮，其中最早的一轮已经列出这个槽`)}">${esc(`${fz.day} ${tr("那一轮或更早")}`)}</span>`)
+      + `</dl><div class="instr" style="margin-top:9px">${tr("永久止损锁定后这个槽不能再入场。按冻结规则 finished_v1，它不再参与排名：既不繁殖，也不被替换，现金和持仓原样留在槽里；每轮的替换名额按其余可比较的槽计算。")}</div></div>` : "";
+  const fsb = ((STATE.snap || {}).crypto || {}).fee_shadow;
+  const fsBox = STATE.crypto ? feeShadowSheetBox(a, fsb, d.fee_shadow) : "";
+  const fsFills = (STATE.crypto && fsb && fsb.applicable === true && d.fee_shadow && d.fee_shadow.status === "known"
+                   && Array.isArray(d.fee_shadow.fills)) ? new Map(d.fee_shadow.fills.map(f => [String(f.fill_id), f])) : null;
+  const reBox = STATE.crypto ? reentryDaysBox(d.reentry_refusals, ((STATE.snap || {}).experiment || {}).reentry_after_take_profit_hours) : "";
+  const btBox = STATE.crypto ? "" : blockTallyBox(d.block_tally);
   body.innerHTML = `
     <div class="box">
       <div class="eyebrow">实时净值</div>
@@ -6517,6 +7390,8 @@ function renderSheet(d, fetched) {
         ${kv("熔断", breakerWords(a.breakers))}
       </dl>
     </div>
+    ${finBox}
+    ${fsBox}
 
     <div class="box">
       <h3>策略版本</h3>
@@ -6543,11 +7418,13 @@ function renderSheet(d, fetched) {
         <td class="num muted" data-k="止损/目标">${px(p.stop_price)} / ${px(p.target_price)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 
     ${(d.fills || []).length ? `<div class="box"><h3>成交记录</h3><div class="tw"><table class="tape">
-      <thead><tr><th>时间</th><th>方向</th><th>${tr(symWord())}</th><th>数量</th><th>价格</th><th>已实现</th><th>意图</th></tr></thead>
+      <thead><tr><th>时间</th><th>方向</th><th>${tr(symWord())}</th><th>数量</th><th>价格</th><th>已实现</th><th>意图</th>${fsFills ? `<th>${tr("重算费率")}</th>` : ""}</tr></thead>
       <tbody>${d.fills.slice(0, 30).map(f => `<tr><td class="num" data-k="时间">${esc(mdhm(f.confirmed_ny))}</td><td><span class="side ${esc(f.side)}">${esc(f.side)}</span></td>
         <td data-k="${symWord()}">${esc(f.symbol)}</td><td class="num" data-k="数量">${f.qty}</td><td class="num" data-k="价格">${pxFull(f.price)}</td>
         <td class="num" data-k="已实现" style="color:${isNum(realOf(f)) && realOf(f) !== 0 ? (realOf(f) > 0 ? cssVar("--green-ink") : cssVar("--red-ink")) : ""}">${f.side === "SELL" ? usd(realOf(f), { sign: isNum(realOf(f)) && realOf(f) > 0 }) : "—"}</td>
-        <td class="muted icell" data-k="意图">${esc(f.intent || "")}${fillTags(f)}</td></tr>`).join("")}</tbody></table></div></div>` : `<div class="box"><h3>成交记录</h3><div class="muted">暂无成交</div></div>`}
+        <td class="muted icell" data-k="意图">${esc(f.intent || "")}${fillTags(f)}</td>${fsFills ? feeShadowFillCell(f, fsFills) : ""}</tr>`).join("")}</tbody></table></div></div>` : `<div class="box"><h3>成交记录</h3><div class="muted">暂无成交</div></div>`}
+    ${reBox}
+    ${btBox}
 
     ${(d.protective_exits || []).length ? `<div class="box"><h3>${tr("盘中止损/止盈（修订 2）")}</h3>
       <div class="muted" style="margin-bottom:6px">${tr("止损/止盈在每次行情轮询时检查，不等整点决策；这些单没有决策记录，触发价写在原因里")}</div>
@@ -6570,7 +7447,7 @@ function renderSheet(d, fetched) {
       <thead><tr><th>时间</th><th>类型</th><th>标的</th><th>动作</th><th>阻断原因</th></tr></thead>
       <tbody>${d.decisions.slice(0, 20).map(x => `<tr><td class="num" data-k="时间">${esc(mdhm(x.ts_ny))}</td><td class="muted" data-k="类型">${esc(x.kind)}</td>
         <td data-k="标的">${esc(x.chosen_symbol || "")}</td><td data-k="动作">${esc(x.action || "")}</td>
-        <td class="muted wrapcell" data-k="阻断原因">${esc((x.blocked_by || []).join("；"))}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+        <td class="muted wrapcell" data-k="阻断原因">${decisionWhy(x)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 
     ${(d.activations || []).length > 1 ? `<div class="box"><h3>资金槽任职史（淘汰不删除历史）</h3><div class="tw"><table class="tape">
       <thead><tr><th>版本</th><th>激活</th><th>退役</th><th>起点净值</th><th>退役净值</th><th>原因</th></tr></thead>
