@@ -636,6 +636,12 @@ tr.grp .gmeta{font-weight:500;color:var(--ink3);margin-left:10px;font-size:12px;
 .banner .bx:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .offbanner{align-items:center}
 .offbanner .grpbtn{margin-left:10px;vertical-align:middle}
+/* a newer build of this published page exists (2026-09-24). Not an alarm - nothing is wrong with the data - so it is
+   neither the amber nor the red box, and smaller than both. Its sentence wraps at any width (a 375px phone included). */
+.banner.pvbanner{align-items:center;padding:9px 14px;font-size:var(--fs-meta);
+  background:color-mix(in srgb,var(--blue) 8%,transparent);border-color:color-mix(in srgb,var(--blue) 22%,transparent)}
+.pvbanner>span{min-width:0;overflow-wrap:anywhere}
+.pvbanner a{color:var(--blue);font-weight:600}
 footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-size:var(--fs-note);color:var(--ink3);line-height:1.65}
 .skel{background:linear-gradient(100deg,var(--hair2) 30%,var(--hair) 50%,var(--hair2) 70%);background-size:220% 100%;
   animation:sh 1.4s linear infinite;border-radius:var(--r-sm);color:transparent!important}
@@ -919,6 +925,8 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
     <span><b id="offwhat">连接已断开</b><span id="offwhen"></span>：<span>下面显示的是最后一次读到的数据，不会自动变新。</span>
       <button class="grpbtn" id="offreload" type="button">刷新重连</button></span>
   </div>
+  <!-- transport too: a newer build of this page. Outside #banners so it shows even when no snapshot ever arrives -->
+  <div class="banner pvbanner" id="pvbanner" style="display:none"></div>
   <div id="banners"></div>
 
   <section class="hero">
@@ -1076,7 +1084,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-24T07:25:01Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-24T07:25:01Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924","experiments":["stock-research-20260924","crypto-kraken-20260924"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-24T12:54:39Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-24T12:54:39Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924","experiments":["stock-research-20260924","crypto-kraken-20260924"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1920,6 +1928,8 @@ const I18N = {
     "止盈后不回补": "no buy-back after a take-profit", "止盈后不回补（逐日）": "No buy-back after a take-profit, per day",
     "读不到：未知，不代表没有拒绝": "could not be read: unknown, not 'nothing refused'",
     "这条规则还没有拒绝过买单": "this rule has not refused a buy yet",
+    // a published page that has fallen behind its own site (2026-09-24): the banner when one automatic reload was not enough
+    "页面有新版本": "A newer version of this page is available", "点此刷新": "reload",
   },
 };
 const I18N_ATTRS = ["title", "aria-label", "placeholder", "data-k"];
@@ -2212,14 +2222,28 @@ function startPolling() {
   if (STATE.pollTimer) return;
   const tick = async () => {
     try {
+      const want = STATE.exp;
+      // static only: the data origin's published list is asked for alongside the board (cached for PUB_TTL_MS), so
+      // checking the board against it below costs no extra round trip
+      if (STATIC && !STATE.followed) publishedIndex();
       // no-cache still revalidates on every poll and never serves a stale body; it just lets an unchanged
       // published snapshot answer 304 instead of resending ~185 KB (overnight it is rewritten once per 900 s)
       const r = await fetch(API.snapshot(), { cache: STATIC ? "no-cache" : "no-store" });
-      if (!r.ok) throw new Error("HTTP " + r.status);
+      if (!r.ok) {
+        // static only: no folder for this id on the data origin - follow to the current board of its kind, once per load
+        const gone = (STATIC && r.status === 404) ? await unpublishedFollowTarget(null, want) : null;
+        if (STATIC && STATE.exp !== want) return;    // the picker moved on while the list was read: that tick paints
+        if (gone) { followRetired(null, gone, true); return; }
+        throw new Error("HTTP " + r.status);
+      }
       const snap = await r.json();
       // an old link's retired marker: follow it to the current board of the same kind, once per load
       const to = STATE.followed ? null : retiredTarget(snap, STATIC, STATE.exp);
       if (to) { followRetired(snap, to); return; }
+      // static only: a folder still on the data origin that the published list leaves out and no marker covers
+      const away = STATIC ? await unpublishedFollowTarget(snap, want) : null;
+      if (STATIC && STATE.exp !== want) return;      // the picker moved on while the list was read: that tick paints
+      if (away) { followRetired(snap, away, true); return; }
       // Safari has never implemented overflow-anchor, so a silent poll used to shift the row under the thumb
       STATE.lastOk = Date.now();
       paintSoon(() => {
@@ -2497,8 +2521,11 @@ function retiredTarget(s, st, exp) {
   if (!to || to === exp || !Array.isArray(s.current) || !s.current.includes(to)) return null;
   return to;
 }
-function followRetired(snap, to) {
-  STATE.followed = { from: STATE.exp || (snap && snap.experiment_id) || "", to, why: (snap && snap.retired_why) || null };
+// `unpublished`: the id has no folder on the data origin, or the published list leaves it out without a marker
+// (unpublishedFollowTarget) - it may never have been published at all, so the note says "not published", not "no longer"
+function followRetired(snap, to, unpublished) {
+  STATE.followed = { from: STATE.exp || (snap && snap.experiment_id) || (STATIC && STATIC.default) || "", to,
+                     why: (snap && snap.retired_why) || null, unpublished: !!unpublished };
   STATE.exp = to;
   try { history.replaceState(null, "", "?experiment=" + encodeURIComponent(to)); } catch (e) { }
   STATE.seenFills = new Set(); STATE.first = true; STATE.tradeDay = "today"; STATE.prices = {};
@@ -2511,25 +2538,78 @@ function followedBanner(s, add) {
   const crypto = s.asset_class === "crypto_spot" || (s.experiment && s.experiment.asset_class === "crypto_spot");
   const why = f.why ? `（${esc(clipWhy(f.why))}）` : "";
   add("", LANG === "en"
-    ? `<span>↪</span><span>The link you opened names <b>${esc(f.from)}</b>, which is no longer published${f.why ? ` (${esc(clipWhy(f.why))})` : ""}. This is the current ${crypto ? "crypto" : "stock"} board, <b>${esc(f.to)}</b>, and it keeps updating.</span>`
-    : `<span>↪</span><span>你打开的链接指向 <b>${esc(f.from)}</b>，该实验已停止发布${why}。这里显示的是当前的${crypto ? "加密货币" : "股票"}实验 <b>${esc(f.to)}</b>，数据持续更新。</span>`);
+    ? `<span>↪</span><span>The link you opened names <b>${esc(f.from)}</b>, which is ${f.unpublished ? "not published" : "no longer published"}${f.why ? ` (${esc(clipWhy(f.why))})` : ""}. This is the current ${crypto ? "crypto" : "stock"} board, <b>${esc(f.to)}</b>, and it keeps updating.</span>`
+    : `<span>↪</span><span>你打开的链接指向 <b>${esc(f.from)}</b>，该实验${f.unpublished ? "目前没有发布" : "已停止发布"}${why}。这里显示的是当前的${crypto ? "加密货币" : "股票"}实验 <b>${esc(f.to)}</b>，数据持续更新。</span>`);
 }
+
+/* A snapshot's own published list, while it can vouch for what is published NOW (review of 4a49624): at any age when
+   it was published after this build, else only within UNLISTED_TRUST_S. An age the page cannot measure (a live server,
+   no published_utc) is trusted. Shared by the unlisted banner and the unpublished-id follow below. */
+function vouchedRows(s, S) {
+  const lag = s && isNum(s.publish_lag_s) ? s.publish_lag_s : publishLagS(s);
+  const seen = ((s && s.experiments) || []).filter(e => e && e.experiment_id);
+  const tb = S && S.built_utc ? Date.parse(S.built_utc) : NaN, ts = s && s.published_utc ? Date.parse(s.published_utc) : NaN;
+  const newer = isFinite(tb) && isFinite(ts) && ts > tb;
+  return (newer || lag == null || lag <= UNLISTED_TRUST_S) ? seen : [];
+}
+
+/* An experiment id the data origin does not publish follows, once per load, to the current board of ITS kind
+   (2026-09-24, after the boards were replaced by stock-research-20260924 / crypto-kraken-20260924). Two ways to be
+   unpublished without a retired marker: the snapshot answers 404 (no folder at all - a mistyped id, or one the site
+   never carried), or the folder is still there but the fresh published list leaves the id out (the publisher only
+   marks folders it knows are retired; one it merely stopped publishing keeps its last snapshot, which still says
+   运行中). The list is the data origin's own index.json - rewritten every publish cycle, with each board's asset
+   class - and, only when a site has none, the build's list plus the snapshot's while it can vouch for it.
+   The kind: a listed asset class, else the id's prefix (crypto ids start with "crypto"), as publish._board_of reads
+   it. The first listed board of that kind is the target, a non-archived one before an archived one; no board of that
+   kind means no follow - never a stock reader sent to the crypto board. Static pages only; the note is followRetired's. */
+const PUB_TTL_MS = 300000;
+let PUB = { at: 0, rows: null, p: null };
+function boardKindOf(x) {
+  if (x && typeof x === "object") {
+    if (x.asset_class) return x.asset_class === "crypto_spot" ? "crypto" : "stock";
+    x = x.experiment_id;
+  }
+  return String(x || "").startsWith("crypto") ? "crypto" : "stock";
+}
+function unpublishedTarget(exp, rows) {
+  if (typeof exp !== "string" || !exp || !Array.isArray(rows)) return null;
+  const list = rows.map(r => (typeof r === "string" ? { experiment_id: r } : r))
+    .filter(r => r && typeof r.experiment_id === "string" && r.experiment_id);
+  if (!list.length || list.some(r => r.experiment_id === exp)) return null;   // nothing to go on, or it IS published
+  const kind = boardKindOf(exp), same = list.filter(r => boardKindOf(r) === kind);
+  const hit = same.find(r => !r.archived) || same[0];
+  return hit ? hit.experiment_id : null;
+}
+function publishedIndex() {
+  if (!STATIC) return Promise.resolve(null);
+  if (PUB.p) return PUB.p;
+  if (PUB.at && Date.now() - PUB.at < PUB_TTL_MS) return Promise.resolve(PUB.rows);
+  PUB.p = fetch(`${STATIC.base}/index.json${bust()}`, { cache: "no-cache" })
+    .then(r => (r.ok ? r.json() : null))
+    .then(j => (j && Array.isArray(j.experiments))
+      ? j.experiments.filter(e => e && typeof e.experiment_id === "string" && e.experiment_id) : null)
+    .catch(() => null)                               // no index (an older site), a network error, unreadable JSON
+    .then(rows => { PUB = { at: Date.now(), rows: (rows && rows.length) ? rows : null, p: null }; return PUB.rows; });
+  return PUB.p;
+}
+async function unpublishedFollowTarget(snap, exp) {
+  if (!STATIC || STATE.followed || (snap && snap.retired === true)) return null;   // a marker is retiredTarget's
+  const cur = exp || STATIC.default || "";
+  const idx = await publishedIndex();
+  if (STATE.followed) return null;
+  return unpublishedTarget(cur, idx || [...vouchedRows(snap, STATIC), ...(STATIC.experiments || [])]);
+}
+
 function retiredBanner(s, add, st) {
   const S = st === undefined ? STATIC : st;       // `st`: the build's static config, passed in by the node probe
   if (!S) return;
   followedBanner(s, add);
-  const lag = s && isNum(s.publish_lag_s) ? s.publish_lag_s : null;
-  // what the snapshot's publisher listed, at any age; `pub` is the same list only while it is recent enough to vouch
-  // that an id is still published. The LINK uses the list at any age: if even an old snapshot names this board and
-  // leaves out the build's default, that default was not being published then, so it is not offered as current
-  // (review of the page pass: past the trust window the stale build otherwise linked 23e back to the retired 23d)
-  const seen = ((s && s.experiments) || []).map(e => e && e.experiment_id).filter(Boolean);
-  // A snapshot published AFTER this copy was built knows the current list better than the copy, at any age: the
-  // hand-committed stelux.ai build is exactly such a stale copy. Without a build stamp (an older build) the age gate
-  // decides - a folder nobody publishes lists itself, and only a recent list is evidence of anything current.
-  const tb = S.built_utc ? Date.parse(S.built_utc) : NaN, ts = s && s.published_utc ? Date.parse(s.published_utc) : NaN;
-  const newer = isFinite(tb) && isFinite(ts) && ts > tb;
-  const pub = (newer || lag == null || lag <= UNLISTED_TRUST_S) ? seen : [];
+  // `pub`: what the snapshot's publisher listed, only while it is recent enough to vouch that an id is still published
+  // (vouchedRows). A snapshot published AFTER this copy was built knows the current list better than the copy, at any
+  // age: the hand-committed stelux.ai build is exactly such a stale copy. Without a build stamp (an older build) the age
+  // gate decides - a folder nobody publishes lists itself, and only a recent list is evidence of anything current.
+  const pub = vouchedRows(s, S).map(e => e.experiment_id);
   const def = (s && s.default) || ((!pub.length || pub.includes(S.default)) ? (S.default || "") : "");
   const link = def ? `<a href="?experiment=${encodeURIComponent(def)}">${esc(def)}</a>` : "";
   if (s && s.retired === true) {
@@ -2543,6 +2623,113 @@ function retiredBanner(s, add, st) {
   if (STATE.exp && built.length && !listed.has(STATE.exp)) {
     add("err", `<span>📦</span><span><b>${tr("这个页面的实验列表里没有")} ${esc(STATE.exp)}</b>${col()}${tr("它可能已停止发布，显示的内容不一定是最新的")}`
       + (link && def !== STATE.exp ? ` · ${tr("当前实验")}${col()}${link}` : "") + `</span>`);
+  }
+}
+
+/* ============================================================ the published page keeps itself current
+   User 2026-09-24: 「修复这个问题应该在这也里面显示新实验 https://stelux.ai/arena/?experiment=stock-research-20260924」.
+   The site already served the new build; the reader's page was an OLD copy - a tab left open, or the browser's cached
+   HTML (GitHub Pages sends it with max-age=600) - and a published page never re-reads its own HTML, so it could learn
+   about a new build, or a new experiment, only when the reader refreshed by hand.
+
+   `arena publish-page --write` drops a small page.json beside index.html carrying the build's own built_utc. A static
+   page asks for it PV_FIRST_MS after load, every PV_EVERY_MS, and when its tab becomes visible again. A STRICTLY newer
+   build is loaded by navigating to this same URL - every parameter kept - plus `_pv=<build stamp>`, a cache key neither
+   the browser nor the CDN has seen; the stamp is stripped from the address bar on arrival. At most ONE automatic reload
+   per target build per tab: the attempt is remembered in sessionStorage and, independently of storage, by the `_pv`
+   this load arrived with - so a copy that is still older after that reload shows a small banner with a link instead
+   of reloading again. A missing page.json (an older site), a network error or unreadable JSON does nothing; a hidden
+   tab or an open drawer is never reloaded (the next check tries again). The live dashboard (STATIC null) runs none of
+   it: no page.json fetch, no reload. */
+const PV_FIRST_MS = 25000, PV_EVERY_MS = 300000, PV_MIN_GAP_MS = 15000, PV_KEY = "arena.pv.tried";
+// "2026-09-24T07:25:01Z" -> "20260924T072501Z": compact, URL-safe, and still readable in an address bar
+function pvStamp(built) { return typeof built === "string" ? built.replace(/[^0-9A-Za-z]/g, "").slice(0, 40) : ""; }
+// 'reload' | 'banner' | 'none'. Only a strictly newer, parseable build moves anything; an unparseable one is ignored.
+function pageUpdateDecision(ownBuilt, fetchedBuilt, alreadyTried) {
+  if (typeof ownBuilt !== "string" || typeof fetchedBuilt !== "string") return "none";
+  const own = Date.parse(ownBuilt), got = Date.parse(fetchedBuilt);
+  if (!isFinite(own) || !isFinite(got) || got <= own) return "none";
+  return alreadyTried ? "banner" : "reload";
+}
+/* `href` with `_pv` set to the build's stamp - or removed, when `built` has none. Every other parameter (experiment
+   first of all) and the fragment are kept byte for byte: the query is edited as text, never re-serialised. */
+function pvUrl(href, built) {
+  const s = String(href == null ? "" : href);
+  const h = s.indexOf("#"), hash = h >= 0 ? s.slice(h) : "", base = h >= 0 ? s.slice(0, h) : s;
+  const q = base.indexOf("?"), path = q >= 0 ? base.slice(0, q) : base;
+  const keep = (q >= 0 ? base.slice(q + 1) : "").split("&").filter(p => p && p.split("=")[0] !== "_pv");
+  const stamp = pvStamp(built);
+  if (stamp) keep.push("_pv=" + stamp);
+  return path + (keep.length ? "?" + keep.join("&") : "") + hash;
+}
+// page.json beside THIS page: "/arena/" and "/arena/index.html" -> "/arena/page.json", and "/arena" (a host that
+// serves the directory without its slash) -> "/arena/page.json" rather than the site root's
+function pageJsonPath(pathname) {
+  const p = String(pathname || "/"), i = p.lastIndexOf("/"), leaf = p.slice(i + 1);
+  return (p.endsWith("/") ? p : (/\.[A-Za-z0-9]+$/.test(leaf) ? p.slice(0, i + 1) : p + "/")) + "page.json";
+}
+const PV_LOADED = (() => { try { return new URLSearchParams(location.search).get("_pv") || ""; } catch (e) { return ""; } })();
+function pvTried(built) {
+  const stamp = pvStamp(built);
+  if (!stamp) return false;
+  if (PV_LOADED === stamp) return true;              // this very load WAS the reload to that build
+  try { return sessionStorage.getItem(PV_KEY) === stamp; } catch (e) { return false; }
+}
+function pvMark(built) { try { sessionStorage.setItem(PV_KEY, pvStamp(built)); } catch (e) { } }
+/* Review of the page pass: the banner's link reused the exact _pv URL the failed automatic reload had just loaded, and
+   with max-age=600 a browser may answer it from its own cache - the very case the banner exists for. A per-load nonce
+   (`_pvr`) makes the click a new cache key; it is stripped on arrival like `_pv`. Without a nonce the link is the plain
+   _pv URL (what the tests pin). */
+const PV_NONCE = Date.now().toString(36);
+function withParam(href, k, v) {
+  const h = href.indexOf("#"), base = h >= 0 ? href.slice(0, h) : href, hash = h >= 0 ? href.slice(h) : "";
+  return base + (base.indexOf("?") >= 0 ? "&" : "?") + k + "=" + encodeURIComponent(v) + hash;
+}
+function withoutParam(href, k) {
+  const h = href.indexOf("#"), base = h >= 0 ? href.slice(0, h) : href, hash = h >= 0 ? href.slice(h) : "";
+  const q = base.indexOf("?");
+  if (q < 0) return href;
+  const keep = base.slice(q + 1).split("&").filter(p => p && p.split("=")[0] !== k);
+  return base.slice(0, q) + (keep.length ? "?" + keep.join("&") : "") + hash;
+}
+function pageUpdateHtml(built, href, nonce) {
+  if (!pvStamp(built)) return "";
+  const link = nonce ? withParam(pvUrl(withoutParam(href, "_pvr"), built), "_pvr", nonce) : pvUrl(href, built);
+  return `<span>🔄</span><span>${tr("页面有新版本")} · <a href="${esc(link)}">${tr("点此刷新")}</a></span>`;
+}
+function paintPageUpdate() {
+  const b = $("pvbanner");
+  if (!b) return;
+  const html = STATE.pageUpdate ? pageUpdateHtml(STATE.pageUpdate, location.href, PV_NONCE) : "";
+  if (b.dataset.sig === html) return;
+  b.dataset.sig = html;
+  b.innerHTML = html;
+  b.style.display = html ? "" : "none";
+}
+let PV_AT = 0, PV_BUSY = false;
+async function checkPageVersion() {
+  if (!STATIC || PV_BUSY || document.hidden) return;          // a hidden tab is asked again when it comes back
+  if (!STATIC.built_utc) return;      // a build without a stamp (the snapshot site's own page) has nothing to compare
+  if (Date.now() - PV_AT < PV_MIN_GAP_MS) return;
+  PV_AT = Date.now(); PV_BUSY = true;
+  try {
+    const r = await fetch(pageJsonPath(location.pathname) + "?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) return;                                         // an older site has no page.json: nothing to do
+    const j = await r.json();
+    const got = j && typeof j.built_utc === "string" ? j.built_utc : null;
+    const d = pageUpdateDecision(STATIC.built_utc, got, pvTried(got));
+    if (d === "reload") {
+      if (document.hidden || STATE.openSlot) return;           // never under the reader's hand; the next check retries
+      pvMark(got);
+      location.replace(pvUrl(location.href, got));
+      return;
+    }
+    STATE.pageUpdate = d === "banner" ? got : null;
+    paintPageUpdate();
+  } catch (e) {
+    // a network error or unreadable JSON changes nothing
+  } finally {
+    PV_BUSY = false;
   }
 }
 
@@ -7544,6 +7731,16 @@ setInterval(() => {
   if (gap >= STALL_S) setConn(false, `${tr("数据已停滞")} ${gap}s`);
 }, API.live ? 2000 : 5000);
 setTimeout(() => { if (!STATE.snap) startPolling(); }, 3500);
+/* A published page keeps its own HTML current (the page-version check above): static pages only - the live dashboard
+   is served fresh by its own server and never fetches page.json or reloads. The `_pv` cache key a reload arrived with
+   leaves the address bar at once; every other parameter stays (PV_LOADED keeps it for the loop guard). */
+if (STATIC) {
+  if (PV_LOADED) { try { history.replaceState(null, "", pvUrl(location.href, null)); } catch (e) { } }
+  try { if (new URLSearchParams(location.search).has("_pvr")) history.replaceState(null, "", withoutParam(location.href, "_pvr")); } catch (e) { }
+  setTimeout(checkPageVersion, PV_FIRST_MS);
+  setInterval(checkPageVersion, PV_EVERY_MS);
+  document.addEventListener("visibilitychange", function pageVersionOnShow() { if (!document.hidden) checkPageVersion(); });
+}
 </script>
 </body>
 </html>
