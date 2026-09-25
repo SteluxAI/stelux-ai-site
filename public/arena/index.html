@@ -196,6 +196,7 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 #ticker[data-session] .tk.held{border-left:3px solid var(--blue)}
 .tk .who{font-size:var(--fs-chip);color:var(--ink2);margin-top:3px;line-height:1.35;overflow-wrap:anywhere}
 .tk .who:empty{display:none}
+.tk .who > div{white-space:normal}
 .tk .sym{flex-wrap:wrap}
 .qmark{color:var(--ink3)}
 .ftag{font-size:var(--fs-chip);font-weight:600;color:var(--orange-ink)}
@@ -353,12 +354,16 @@ tr.tape-in{animation:slidein .6s var(--ease-out)}
   border-color:color-mix(in srgb,var(--purple) 28%,transparent)}
 #ticker[data-session="overnight"] .tk{background:color-mix(in srgb,var(--blue) 13%,var(--card-solid));
   border-color:color-mix(in srgb,var(--blue) 28%,transparent)}
+/* crypto trades around the clock: the same tint as the regular session (user 2026-09-25: crypto 使用和股票一样的卡片设计风格) */
+#ticker[data-session="crypto_24_7"] .tk{background:color-mix(in srgb,var(--green) 11%,var(--card-solid));
+  border-color:color-mix(in srgb,var(--green) 28%,transparent)}
 #ticker[data-session="closed"] .tk{background:color-mix(in srgb,var(--ink3) 9%,var(--card-solid));
   border-color:var(--hair)}
 .seslegend{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-note);color:var(--ink3);margin-left:2px}
 .seslegend i{width:8px;height:8px;border-radius:3px;display:inline-block}
 .sesdot.pre{background:var(--orange)} .sesdot.regular{background:var(--green)}
 .sesdot.post{background:var(--purple)} .sesdot.overnight{background:var(--blue)} .sesdot.closed{background:var(--ink3)}
+.sesdot.crypto_24_7{background:var(--green)}
 
 /* can the agents act right now? Entries are regular-session only and inside 09:45-15:30; exits run in
    pre/regular/post, and overnight too when the experiment froze Robinhood's 24h policy (ex.trading_hours) - never
@@ -1104,7 +1109,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-25T13:29:03Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-25T13:29:03Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-25T14:12:07Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-25T14:12:07Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -3156,19 +3161,24 @@ function syncTickerHint() {
    {fills, buys, sells, slots}); an older server without them gets the plain role word as before. Pure, for the probe. */
 function tickerBadges(t) {
   const h = Array.isArray(t && t.holders) ? t.holders : [], td = (t && t.today) || null;
+  // ONE badge on the header line (held wins; else today's fills) so a narrow card never wraps it - the same look on the
+  // stock and crypto strips (user 2026-09-25); the who-line carries both facts, one per line
   const badges = [], who = [], tip = [];
+  const fills = td && td.fills ? td.fills : 0;
+  const nFills = LANG === "en" ? `${fills} fill${fills === 1 ? "" : "s"} today` : `今日 ${fills} 笔`;
   if (h.length) {
     badges.push(`<span class='qbadge held'>${LANG === "en" ? `held ×${h.length}` : `持仓 ×${h.length}`}</span>`);
     who.push((LANG === "en" ? "held: " : "持有：") + h.map(x => esc(x.slot || "?")).join(" "));
     tip.push((LANG === "en" ? "held by " : "持有：") + h.map(x => `${x.slot || "?"}${x.qty != null ? " ×" + x.qty : ""}`).join(", "));
+  } else if (fills) {
+    badges.push(`<span class='qbadge traded'>${nFills}</span>`);
   }
-  if (td && td.fills) {
-    badges.push(`<span class='qbadge traded'>${LANG === "en" ? `${td.fills} fill${td.fills === 1 ? "" : "s"} today` : `今日 ${td.fills} 笔`}</span>`);
-    who.push((LANG === "en" ? "today: " : "今日：") + (td.slots || []).map(esc).join(" "));
+  if (fills) {
+    who.push((h.length ? nFills + (LANG === "en" ? ": " : "：") : (LANG === "en" ? "today: " : "今日：")) + (td.slots || []).map(esc).join(" "));
     tip.push(LANG === "en" ? `today ${td.buys || 0} buy / ${td.sells || 0} sell by ${(td.slots || []).join(", ")}`
                            : `今日 买 ${td.buys || 0} 笔 / 卖 ${td.sells || 0} 笔：${(td.slots || []).join("、")}`);
   }
-  return { badges: badges.join(" "), who: who.join(LANG === "en" ? " · " : " · "), tip: tip.join(" · ") };
+  return { badges: badges.join(" "), who: who.map(x => `<div>${x}</div>`).join(""), tip: tip.join(" · ") };
 }
 function renderTicker(s, keep) {
   const wrap = $("ticker"), ex = s.experiment || {};
