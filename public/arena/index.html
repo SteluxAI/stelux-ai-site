@@ -188,6 +188,15 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .tk .ch{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
 .tk .ch{font-size:var(--fs-meta);font-weight:550}
 .qrole,.qmark{font-size:var(--fs-chip);font-weight:600}
+/* user 2026-09-25: 哪些是持仓的、哪些是今天交易的 - a badge that reads at a glance (the card's background is the SESSION
+   colour and the flash is the price move, so neither may carry this), a stripe on held cards, and who holds / traded */
+.qbadge{font-size:var(--fs-chip);font-weight:700;padding:1px 6px;border-radius:999px;white-space:nowrap;line-height:1.5}
+.qbadge.held{background:var(--blue);color:#fff}
+.qbadge.traded{border:1px solid var(--purple-ink);color:var(--purple-ink)}
+#ticker[data-session] .tk.held{border-left:3px solid var(--blue)}
+.tk .who{font-size:var(--fs-chip);color:var(--ink2);margin-top:3px;line-height:1.35;overflow-wrap:anywhere}
+.tk .who:empty{display:none}
+.tk .sym{flex-wrap:wrap}
 .qmark{color:var(--ink3)}
 .ftag{font-size:var(--fs-chip);font-weight:600;color:var(--orange-ink)}
 .qhalt{color:var(--red-ink);font-size:var(--fs-chip);font-weight:600}
@@ -1095,7 +1104,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-25T13:22:24Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-25T13:22:24Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-25T13:29:03Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-25T13:29:03Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -3143,6 +3152,24 @@ function syncTickerHint() {
   w.classList.toggle("more", t.scrollWidth - t.clientWidth - t.scrollLeft > 8);
 }
 
+/* The strip's per-symbol badges and the who-line, from the server's ticker entry (holders: [{slot, qty}], today:
+   {fills, buys, sells, slots}); an older server without them gets the plain role word as before. Pure, for the probe. */
+function tickerBadges(t) {
+  const h = Array.isArray(t && t.holders) ? t.holders : [], td = (t && t.today) || null;
+  const badges = [], who = [], tip = [];
+  if (h.length) {
+    badges.push(`<span class='qbadge held'>${LANG === "en" ? `held ×${h.length}` : `持仓 ×${h.length}`}</span>`);
+    who.push((LANG === "en" ? "held: " : "持有：") + h.map(x => esc(x.slot || "?")).join(" "));
+    tip.push((LANG === "en" ? "held by " : "持有：") + h.map(x => `${x.slot || "?"}${x.qty != null ? " ×" + x.qty : ""}`).join(", "));
+  }
+  if (td && td.fills) {
+    badges.push(`<span class='qbadge traded'>${LANG === "en" ? `${td.fills} fill${td.fills === 1 ? "" : "s"} today` : `今日 ${td.fills} 笔`}</span>`);
+    who.push((LANG === "en" ? "today: " : "今日：") + (td.slots || []).map(esc).join(" "));
+    tip.push(LANG === "en" ? `today ${td.buys || 0} buy / ${td.sells || 0} sell by ${(td.slots || []).join(", ")}`
+                           : `今日 买 ${td.buys || 0} 笔 / 卖 ${td.sells || 0} 笔：${(td.slots || []).join("、")}`);
+  }
+  return { badges: badges.join(" "), who: who.join(LANG === "en" ? " · " : " · "), tip: tip.join(" · ") };
+}
 function renderTicker(s, keep) {
   const wrap = $("ticker"), ex = s.experiment || {};
   const m = s.market || {};
@@ -3199,8 +3226,8 @@ function renderTicker(s, keep) {
   // The server sends the list (s.ticker); an older server without it gets watchlist + benchmarks as before.
   const tk = (Array.isArray(s.ticker) && s.ticker.length) ? s.ticker
     : uni.map(x => ({ symbol: x, role: "watch" })).concat(bench.filter(b => !uni.includes(b)).map(x => ({ symbol: x, role: "benchmark" })));
-  const roleOf = {};
-  tk.forEach(t => { roleOf[t.symbol] = t.role; });
+  const roleOf = {}, entryOf = {};
+  tk.forEach(t => { roleOf[t.symbol] = t.role; entryOf[t.symbol] = t; });
   // closed: what these agents are actually doing right now, plus the benchmarks they are measured against.
   const ACTIVE = ["held", "traded", "recent", "benchmark"];
   const active = tk.filter(t => ACTIVE.includes(t.role));
@@ -3239,7 +3266,7 @@ function renderTicker(s, keep) {
     if (!node) {
       node = el("div", "tk");
       node.dataset.sym = sym;
-      node.innerHTML = `<div class="sym"></div><div class="px num"></div><div class="ch num"></div>`;
+      node.innerHTML = `<div class="sym"></div><div class="px num"></div><div class="ch num"></div><div class="who"></div>`;
       wrap.appendChild(node);
     }
     node.classList.toggle("bench", role === "benchmark" || role === "watch" || role === "active");   // held / traded / recent stay bright
@@ -3255,7 +3282,13 @@ function renderTicker(s, keep) {
     if (known) STATE.prices[sym] = Number(q.price);
     const stale = q.status === "stale", unknown = !known;
     const roleZh = tr(({ held: "持仓", traded: "今日交易", recent: "最近交易", benchmark: "基准", watch: "候选", active: "活跃池" })[role] || "");
-    node.querySelector(".sym").innerHTML = `${esc(sym)}${roleZh ? ` <span class='muted qrole'>${roleZh}</span>` : ""}${stale ? ` <span class='muted qmark'>${tr("陈旧")}</span>` : ""}${q.halted ? ` <span class='qhalt'>${tr("停牌")}</span>` : ""}`;
+    const bd = tickerBadges(entryOf[sym]);
+    // held / traded today: the badges say it (and who); the grey role word stays for recent / benchmark / candidate
+    const roleWord = bd.badges ? "" : (roleZh ? ` <span class='muted qrole'>${roleZh}</span>` : "");
+    node.querySelector(".sym").innerHTML = `${esc(sym)}${bd.badges ? " " + bd.badges : ""}${roleWord}${stale ? ` <span class='muted qmark'>${tr("陈旧")}</span>` : ""}${q.halted ? ` <span class='qhalt'>${tr("停牌")}</span>` : ""}`;
+    node.classList.toggle("held", !!(entryOf[sym] && Array.isArray(entryOf[sym].holders) && entryOf[sym].holders.length));
+    const whoN = node.querySelector(".who");
+    if (whoN) whoN.innerHTML = bd.who;
     const pxn = node.querySelector(".px");
     setNum(pxn, known ? Number(q.price) : null, v => v == null ? UNK : px(v));
     // the 陈旧 / 未知 WORD is the marker; the dimming is only a second signal, and at 50% it erased the price on a phone
@@ -3270,7 +3303,7 @@ function renderTicker(s, keep) {
       ch.textContent = `${q.change_pct > 0 ? "+" : q.change_pct < 0 ? "−" : ""}${Math.abs(q.change_pct).toFixed(2)}%  ${isNum(q.change) ? (q.change > 0 ? "+" : q.change < 0 ? "−" : "") + px(Math.abs(q.change)) : ""}`;
       ch.style.color = q.change_pct > 0 ? cssVar("--green-ink") : q.change_pct < 0 ? cssVar("--red-ink") : cssVar("--ink3");
     } else { ch.textContent = unknown ? (q.error ? tr("无报价") : tr(UNK)) : "—"; ch.style.color = cssVar("--ink3"); }
-    node.title = `${sym} · ${q.field || ""} @ ${q.ts_ny || UNK}${isNum(q.age_s) ? " · " + ago(q.age_s) : ""}${q.source ? " · " + q.source : ""}`;
+    node.title = `${sym} · ${q.field || ""} @ ${q.ts_ny || UNK}${isNum(q.age_s) ? " · " + ago(q.age_s) : ""}${q.source ? " · " + q.source : ""}${bd.tip ? "\n" + bd.tip : ""}`;
   });
   syncTickerHint();          // once, after the grid is complete -- it was inside the loop, i.e. a forced layout per symbol
   const f = s.feed || {};
