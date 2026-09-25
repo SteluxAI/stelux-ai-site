@@ -1095,7 +1095,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-24T15:30:48Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-24T15:30:48Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-25T13:22:24Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-25T13:22:24Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -2227,6 +2227,8 @@ function connect() {
     stopPolling();
     try {
       const snap = JSON.parse(ev.data);
+      const lt = STATE.followed ? null : liveFollowTarget(snap, STATE.exp, !!STATIC);
+      if (lt) { followRetired(snap, lt); return; }      // an ended / archived board: to the current one of its kind
       STATE.lastOk = Date.now();               // the DATA arrived now, whatever the paint does next
       paintSoon(() => render(snap));
     } catch (e) { console.error(e); }
@@ -2311,6 +2313,8 @@ function startPolling() {
       // an old link's retired marker: follow it to the current board of the same kind, once per load
       const to = STATE.followed ? null : retiredTarget(snap, STATIC, STATE.exp);
       if (to) { followRetired(snap, to); return; }
+      const lt = STATE.followed ? null : liveFollowTarget(snap, STATE.exp, !!STATIC);   // the live server's polling fallback
+      if (lt) { followRetired(snap, lt); return; }
       // static only: a folder still on the data origin that the published list leaves out and no marker covers
       const away = STATIC ? await unpublishedFollowTarget(snap, want) : null;
       if (STATIC && STATE.exp !== want) return;      // the picker moved on while the list was read: that tick paints
@@ -2597,11 +2601,31 @@ function retiredTarget(s, st, exp) {
 function followRetired(snap, to, unpublished) {
   STATE.followed = { from: STATE.exp || (snap && snap.experiment_id) || (STATIC && STATIC.default) || "", to,
                      why: (snap && snap.retired_why) || null, unpublished: !!unpublished };
+  if (!STATIC) STATE.followed.ended = true;       // the live dashboard follows ended boards, not retired markers
   STATE.exp = to;
   try { history.replaceState(null, "", "?experiment=" + encodeURIComponent(to)); } catch (e) { }
   STATE.seenFills = new Set(); STATE.first = true; STATE.tradeDay = "today"; STATE.prices = {};
   ["tradeday", "tradebody", "rounds"].forEach(i => { const n = $(i); if (n) delete n.dataset.sig; });
   stopPolling(); closeSheet(); connect();
+}
+/* The live dashboard (2026-09-25): after a reboot the user opened http://127.0.0.1:8770/?experiment=stock-research-20260924
+   - replaced (ended and archived) the day before by stock-research-20260924b - and saw a stopped board. The live server
+   knows what is current (snap.experiments; the archived ids in snap.archived.ids), so an ended or archived id follows,
+   once per load, to the current board of ITS kind, with the same note as the published page. Never on the static page
+   (it has retired markers), never to itself, and nothing when no board of that kind is listed. */
+function boardKind(id, assetClass) {
+  if (assetClass) return assetClass === "crypto_spot" ? "crypto" : "stock";
+  return String(id || "").startsWith("crypto") ? "crypto" : "stock";
+}
+function liveFollowTarget(snap, exp, isStatic) {
+  if (isStatic || !snap || !exp) return null;
+  const ex = snap.experiment || {};
+  const archived = (((snap.archived || {}).ids) || []).includes(exp);
+  if (!archived && ex.status !== "ended") return null;
+  const mine = boardKind(exp, ex.asset_class || snap.asset_class);
+  const hit = (snap.experiments || []).find(e => e && e.experiment_id && e.experiment_id !== exp
+                                                && boardKind(e.experiment_id, e.asset_class) === mine);
+  return hit ? hit.experiment_id : null;
 }
 function followedBanner(s, add) {
   const f = STATE.followed;
@@ -2609,8 +2633,8 @@ function followedBanner(s, add) {
   const crypto = s.asset_class === "crypto_spot" || (s.experiment && s.experiment.asset_class === "crypto_spot");
   const why = f.why ? `（${esc(clipWhy(f.why))}）` : "";
   add("", LANG === "en"
-    ? `<span>↪</span><span>The link you opened names <b>${esc(f.from)}</b>, which is ${f.unpublished ? "not published" : "no longer published"}${f.why ? ` (${esc(clipWhy(f.why))})` : ""}. This is the current ${crypto ? "crypto" : "stock"} board, <b>${esc(f.to)}</b>, and it keeps updating.</span>`
-    : `<span>↪</span><span>你打开的链接指向 <b>${esc(f.from)}</b>，该实验${f.unpublished ? "目前没有发布" : "已停止发布"}${why}。这里显示的是当前的${crypto ? "加密货币" : "股票"}实验 <b>${esc(f.to)}</b>，数据持续更新。</span>`);
+    ? `<span>↪</span><span>The link you opened names <b>${esc(f.from)}</b>, which is ${f.ended ? "ended (replaced)" : f.unpublished ? "not published" : "no longer published"}${f.why ? ` (${esc(clipWhy(f.why))})` : ""}. This is the current ${crypto ? "crypto" : "stock"} board, <b>${esc(f.to)}</b>, and it keeps updating.</span>`
+    : `<span>↪</span><span>你打开的链接指向 <b>${esc(f.from)}</b>，该实验${f.ended ? "已结束（已被替换）" : f.unpublished ? "目前没有发布" : "已停止发布"}${why}。这里显示的是当前的${crypto ? "加密货币" : "股票"}实验 <b>${esc(f.to)}</b>，数据持续更新。</span>`);
 }
 
 /* A snapshot's own published list, while it can vouch for what is published NOW (review of 4a49624): at any age when
@@ -2674,8 +2698,8 @@ async function unpublishedFollowTarget(snap, exp) {
 
 function retiredBanner(s, add, st) {
   const S = st === undefined ? STATIC : st;       // `st`: the build's static config, passed in by the node probe
+  followedBanner(s, add);                         // the live dashboard follows ended boards too (liveFollowTarget)
   if (!S) return;
-  followedBanner(s, add);
   // `pub`: what the snapshot's publisher listed, only while it is recent enough to vouch that an id is still published
   // (vouchedRows). A snapshot published AFTER this copy was built knows the current list better than the copy, at any
   // age: the hand-committed stelux.ai build is exactly such a stale copy. Without a build stamp (an older build) the age
