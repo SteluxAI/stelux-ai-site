@@ -193,7 +193,10 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .qbadge{font-size:var(--fs-chip);font-weight:700;padding:1px 6px;border-radius:999px;white-space:nowrap;line-height:1.5}
 .qbadge.held{background:var(--blue);color:#fff}
 .qbadge.traded{border:1px solid var(--purple-ink);color:var(--purple-ink)}
-#ticker[data-session] .tk.held{border-left:3px solid var(--blue)}
+/* a held card: a thin even blue frame and a blue wash instead of the session tint (user 2026-09-25: no thick one-sided
+   stripe); the 持仓 ×N badge says it in words */
+#ticker[data-session] .tk.held{border-color:color-mix(in srgb,var(--blue) 65%,transparent);
+  background:color-mix(in srgb,var(--blue) 14%,var(--card-solid))}
 .tk .who{font-size:var(--fs-chip);color:var(--ink2);margin-top:3px;line-height:1.35;overflow-wrap:anywhere}
 .tk .who:empty{display:none}
 .tk .who > div{white-space:normal}
@@ -1109,7 +1112,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-25T14:12:07Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-25T14:12:07Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-25T14:37:13Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-25T14:37:13Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
