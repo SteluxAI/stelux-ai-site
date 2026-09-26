@@ -1112,7 +1112,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-25T14:37:13Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-25T14:37:13Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260924b","experiments":["stock-research-20260924b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-09-26T00:14:08Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-09-26T00:14:08Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20260928","experiments":["stock-research-20260928","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1889,6 +1889,32 @@ const I18N = {
     "上次读取": "the last read",
     // ---- 2026-09-24 (page group): why no trade, finished records, the earnings blackout, the fee-tier shadow, the
     // re-entry gate after a take-profit. BLOCK_ZH first: every reason code the stock entry path can record
+    // ---- 2026-09-25: the week (weekly-cadence boards) and the multi-day agents
+    "本周": "This week", "本周领先": "Leading this week", "本周并列第一": "Tied first this week",
+    "周末收盘后进化": "evolves after the week's last close", "① 本周谁领先": "① Who leads this week",
+    "实时 paper 里本周涨幅最高的槽。这只是本周到目前为止的事实，它不构成任何「这个策略有效」的结论。":
+      "The slot with the highest gain this week in the live paper run. It is only a fact about the week so far - it is not a conclusion that the strategy works.",
+    "本周涨幅从上周最后一次收盘冻结的净值算起（第一周从本金算起）。每周最后一个交易日收盘后进化：按最近 5 个交易日的净收益之和排名，淘汰末 3 名，换成它们各自的变异版本。":
+      "This week's gain is measured from last week's final frozen close (the principal in the first week). The board evolves after the week's last close: ranked on the net return summed over the last 5 sessions, the bottom 3 are replaced by mutations of themselves.",
+    "本周涨幅名次，仅作对照：这个槽已结束，不参加进化排名": "Rank on this week's gain, for reference only: this slot is finished and takes no part in the evolution ranking",
+    "并列：本周涨幅相同，名次由预先固定的 tie-break 规则决定，不代表优劣": "Tied: the same gain this week - the order comes from a fixed tie-break, not from performance",
+    "本周涨幅名次（从上周最后一次收盘冻结算起；每周最后一个交易日收盘后按最近 5 个交易日的收益进化）":
+      "Rank on this week's gain (from last week's final frozen close; the board evolves after the week's last close on the last 5 sessions' return)",
+    "本周涨幅相同，名次由 tie-break 决定": "the same gain this week; the order is a tie-break",
+    "波段": "swing", "趋势回调": "trend pullback", "深回调": "deep pullback", "20日突破": "20-day breakout",
+    "55日突破": "55-day breakout", "超跌反弹": "oversold rebound", "日线突破": "daily breakout",
+    "波段·趋势回调": "swing · trend pullback", "波段·日线突破": "swing · daily breakout", "波段·超跌反弹": "swing · oversold rebound",
+    "今天收盘前要清仓（周末/节假日前），波段不开新仓": "flattened at today's close (before a weekend or holiday): no new swing entry",
+    "没有启用的波段策略": "no swing rule enabled", "波段策略只在常规盘入场": "swing rules enter in the regular session only",
+    "前一交易日的日线还没到": "the previous session's daily bar has not arrived", "大盘指数前一交易日的日线还没到": "the index's previous daily bar has not arrived",
+    "不知道前一个交易日": "the previous trading day is unknown", "日线历史不够": "not enough daily history",
+    "不在上升结构（20 日均线不高于 50 日）": "no uptrend (20-day mean not above the 50-day)", "昨收低于 50 日均线": "prior close below the 50-day mean",
+    "还没回调到 20 日均线附近": "not pulled back to the 20-day mean yet", "回调太深": "pullback too deep", "昨天没有收高确认": "no up close yesterday",
+    "大盘 20 日走弱": "index weak over 20 days", "昨天已经突破（不是新突破）": "broke out yesterday already (not a fresh break)",
+    "突破后已高出 1 个 ATR，不追": "more than 1 ATR above the level: not chased", "今天离昨收超过 1 个 ATR": "more than 1 ATR from the prior close today",
+    "大盘低于 50 日均线": "index below its 50-day mean", "超跌不够": "not stretched enough", "跌得太深（接飞刀）": "too deep (a falling knife)",
+    "昨收低于 100 日均线": "prior close below the 100-day mean", "今天还没从开盘价拐头向上": "not yet up from today's open",
+    "未知波段策略": "unknown swing rule",
     "出现信号": "a signal", "没有策略给出信号": "no strategy fired", "已有持仓（每槽最多 1 个）": "already holding (one position per slot)",
     "收盘前清仓时段，不再开仓": "the pre-close flatten window: no new entry", "非常规时段的入场次数已用完": "the extended-hours entry quota is spent",
     "非常规时段的入场单已用完": "the extended-hours entry-order quota is spent", "没有新 K 线": "no new bar",
@@ -3646,17 +3672,30 @@ function renderCrypto(s) {
 // server refuses to rank a slot whose day return is unknown ("listed but never ranked"), which on a closed
 // weekend is every stock slot - so the fallback is the cumulative return the card already prints. That orders
 // cards by a number on the card; it does not invent a rank, and the badge still reads "–". Unknown sorts last.
-function agentOrder(slots) {
-  const ranked = slots.some(a => isNum(a.live_rank));
+// 2026-09-25 (user: 按照一周的周末看谁的涨幅最大): a board that evolves once a week is judged on the WEEK - there the cards,
+// the rank badge, the leader and the at-risk band read the week's gain (week_rank, from the last frozen close before the
+// week), and the day's return stays on the card beside it. Every other board reads the day exactly as before.
+function weeklyBoard(s) {
+  const e = (s && s.experiment) || {};
+  return !STATE.crypto && e.round_cadence === "weekly" && !!(s && s.week);
+}
+function rankOf(a, s) { return weeklyBoard(s) ? a.week_rank : a.live_rank; }
+function rankTiedOf(a, s) { return weeklyBoard(s) ? a.week_rank_tied : a.live_rank_tied; }
+
+function agentOrder(slots, s) {
+  // the badge's own rank: week_rank on a weekly board, live_rank on every other (rankOf reads the same two)
+  const wk = weeklyBoard(s);
+  const rk = a => (wk ? a.week_rank : a.live_rank);
+  const ranked = slots.some(a => isNum(rk(a)));
   const key = a => ranked
-    ? (isNum(a.live_rank) ? a.live_rank : Infinity)
+    ? (isNum(rk(a)) ? rk(a) : Infinity)
     : (isNum(a.live_return_bp) ? -a.live_return_bp : Infinity);
   const out = slots.slice().sort((a, b) => {
     const d = key(a) - key(b);
     if (d) return d;
     return (a.slot_index || 0) - (b.slot_index || 0);     // stable: equal returns must not reshuffle every second
   });
-  out.basis = ranked ? "rank" : (slots.some(a => isNum(a.live_return_bp)) ? "return" : "none");
+  out.basis = ranked ? (wk ? "week" : "rank") : (slots.some(a => isNum(a.live_return_bp)) ? "return" : "none");
   return out;
 }
 
@@ -3790,11 +3829,27 @@ const BLOCK_ZH = {
   "breaker:daily": "日亏熔断", "breaker:cum": "累计/回撤熔断", pre_start: "实验尚未开始", last_day: "实验最后一天",
   ended: "实验已结束", duplicate_signal_bar: "这根 K 线已经下过单", "not_admitted:not_in_universe": "不在可交易名单内",
   "paused:trading": "交易已暂停", earnings_blackout: "财报禁区", earnings_calendar_unknown: "财报日历未知",
+  // the multi-day rules (arena/swing.py, 2026-09-25)
+  no_swing_strategy_enabled: "没有启用的波段策略", swing_regular_session_only: "波段策略只在常规盘入场",
+  swing_flatten_day: "今天收盘前要清仓（周末/节假日前），波段不开新仓",
+  daily_bars_stale: "前一交易日的日线还没到", benchmark_daily_stale: "大盘指数前一交易日的日线还没到",
+  daily_calendar_unknown: "不知道前一个交易日", insufficient_daily_history: "日线历史不够",
+  no_uptrend_structure: "不在上升结构（20 日均线不高于 50 日）", below_sma50: "昨收低于 50 日均线",
+  not_pulled_back: "还没回调到 20 日均线附近", dip_too_deep: "回调太深", no_recovery_day: "昨天没有收高确认",
+  regime_weak_20d: "大盘 20 日走弱", already_broken_out: "昨天已经突破（不是新突破）",
+  breakout_extended_beyond_1atr: "突破后已高出 1 个 ATR，不追", gap_beyond_1atr: "今天离昨收超过 1 个 ATR",
+  regime_off_benchmark_below_sma50: "大盘低于 50 日均线", not_stretched: "超跌不够", falling_knife: "跌得太深（接飞刀）",
+  below_sma100: "昨收低于 100 日均线", no_intraday_turn: "今天还没从开盘价拐头向上", unknown_swing_strategy: "未知波段策略",
   // the heads of a family whose tail is printed as it was written
   "risk_limit:*": "风控上限", "skip:*": "跳过", "breaker:*": "熔断",
 };
 
-function stratShort(sid) { return String(sid == null ? "" : sid).replace(/_v\d+$/, ""); }
+// the multi-day rules (arena/swing.py) by name; every other id is shown as it always was, minus its version suffix
+const SWING_NAME = { swing_pullback_v1: "波段·趋势回调", swing_breakout_v1: "波段·日线突破", swing_reversion_v1: "波段·超跌反弹" };
+function stratShort(sid) {
+  const k = String(sid == null ? "" : sid);
+  return SWING_NAME[k] ? tr(SWING_NAME[k]) : k.replace(/_v\d+$/, "");
+}
 
 function blockWord(code) {
   const k = String(code == null ? "" : code);
@@ -4512,7 +4567,8 @@ function renderAgents(s) {
     });
   }
   const ranked = STATE.agSort !== "slot";
-  const ordered = ranked ? agentOrder(byIndex) : byIndex;
+  const ordered = ranked ? agentOrder(byIndex, s) : byIndex;
+  const wk = weeklyBoard(s);
   // The band on course to be replaced at the next node. `evolution.run_round` ranks by the day's scoring metric
   // and retires `bottom = ranked[-replace_bottom:]`, so the size comes from the experiment, never a constant.
   // Only a LIVE RANKING can project it: where the server declined to rank (unknown day return), a fallback order
@@ -4526,10 +4582,12 @@ function renderAgents(s) {
   const latched = exr.latched_slots === "finished_v1";
   const swb = switchBoard(s);                   // each agent's own switches (2026-09-24): off on every running board
   const fin = new Set(latched ? byIndex.filter(a => finishedOf(a, s)).map(a => a.slot_id) : []);
-  const byRank = byIndex.filter(a => isNum(a.live_rank) && !fin.has(a.slot_id)).sort((a, b) => a.live_rank - b.live_rank);
+  // the server's own ranking: the week's on a weekly board, the day's on every other
+  const byRank = byIndex.filter(a => (wk ? isNum(a.week_rank) : isNum(a.live_rank)) && !fin.has(a.slot_id))
+    .sort((a, b) => rankOf(a, s) - rankOf(b, s));
   const nRep = latched ? Math.min(nCfg, Math.floor(byRank.length / 2)) : nCfg;
   const enough = latched ? byRank.length >= 2 : byRank.length >= 2 * nRep;
-  const sameMetric = (exr.metric || "daily_net_equity_return") === "daily_net_equity_return";
+  const sameMetric = wk || (exr.metric || "daily_net_equity_return") === "daily_net_equity_return";
   // every reason run_round writes outcome=skipped and moves nobody
   const inert = [];
   if ((s.controls || {}).pause_evolution) inert.push(tr("进化已暂停"));
@@ -4545,7 +4603,7 @@ function renderAgents(s) {
   const slots = ordered;
   // the ring marks a LEADER, and a tie has none: ringing the lowest slot number of a ten-way tie was a claim about
   // a strategy made by a sort order, and ringing all ten on a flat day would mean nothing
-  const lv = leaderView(s.system);
+  const lv = leaderView(s.system, wk);
   const lead = lv.tie === false ? lv.slots[0] : null;
   const live = new Set(slots.map(a => a.slot_id));
   // drop anything that is not a card for a current slot -- including the empty-state placeholder,
@@ -4608,22 +4666,33 @@ function renderAgents(s) {
         rc.title = LANG === "en"
           ? (inert.length
             ? `In the bottom ${nRep} on the live ranking, but nothing is replaced this round: ${inert.join(", ")}`
+            : wk
+            ? `In the bottom ${nRep} on this week's gain so far. The slot and its money are permanent - what gets replaced `
+            + `is the strategy version in it. The real selection runs after the week's last close, on the net return `
+            + `summed over the last 5 sessions (leaving out positions a new version inherited); this is a live projection.`
             : `In the bottom ${nRep} on the live ranking. The slot and its money are permanent - what gets replaced `
             + `is the strategy version in it. The real selection is made from the FROZEN daily close at the next `
             + `evolution node; this is a live projection.`)
           : (inert.length
             ? `按当前实时名次属于末 ${nRep} 名，但本轮不会替换：${inert.join("、")}`
+            : wk
+            ? `按本周涨幅目前属于末 ${nRep} 名。资金槽与本金永久保留，被替换的是槽里的策略版本；实际淘汰在本周最后一个交易日收盘冻结后进行，按最近 5 个交易日的净收益之和（不含新版本接手的旧持仓）排名，现在只是实时推演。`
             : `按当前实时名次属于末 ${nRep} 名。资金槽与本金永久保留，被替换的是槽里的策略版本；`
             // the board's own boundary: a stock board freezes at its 20:10 close, not at a UTC day end
             + `实际淘汰以${STATE.crypto ? " UTC 日结" : "收盘"}冻结后的当日成绩为准，现在只是实时推演。`);
       }
       const rk = n.querySelector(".rank");
-      rk.textContent = isNum(a.live_rank) ? a.live_rank : "–";
+      const rkv = rankOf(a, s), rkt = rankTiedOf(a, s);
+      rk.textContent = isNum(rkv) ? rkv : "–";
       // gild only a rank that performance actually earned; a tie-break rank stays neutral and says so
-      rk.className = "rank" + (a.live_rank >= 1 && a.live_rank <= 3 && !a.live_rank_tied ? " r" + a.live_rank : "");
+      rk.className = "rank" + (rkv >= 1 && rkv <= 3 && !rkt ? " r" + rkv : "");
       // a finished slot keeps its day-return badge (its positions still move), but the hover says it is not in the
       // evolution ranking - the chip beside it says "finished", and a bare rank read as "ranked"
-      rk.title = tr(fz ? "当日净值收益率名次，仅作对照：这个槽已结束，不参加进化排名"
+      rk.title = wk
+        ? tr(fz ? "本周涨幅名次，仅作对照：这个槽已结束，不参加进化排名"
+          : rkt ? "并列：本周涨幅相同，名次由预先固定的 tie-break 规则决定，不代表优劣"
+          : "本周涨幅名次（从上周最后一次收盘冻结算起；每周最后一个交易日收盘后按最近 5 个交易日的收益进化）")
+        : tr(fz ? "当日净值收益率名次，仅作对照：这个槽已结束，不参加进化排名"
         : a.live_rank_tied ? "并列：当日收益相同，名次由预先固定的 tie-break 规则决定，不代表优劣"
         : "当日净值收益率名次（实时徽章始终按当日口径排序）");
       n.querySelector(".slotid").textContent = a.slot_id;
@@ -4669,7 +4738,7 @@ function renderAgents(s) {
       const tag = n.querySelector(".tag");
       tag.textContent = tr(({ new: "新生", kept: "保留", init: "初代" })[a.round_status] || "");
       tag.className = "tag " + (a.round_status || "");
-      n.classList.toggle("lead", a.slot_id === lead && isNum(a.live_day_return_bp));
+      n.classList.toggle("lead", a.slot_id === lead && isNum(wk ? a.week_return_bp : a.live_day_return_bp));
       setNum(n.querySelector(".aeq"), a.live_equity_cents, v => usd(v));
       const cashBox = n.querySelector(".acash");
       if (cashBox) {
@@ -4684,11 +4753,16 @@ function renderAgents(s) {
       const dayCls = signCls(a.live_day_return_bp);
       // the same label the drawer uses: a since-inception figure or an unfrozen baseline must not read as 今日
       const db = dayBasis(a);
-      row.innerHTML = `<span class="chg s num ${dayCls}">${isNum(a.live_day_return_bp) ? bpPct(a.live_day_return_bp) : UNK}</span>
-        <span class="muted" title="${esc(db.tip)}">${esc(db.k)}</span>
+      const wkTip = wk ? weekTip(a, s) : "";
+      row.innerHTML = (wk
+        ? `<span class="chg s num ${signCls(a.week_return_bp)}" title="${esc(wkTip)}">${isNum(a.week_return_bp) ? bpPct(a.week_return_bp) : UNK}</span>
+        <span class="muted" title="${esc(wkTip)}">${tr("本周")}</span>
+        <span class="muted num" title="${esc(db.tip)}">${esc(db.k)} <b class="${dayCls}">${isNum(a.live_day_return_bp) ? bpPct(a.live_day_return_bp) : UNK}</b></span>`
+        : `<span class="chg s num ${dayCls}">${isNum(a.live_day_return_bp) ? bpPct(a.live_day_return_bp) : UNK}</span>
+        <span class="muted" title="${esc(db.tip)}">${esc(db.k)}</span>`) + `
         <span class="muted num">累计 <b style="color:${isNum(a.live_return_bp) ? (a.live_return_bp > 0 ? cssVar("--green-ink") : a.live_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_return_bp) ? bpPct(a.live_return_bp) : UNK}</b></span>
         <span class="muted num" title="${tr("策略任内收益：本策略版本接手这个资金槽之后的收益，不含前任的盈亏")}">${tr("任内")} <b style="color:${isNum(a.live_tenure_return_bp) ? (a.live_tenure_return_bp > 0 ? cssVar("--green-ink") : a.live_tenure_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_tenure_return_bp) ? bpPct(a.live_tenure_return_bp) : UNK}</b>${isNum(a.tenure_sessions) ? ` <span class="muted">· ${a.tenure_sessions} ${plu(a.tenure_sessions, tr("日"), "day")}</span>` : ""}</span>
-        ${a.live_rank_tied ? `<span class="muted" title="${tr("当日收益相同，名次由 tie-break 决定")}">· ${tr("并列")}</span>` : ""}`;
+        ${rankTiedOf(a, s) ? `<span class="muted" title="${tr(wk ? "本周涨幅相同，名次由 tie-break 决定" : "当日收益相同，名次由 tie-break 决定")}">· ${tr("并列")}</span>` : ""}`;
       const pts = curveVals(a.curve);
       if (isNum(a.live_equity_cents)) pts.push(a.live_equity_cents);
       spark(n.querySelector(".spark"), pts, !isNum(a.live_day_return_bp) ? cssVar("--ink3")
@@ -4699,7 +4773,7 @@ function renderAgents(s) {
         pb.innerHTML = a.positions.map(p => {
           const u = p.unrealized_cents;
           // a position valued on a stale print says so on its own row, not only in the drawer
-          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}${p.price_status === "stale" ? ` <span class="qmark"${isNum(p.price_age_s) ? ` title="${esc(ago(p.price_age_s))}"` : ""}>${tr("陈旧")}</span>` : ""}</span><span class="q num">${fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}</span>
+          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}${p.price_status === "stale" ? ` <span class="qmark"${isNum(p.price_age_s) ? ` title="${esc(ago(p.price_age_s))}"` : ""}>${tr("陈旧")}</span>` : ""}</span><span class="q num">${fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}${swingHeld(p)}</span>
             <span class="u num" style="color:${isNum(u) ? (u > 0 ? cssVar("--green-ink") : u < 0 ? cssVar("--red-ink") : "") : cssVar("--ink3")}">${isNum(u) ? usd(u, { sign: u > 0 }) : UNK}${isNum(p.unrealized_bp) ? ` <span class="muted">${bpPct(p.unrealized_bp, 1)}</span>` : ""}</span></div>`;
         }).join("");
       } else if (a.ledger_readable === false || a.live_equity_status === "unreadable") {
@@ -4824,6 +4898,10 @@ function renderAgents(s) {
   $("agnote").textContent = `${tr("资金槽永久保留 · 策略版本可更换 · 竞争口径")}${LANG === "en" ? ": " : "："}${tr(ex.metric_zh || UNK)}`
     + (daily
         ? (LANG === "en" ? " (the badges rank on this same metric)" : "（徽章即此口径）")
+        : weeklyBoard(s)
+        ? (LANG === "en"
+            ? " (the badges rank this week's gain; the weekly round sums the last 5 sessions' net returns and leaves out positions a new version inherited - close to the week's gain, not always identical)"
+            : "（徽章与名次按本周涨幅排序；每周进化按最近 5 个交易日的净收益之和排名，不含新版本接手的旧持仓——与本周涨幅接近，但不一定完全相同）")
         : (LANG === "en"
             ? ` (note: the badges and ranks below sort by DAILY net equity return, which differs from the competition metric ${tr(ex.metric_zh || "")}; each card lists its cumulative return separately)`
             : `（注意：下方徽章与名次按当日净值收益率排序，与竞争口径 ${ex.metric_zh} 不同；每卡的累计收益单列）`));
@@ -4835,12 +4913,14 @@ function renderAgents(s) {
       ? (LANG === "en" ? ` · the bottom ${nRep} are marked, but nothing will be replaced this round (${inert.join(", ")})`
         : ` · 已标出末 ${nRep} 名，但本轮不会替换（${inert.join("、")}）`)
       : (LANG === "en" ? ` · the bottom ${nRep} are on course to have their strategy replaced at the next node; the slot and its money stay`
-        : ` · 末 ${nRep} 名的策略将在下个进化结点被替换（资金槽与本金保留），以日结冻结成绩为准`);
+        : ` · 末 ${nRep} 名的策略将在下个进化结点被替换（资金槽与本金保留），以${weeklyBoard(s) ? "周末收盘冻结的最近 5 个交易日成绩" : "日结冻结成绩"}为准`);
   }
   if (ranked) {
     const b = ordered.basis;
     $("agnote").textContent += b === "rank"
       ? (LANG === "en" ? " · cards ordered by live rank" : " · 卡片按实时名次排列")
+      : b === "week"
+        ? (LANG === "en" ? " · cards ordered by this week's gain (the board evolves once a week)" : " · 卡片按本周涨幅排列（每周进化一次）")
       : b === "return"
         ? (LANG === "en" ? " · no live rank yet (no prior close), so cards are ordered by the cumulative return on each card"
           : " · 今日尚无实时名次（无前收基准），卡片按各自的累计收益排列")
@@ -5200,6 +5280,21 @@ function experimentBrief(s) {
   const today = [];
   if (isNum(sys.day_return_bp)) today.push(`${tr("十槽合计")} ${pct1(sys.day_return_bp)}`);
   else if (isNum(sys.cum_return_bp)) today.push(`${tr("累计")} ${pct1(sys.cum_return_bp)}`);
+  if (weeklyBoard(s)) {
+    // the week the board is judged on: its gain so far, who leads it, and when the round runs
+    const w = s.week || {};
+    const wl = leaderView(sys, true);
+    const wline = [];
+    if (isNum(sys.week_return_bp)) wline.push(`${tr("十槽合计")} ${pct1(sys.week_return_bp)}`);
+    if (wl.slots.length) wline.push(wl.tie
+      ? `${tr("本周并列第一")} ${esc(wl.slots.slice(0, 4).join(" "))}`
+      : `${tr("本周领先")} ${esc(wl.slots[0])} ${isNum(sys.week_leader_return_bp) ? pct1(sys.week_leader_return_bp) : ""}`);
+    if ((w.days || []).length) wline.push(LANG === "en" ? `${w.days_closed || 0}/${w.days.length} days closed`
+      : `已收盘 ${w.days_closed || 0}/${w.days.length} 个交易日`);
+    wline.push(tr("周末收盘后进化"));
+    out.push({ k: tr("本周"), v: wline.join(" · "),
+               tip: tr("本周涨幅从上周最后一次收盘冻结的净值算起（第一周从本金算起）。每周最后一个交易日收盘后进化：按最近 5 个交易日的净收益之和排名，淘汰末 3 名，换成它们各自的变异版本。") });
+  }
   const lv = leaderView(sys);
   if (lv.slots.length) {
     // ten slots flat at 0 bp have no leader, they have a sort order. Saying 领先 there is the one thing this
@@ -5225,11 +5320,41 @@ function experimentBrief(s) {
    board after the identical RKLB stop-out, all ten slots at -5 bp, the hero correctly said 当日并列第一 while shelf ①
    listed S01 with a count of 1 and S01's card wore the leader ring. The crypto board did the same with a two-way
    tie. merge_live's own comment calls this the one claim the board must not make. */
-function leaderView(sys) {
+function leaderView(sys, week) {
   const y = sys || {};
-  const tied = Array.isArray(y.leader_tied_with) ? y.leader_tied_with : [];
-  if (!y.leader_slot) return { slots: [], tie: null };
-  return (y.leader_is_tie === true && tied.length > 1) ? { slots: tied, tie: true } : { slots: [y.leader_slot], tie: false };
+  const w = week ? "week_" : "";
+  const tied = Array.isArray(y[w + "leader_tied_with"]) ? y[w + "leader_tied_with"] : [];
+  if (!y[w + "leader_slot"]) return { slots: [], tie: null };
+  return (y[w + "leader_is_tie"] === true && tied.length > 1) ? { slots: tied, tie: true } : { slots: [y[w + "leader_slot"]], tie: false };
+}
+
+// what a card's week figure is measured from, in words (the hover of the number and of 本周)
+function weekTip(a, s) {
+  const w = s.week || {};
+  const en = LANG === "en";
+  const n = (w.days || []).length, done = isNum(w.days_closed) ? w.days_closed : 0;
+  const base = w.first_week
+    ? (en ? "from the principal (the experiment's first week)" : "从本金算起（实验的第一周）")
+    : (en ? `from its frozen close of ${w.prev_close_day}` : `从 ${w.prev_close_day} 收盘冻结的净值算起`);
+  const now = w.live ? (en ? "to its live equity" : "到实时净值") : (en ? "to its last close this week" : "到本周最后一次收盘");
+  return (en ? `This week's gain ${base} ${now}; ${done} of ${n} trading days closed. `
+    + `The weekly round runs after the week's last close on the net return summed over the last 5 sessions `
+    + `(positions a new version inherited left out), so it can differ slightly from this figure.`
+    : `本周涨幅：${base}，${now}；本周 ${n} 个交易日已收盘 ${done} 个。每周最后一个交易日收盘后进化，按最近 5 个交易日的每日净收益之和排名（不含新版本接手的旧持仓），可能与这里的数字略有不同。`);
+}
+
+// the multi-day agents' positions (arena/swing.py): day N of at most M
+function swingHeld(p) {
+  const w = p && p.swing;
+  if (!w) return "";
+  const en = LANG === "en";
+  const t = isNum(w.held_days)
+    ? (en ? `day ${w.held_days}/${w.max_hold_days}` : `第 ${w.held_days}/${w.max_hold_days} 天`)
+    : (en ? `up to ${w.max_hold_days} days` : `最多 ${w.max_hold_days} 天`);
+  const tip = en
+    ? `A multi-day position: held since ${w.entry_day || "?"}; sold before the close of trading day ${w.max_hold_days} at the latest; from day 2 its stop trails up to the lowest low of the last ${w.trail_days} daily bars.`
+    : `波段持仓：${w.entry_day || "?"} 买入；最迟在第 ${w.max_hold_days} 个交易日收盘前卖出；从第 2 天起止损跟随最近 ${w.trail_days} 个日线的最低点上移。`;
+  return ` <span class="swchip" title="${esc(tip)}">${esc(t)}</span>`;
 }
 
 function renderShelves(s) {
@@ -5237,7 +5362,7 @@ function renderShelves(s) {
   const r = (s.research || null);
   if (!box) return;
   if (!r) { if (sec) sec.style.display = "none"; box.style.display = "none"; return; }
-  const lv = leaderView(s.system);
+  const lv = leaderView(s.system, weeklyBoard(s));
   const lead = lv.tie === false ? lv.slots[0] : null;
   const counts = {
     // counted from the LEADER, not from the slot count: when the server cannot rank anyone (a feed outage
@@ -5267,10 +5392,10 @@ function renderShelves(s) {
         + `${lv.slots.length > 6 ? ` ${tr("…共")} ${lv.slots.length} ${tr("个并列")}` : ""}</li></ul>`
       : "";
     return `<div class="shelf ${esc(k)}${empty ? " empty" : ""}">
-      <h3>${tr(SHELF_ZH[k])}</h3>
+      <h3>${tr(k === "day_leader" && weeklyBoard(s) ? "① 本周谁领先" : SHELF_ZH[k])}</h3>
       <div class="n">${empty && k === "evidence_supported" ? tr("无合格候选")
         : (k === "day_leader" && lv.tie === true) ? tr("无领先") : counts[k]}</div>
-      <div class="why">${tr(SHELF_WHY[k])}</div>
+      <div class="why">${tr(k === "day_leader" && weeklyBoard(s) ? "实时 paper 里本周涨幅最高的槽。这只是本周到目前为止的事实，它不构成任何「这个策略有效」的结论。" : SHELF_WHY[k])}</div>
       ${tieBlock}${nm.length ? `<ul>${nm.slice(0, 6).map(x => {
         // `trend_continuation · d26199a9` is a family and a config hash. The hash is provenance - two entries of
         // the same family are told apart by it - so it stays in the tooltip and out of the reading line.
