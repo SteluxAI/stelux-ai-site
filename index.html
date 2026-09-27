@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Stelux AI — Enterprise AI Agents, Orchestration &amp; GPU Compute</title>
-  <meta name="description" content="Stelux AI — home of Michigan Property Intelligence, StyleAI, Market Signal Pro and Lux AI Assistant. Autonomous agent swarms on your data and your GPUs.">
+  <meta name="description" content="Explore Stelux AI: Arena stock research, BUMPHONY! rhythm game, Michigan Property Intelligence, and StyleAI. AI tools and original games, built in Michigan.">
   <meta name="theme-color" content="#08080a">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -63,10 +63,9 @@
       </a>
       <ul class="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 text-[14px] md:flex">
         <li><a class="nav-link" href="#products">Products</a></li>
-        <li><a class="nav-link" href="#platform">Platform</a></li>
-        <li class="hidden lg:block"><a class="nav-link" href="#agents">Agents</a></li>
-        <li class="hidden lg:block"><a class="nav-link" href="#compute">Compute</a></li>
-        <li class="hidden lg:block"><a class="nav-link" href="#showcase">Developers</a></li>
+        <li class="hidden lg:block"><a class="nav-link" href="#platform">Platform</a></li>
+        <li><a class="nav-link" href="/arena/?experiment=stock-research-20260928">Arena</a></li>
+        <li class="hidden lg:block"><a class="nav-link" href="#bumphony">Games</a></li>
         <li><a class="nav-link" href="#pricing">Pricing</a></li>
       </ul>
       <div class="ml-auto flex items-center gap-2 sm:gap-3">
@@ -85,6 +84,8 @@
     <div class="flex min-h-full flex-col px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-24">
       <nav class="flex flex-col gap-1" aria-label="Mobile">
         <a class="menu-link" href="#products">Products</a>
+        <a class="menu-link" href="/arena/?experiment=stock-research-20260928">Arena</a>
+        <a class="menu-link" href="#bumphony">BUMPHONY! · Music game</a>
         <a class="menu-link" href="#platform">Platform</a>
         <a class="menu-link" href="#agents">Agents</a>
         <a class="menu-link" href="#data">Data</a>
@@ -212,10 +213,40 @@
             <span class="eyebrow">What we build</span>
             <h2 class="h2 mt-4">Our products.</h2>
           </div>
-          <p class="lead max-w-md lg:text-right">Focused, practical AI tools that deliver a genuine edge — not hype, not demos. Real intelligence, real results.</p>
+          <p class="lead max-w-md lg:text-right">Explore our AI tools, follow the Arena research experiment, or find your rhythm with BUMPHONY!.</p>
         </div>
 
         <div class="mt-12 grid gap-4 md:grid-cols-2" data-reveal>
+          <a id="arena" href="/arena/?experiment=stock-research-20260928" class="product product-featured">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <span class="product-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18M6 15l4-5 4 3 6-8"/><path d="M16 5h4v4"/></svg></span>
+              <span class="status-live">Research experiment</span>
+            </div>
+            <h3 class="product-h3">Arena · Stock Research</h3>
+            <p class="product-p">Follow ten AI strategy slots in one stock-research arena. Explore portfolio performance, positions, trades, and the progress of the experiment.</p>
+            <p class="mt-3 text-[12px] leading-relaxed text-white/55">Real market data · Simulated trades</p>
+            <span class="product-cta">Explore Arena <span aria-hidden="true">→</span></span>
+          </a>
+          <article id="bumphony" class="product product-game" aria-labelledby="bumphony-title">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <img class="game-icon" src="/img/bumphony-icon.png" width="64" height="64" alt="" loading="lazy" decoding="async">
+              <span class="status-live">Music game</span>
+            </div>
+            <h3 id="bumphony-title" class="product-h3">BUMPHONY!</h3>
+            <p class="product-p">Every cheek has a beat. Tap to the music, hold the notes, and build your combo in an original comedy rhythm game with four expressive performers.</p>
+            <div class="game-downloads">
+              <a class="game-download" href="https://play.google.com/store/apps/details?id=ai.stelux.bumphony" target="_blank" rel="noopener noreferrer" aria-label="Download BUMPHONY! for Android on Google Play">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg>
+                <span><small>Download for Android</small><strong>Google Play</strong></span>
+                <span aria-hidden="true">↗</span>
+              </a>
+              <!-- Add the approved App Store URL here when the iPhone update is ready. -->
+              <div class="game-download game-download-pending">
+                <span><small>iPhone · App Store</small><strong>Update in review</strong></span>
+              </div>
+            </div>
+            <p class="mt-3 text-[12px] leading-relaxed text-white/55">The iPhone download link will be added after the update is approved.</p>
+          </article>
           <a href="https://michigan.stelux.ai" target="_blank" rel="noopener" class="product">
             <div class="flex items-start justify-between gap-4">
               <span class="product-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
@@ -655,6 +686,8 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
         <div>
           <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Products</div>
           <ul class="mt-2">
+            <li><a class="foot-link" href="/arena/?experiment=stock-research-20260928">Arena · Stock Research</a></li>
+            <li><a class="foot-link" href="#bumphony">BUMPHONY! · Downloads</a></li>
             <li><a class="foot-link" href="https://michigan.stelux.ai" target="_blank" rel="noopener">Michigan Property Intelligence</a></li>
             <li><a class="foot-link" href="https://style.stelux.ai" target="_blank" rel="noopener">StyleAI</a></li>
             <li><a class="foot-link" href="#products">Market Signal Pro</a></li>
