@@ -496,8 +496,12 @@
     var EN = {};
     nodes.forEach(function (n) { var k = n.getAttribute("data-i18n"); if (!(k in EN)) EN[k] = n.textContent; });
     EN.soundOn = "Sound on"; EN.soundOff = "Mute";
+    /* English by default for every visitor. A ?lang=zh|en link picks the
+       language for that visit; the toggle remembers an explicit choice under
+       its own key (the old "cb-lang" was also written on auto-detect, so it
+       is ignored rather than trusted). */
     var lang = "en";
-    try { lang = localStorage.getItem("cb-lang") || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en"); } catch (e) {}
+    try { var q = (new URLSearchParams(location.search).get("lang") || "").toLowerCase(); lang = q === "zh" || q === "en" ? q : (localStorage.getItem("cb-lang-choice") || "en"); } catch (e) {}
     var soundBtn = document.getElementById("hero-sound");
     function apply(l) {
       lang = l;
@@ -506,9 +510,11 @@
       document.documentElement.lang = l === "zh" ? "zh-CN" : "en";
       document.getElementById("lang").textContent = l === "zh" ? "EN" : "中文";
       syncSound();
-      try { localStorage.setItem("cb-lang", l); } catch (e) {}
     }
-    document.getElementById("lang").addEventListener("click", function () { apply(lang === "zh" ? "en" : "zh"); });
+    document.getElementById("lang").addEventListener("click", function () {
+      apply(lang === "zh" ? "en" : "zh");
+      try { localStorage.setItem("cb-lang-choice", lang); } catch (e) {}
+    });
 
     /* ---------- the nav turns solid once the hero scrolls ---------- */
     var nav = document.querySelector(".nav");
