@@ -1030,7 +1030,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
     </div>
   </div>
 
-  <div class="sec"><h2>十个 Agent</h2><span class="note" id="agnote"></span>
+  <div class="sec"><h2>全部 Agent</h2><span class="note" id="agnote"></span>
     <button class="grpbtn" id="agsort" type="button" aria-pressed="true" title="按名次排列：领先的在前面。点一下改回按槽位 S01–S10 排列">按名次</button></div>
   <div class="aglegend" id="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
@@ -1058,7 +1058,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
     <div class="hint" id="cmpnotefull" style="display:none;flex:1 0 100%;margin-top:2px"></div>
   </div>
   <div class="card pad cmpwrap">
-    <svg class="cmp" id="cmpchart" role="img" aria-label="十个 Agent 的净值对比曲线"></svg>
+    <svg class="cmp" id="cmpchart" role="img" aria-label="各 Agent 的净值对比曲线"></svg>
     <svg class="cmpnav" id="cmpnav" tabindex="0" role="group"
          aria-label="时间轴导航条：拖动窗口左右移动，拖动两端改变时长，左右方向键逐步移动"
          title="拖动窗口左右移动 · 拖两端改变时长 · 空白处拖选一段 · ← → 逐步移动"></svg>
@@ -1112,7 +1112,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-03T15:34:05Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-03T15:34:05Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005","experiments":["stock-factor-20261005","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-03T15:36:56Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-03T15:36:56Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005","experiments":["stock-factor-20261005","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1410,7 +1410,7 @@ const I18N = {
       "· these agents hold nothing and have not filled today, so only the benchmarks are shown",
     "行情源已关闭（--no-feed）": "Quote feed disabled (--no-feed)",
     // ---- agents
-    "十个 Agent": "Ten Agents",
+    "全部 Agent": "All agents",
     "每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。":
       "Each card: rank · capital slot (S01–S10, permanent) · current strategy (its code, then its personality) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.",
     "原版": "original", "可隔夜": "may hold overnight", "保留": "kept", "新生": "new", "任内": "tenure",
@@ -1519,7 +1519,9 @@ const I18N = {
     "基准线为本金，上方盈利、下方亏损": "the dashed baseline is the principal: above it is profit, below it is loss",
     "最后一点为实时净值（未冻结）": "the last point of each line is live equity (not frozen)",
     "所选范围内没有可画的净值点": "no equity points to draw in the chosen range",
-    "十个 Agent 的净值对比曲线": "equity of the ten agents compared",
+    "各 Agent 的净值对比曲线": "equity of the agents compared",
+    "多因子组合不限于这份名单：每月从 ": "The multi-factor portfolios are not limited to this list: each month they rank a pool of ",
+    " 只股票（这份名单 + 全部标普 500 成分股）里排名选股，名单上的股票每 5 分钟更新行情": " stocks (this list + every S&P 500 member); this list is the one quoted every 5 minutes",
     "选择要显示的 Agent": "choose which agents to show",
     "选择时间范围": "choose a time range", "起始日": "from", "结束日": "to",
     "最近 7 个交易日": "Last 7 trading days", "最近 30 个交易日": "Last 30 trading days", "自定义": "Custom",
@@ -3413,7 +3415,9 @@ function renderStockPool(s) {
   const syms = ex.universe || [];
   if (STATE.crypto || !syms.length) { sec.style.display = "none"; box.style.display = "none"; return; }
   sec.style.display = ""; box.style.display = "";
-  $("stnote").textContent = tr("十个 Agent 共用这一份名单 · 实验创建时冻结，全程不变");
+  $("stnote").textContent = isNum(ex.factor_pool_n)
+    ? `${tr("多因子组合不限于这份名单：每月从 ")}${ex.factor_pool_n}${tr(" 只股票（这份名单 + 全部标普 500 成分股）里排名选股，名单上的股票每 5 分钟更新行情")}`
+    : tr("十个 Agent 共用这一份名单 · 实验创建时冻结，全程不变");
   const bm = ex.benchmarks || [];
   const sep = LANG === "en" ? ", " : "、";
   const stop = LANG === "en" ? "." : "。";
