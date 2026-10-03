@@ -1,9 +1,9 @@
 {
- "built_utc": "2026-10-03T20:56:07Z",
+ "built_utc": "2026-10-03T23:37:54Z",
  "default": "stock-factor-20261005b",
  "experiments": [
   "stock-factor-20261005b",
-  "crypto-kraken-20260924b"
+  "crypto-robinhood-20261004"
  ],
  "generator": "ptrade arena publish-page"
 }
