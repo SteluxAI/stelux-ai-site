@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173 --strictPort",
-    "build": "vite build",
+    "build": "vite build && node scripts/release-privacy.mjs dist",
+    "privacy:test": "node --test scripts/release-privacy.test.mjs",
+    "privacy:check": "node scripts/release-privacy.mjs dist",
     "preview": "vite preview --port 4173 --strictPort",
     "shots": "node scripts/screenshots.mjs",
-    "deploy": "wrangler pages deploy dist --project-name stelux-ai --branch main --commit-dirty=true"
+    "deploy": "node scripts/release-privacy.mjs dist && wrangler pages deploy dist --project-name stelux-ai --branch main --commit-dirty=true"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",

@@ -5,6 +5,7 @@ export default defineConfig({
   base: './',
   plugins: [tailwindcss()],
   build: {
+    sourcemap: false,
     target: 'es2020',
     cssMinify: true,
     assetsInlineLimit: 4096,

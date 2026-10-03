@@ -7,3 +7,15 @@ shots
 scripts/tmp-*
 output/
 dns-backup-*.json
+
+# Private release inputs never belong in the website repository.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.p8
+*.jks
+*.keystore
+*.mobileprovision
