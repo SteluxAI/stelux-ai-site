@@ -21,7 +21,7 @@ The six hero layers live in `public/img/hero-v4/` (desktop 2172×724, mobile 144
 
 ## Deployment
 
-**GitHub Pages (live at https://stelux.ai since 2026-09-03).** Every push to `main` runs `.github/workflows/deploy-pages.yml`, builds, and publishes to GitHub Pages. Custom domain `stelux.ai` is bound in the repository's Pages settings, the certificate is issued by GitHub and HTTPS is enforced; `www.stelux.ai` redirects to the apex. The previous site was served through a Cloudflare Tunnel (`michigan-api`), which still fronts `style.stelux.ai`.
+**GitHub Pages (live at https://stelux.ai since 2026-09-03).** Every push to `main` runs `.github/workflows/deploy-pages.yml`, builds, and publishes to GitHub Pages. Custom domain `stelux.ai` is bound in the repository's Pages settings, the certificate is issued by GitHub and HTTPS is enforced; `www.stelux.ai` redirects to the apex. The previous tunnel-backed fashion product has been retired. This website continues to publish through GitHub Pages.
 
 **Cloudflare Pages (ready).** `.github/workflows/deploy-cloudflare.yml` is a manual workflow. Add the repository secrets `CLOUDFLARE_API_TOKEN` (Pages:Edit + Account:Read) and `CLOUDFLARE_ACCOUNT_ID`, then run it from the Actions tab. Or deploy locally with `npx wrangler login && pnpm deploy`.
 
