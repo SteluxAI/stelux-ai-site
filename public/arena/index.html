@@ -1031,8 +1031,8 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   </div>
 
   <div class="sec"><h2>全部 Agent</h2><span class="note" id="agnote"></span>
-    <button class="grpbtn" id="agsort" type="button" aria-pressed="true" title="按名次排列：领先的在前面。点一下改回按槽位 S01–S10 排列">按名次</button></div>
-  <div class="aglegend" id="aglegend">每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
+    <button class="grpbtn" id="agsort" type="button" aria-pressed="true" title="按名次排列：领先的在前面。点一下改回按槽位顺序排列">按名次</button></div>
+  <div class="aglegend" id="aglegend">每张卡：名次 · 资金槽（S01 起编号，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。</div>
   <div class="agents" id="agents"></div>
   <div class="fsnote" id="feeshadow" hidden></div>
 
@@ -1112,7 +1112,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-03T15:36:56Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-03T15:36:56Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005","experiments":["stock-factor-20261005","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-03T20:56:07Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-03T20:56:07Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1411,8 +1411,8 @@ const I18N = {
     "行情源已关闭（--no-feed）": "Quote feed disabled (--no-feed)",
     // ---- agents
     "全部 Agent": "All agents",
-    "每张卡：名次 · 资金槽（S01–S10，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。":
-      "Each card: rank · capital slot (S01–S10, permanent) · current strategy (its code, then its personality) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.",
+    "每张卡：名次 · 资金槽（S01 起编号，永久）· 当前策略（策略编号 · 策略性格）· 原版或第几代变异 · 是否可隔夜 · 本轮是保留还是新生。":
+      "Each card: rank · capital slot (numbered from S01, permanent) · current strategy (its code, then its personality) · original or Nth generation · whether it may hold overnight · kept or newly seeded this round.",
     "原版": "original", "可隔夜": "may hold overnight", "保留": "kept", "新生": "new", "任内": "tenure",
     // ---- trades
     "交易记录": "Trades", "选择交易日": "Select trading day", "交易记录视图": "Trades view",
@@ -1748,7 +1748,7 @@ const I18N = {
     "柱修订核对：未知（收盘记录没有这一项）": "bar-revision check: unknown (the close record does not carry it)", "柱修订核对：未知（这个 runner 版本不写这一项）": "bar-revision check: unknown (this runner build does not write it)", "页面有": "this page has", "个区块渲染失败，显示的可能是旧内容：": "sections failed to render; what you see may be stale: ", "（请刷新页面；控制台有详细堆栈）": " (reload the page; the console has the stack)",
     "策略参数 eod_cleanup=true 的收盘前平仓，不是系统强制清仓；该参数可被进化改成 false 以允许隔夜": "A flatten before the close because this strategy has eod_cleanup=true - not a forced liquidation by the system. Evolution may set that parameter to false, which allows holding overnight.",
     "默认只列活跃池与持有的币；点开显示全部 40 个候选及其状态原因": "By default this lists the active pool and what is held; open it for all 40 candidates and why each is in the state it is in",
-    "按名次排列：领先的在前面。点一下改回按槽位 S01–S10 排列": "Ordered by rank, leader first. Click to go back to slot order, S01-S10",
+    "按名次排列：领先的在前面。点一下改回按槽位顺序排列": "Ordered by rank, leader first. Click to go back to slot order",
     "只看": "only",
     "的成交": "fills",
     "当日行情数据不完整，这一轮不进化": "the day's market data was incomplete, so nothing evolved this round", "进化已被手动暂停": "evolution has been paused by hand", "这一天已经结算过了": "this day had already been settled", "这一轮没有进化": "nothing evolved this round", "当日数据不完整": "incomplete data that day", "估值未知": "valuation unknown", "没有数据": "no data", "触发熔断": "a breaker tripped", "当日未在岗": "not in service that day",
@@ -1918,7 +1918,7 @@ const I18N = {
     "昨收低于 100 日均线": "prior close below the 100-day mean", "今天还没从开盘价拐头向上": "not yet up from today's open",
     "未知波段策略": "unknown swing rule",
     "上个交易日": "Last session", "波段·进化基因": "swing · evolved genome", "进化基因": "evolved genome",
-    "多因子组合": "multi-factor portfolio", "多因子冠军": "multi-factor champion", "高波动对照": "high-volatility control",
+    "多因子组合": "multi-factor portfolio", "多因子冠军": "multi-factor champion", "修复版冠军": "clean-data champion", "高波动对照": "high-volatility control",
     "第1只": "name 1", "第2只": "name 2", "第3只": "name 3", "第4只": "name 4", "第5只": "name 5", "第6只": "name 6",
     "第7只": "name 7", "第8只": "name 8", "第9只": "name 9", "第10只": "name 10",
     "组合里的这只分给了别的槽位": "this portfolio name belongs to another slot", "本月组合还没决定（数据未齐）": "this month's portfolio is not decided yet (data incomplete)",
