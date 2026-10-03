@@ -1112,7 +1112,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-03T02:22:59Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-03T02:22:59Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20261005","experiments":["stock-research-20261005","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-03T03:44:36Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-03T03:44:36Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-research-20261005","experiments":["stock-research-20261005","stock-validation-20261005","crypto-kraken-20260924b"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1915,7 +1915,12 @@ const I18N = {
     "大盘低于 50 日均线": "index below its 50-day mean", "超跌不够": "not stretched enough", "跌得太深（接飞刀）": "too deep (a falling knife)",
     "昨收低于 100 日均线": "prior close below the 100-day mean", "今天还没从开盘价拐头向上": "not yet up from today's open",
     "未知波段策略": "unknown swing rule",
-    "上个交易日": "Last session", "波段·趋势动量": "swing · trend momentum", "趋势动量": "trend momentum",
+    "上个交易日": "Last session", "波段·进化基因": "swing · evolved genome", "进化基因": "evolved genome",
+    "进化冠军": "evolved champion", "随机对照": "random control", "相对强势": "relative strength",
+    "第1名": "rank 1", "第2名": "rank 2", "第3名": "rank 3", "第4名": "rank 4", "第5名": "rank 5",
+    "缺少进化基因": "evolved genome missing", "今天已交易过（进化基因每天只在开盘决策一次）": "already traded today (an evolved genome decides once a day, at the open)",
+    "符合条件的候选不够": "not enough eligible candidates", "按排名这次轮到别的股票": "the ranking gives this turn to another stock",
+    "还没有常规盘开盘价": "no regular-session open yet", "大盘指数日线不够": "not enough index daily bars", "波段·趋势动量": "swing · trend momentum", "趋势动量": "trend momentum",
     "不在多日上升趋势（收盘>20日>50日均线）": "no multi-day uptrend (close > 20-day > 50-day mean)",
     "60 日涨幅不够": "60-day gain too small", "离 20 日均线太远（超过 ATR 上限）": "too far above the 20-day mean (beyond the ATR limit)",
     "出现信号": "a signal", "没有策略给出信号": "no strategy fired", "已有持仓（每槽最多 1 个）": "already holding (one position per slot)",
@@ -3847,14 +3852,17 @@ const BLOCK_ZH = {
   breakout_extended_beyond_1atr: "突破后已高出 1 个 ATR，不追", gap_beyond_1atr: "今天离昨收超过 1 个 ATR",
   regime_off_benchmark_below_sma50: "大盘低于 50 日均线", not_stretched: "超跌不够", falling_knife: "跌得太深（接飞刀）",
   below_sma100: "昨收低于 100 日均线", no_multi_day_uptrend: "不在多日上升趋势（收盘>20日>50日均线）",
-  momentum_too_weak: "60 日涨幅不够", extended_beyond_atr: "离 20 日均线太远（超过 ATR 上限）", no_intraday_turn: "今天还没从开盘价拐头向上", unknown_swing_strategy: "未知波段策略",
+  momentum_too_weak: "60 日涨幅不够", extended_beyond_atr: "离 20 日均线太远（超过 ATR 上限）",
+  genome_missing: "缺少进化基因", genome_one_entry_per_day: "今天已交易过（进化基因每天只在开盘决策一次）",
+  genome_fewer_candidates: "符合条件的候选不够", genome_rank_elsewhere: "按排名这次轮到别的股票", no_regular_open_bar: "还没有常规盘开盘价",
+  benchmark_daily_insufficient: "大盘指数日线不够", no_intraday_turn: "今天还没从开盘价拐头向上", unknown_swing_strategy: "未知波段策略",
   // the heads of a family whose tail is printed as it was written
   "risk_limit:*": "风控上限", "skip:*": "跳过", "breaker:*": "熔断",
 };
 
 // the multi-day rules (arena/swing.py) by name; every other id is shown as it always was, minus its version suffix
 const SWING_NAME = { swing_pullback_v1: "波段·趋势回调", swing_breakout_v1: "波段·日线突破", swing_reversion_v1: "波段·超跌反弹",
-                     swing_momentum_v1: "波段·趋势动量" };
+                     swing_momentum_v1: "波段·趋势动量", swing_genome_v1: "波段·进化基因" };
 function stratShort(sid) {
   const k = String(sid == null ? "" : sid);
   return SWING_NAME[k] ? tr(SWING_NAME[k]) : k.replace(/_v\d+$/, "");
@@ -8232,7 +8240,7 @@ function renderSheet(d, fetched) {
       ${OWN_SWITCH_KEYS.some(k => Object.prototype.hasOwnProperty.call(params || {}, k))
         ? `<div class="instr" style="margin-top:6px;color:var(--ink3)">${tr("上面的说明写于这个策略创建时；它自己的开关（是否跨夜、是否回避财报、止盈后冷却、趋势转弱是否离场）以卡片和下面的参数为准，进化可能已经改变了它们。")}</div>` : ""}
       ${a.hypothesis ? `<div class="instr" style="margin-top:8px;color:var(--ink3)">${LANG === "en" ? "Hypothesis: " : "假设："}${esc(a.hypothesis)}</div>` : ""}
-      <div class="parm">${Object.entries(params).map(([k, v]) => `<span class="${diff && diff[k] ? "diff" : ""}">${esc(k)}=${esc(Array.isArray(v) ? v.join("/") : v)}</span>`).join("")}</div>
+      <div class="parm">${Object.entries(params).map(([k, v]) => `<span class="${diff && diff[k] ? "diff" : ""}">${esc(k)}=${esc(Array.isArray(v) ? v.join("/") : (v && typeof v === "object") ? Object.entries(v).map(([a, b]) => a + ":" + b).join(", ") : v)}</span>`).join("")}</div>
       ${Object.keys(diff || {}).length ? `<div class="instr" style="margin-top:9px">相对父代变异：${Object.entries(diff).map(([k, v]) => `<b>${esc(k)}</b> ${esc(v.from)} → ${esc(v.to)}`).join(" · ")}</div>` : ""}
       <dl class="kv" style="margin-top:12px">
         ${kv("家族", esc(a.family_id || "—"))}
