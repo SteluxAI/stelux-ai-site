@@ -276,6 +276,8 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
   backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--hair);box-shadow:var(--shadow-lg)}
 .fabmenu button{text-align:left;padding:8px 10px;border-radius:8px;font-size:13.5px;color:var(--ink)}
 .fabmenu button:focus-visible{background:var(--hair2)}
+.refline{margin-top:8px;font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.refline .reftag{font-size:var(--fs-chip);font-weight:600;padding:2px 8px;border-radius:999px;background:var(--hair);color:var(--ink2)}
 .startnote{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:5px 11px;border-radius:999px;font-size:13px;font-weight:500;
   background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue-ink)}
 .startnote::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--blue)}
@@ -1044,14 +1046,15 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
 
   <section class="hero">
     <div class="card pad" id="heroMain">
-      <p class="eyebrow">全系统实时净值 <span id="eqtag" class="muted" style="text-transform:none;letter-spacing:0"></span></p>
+      <p class="eyebrow"><span id="eqlabel">全系统实时净值</span> <span id="eqtag" class="muted" style="text-transform:none;letter-spacing:0"></span></p>
       <div class="big num" id="sysEq">—</div>
       <div class="delta">
         <span class="dpair"><span class="chg num" id="sysDay">—</span><span class="muted" id="sysDayK" style="white-space:normal">今日</span></span>
         <span class="dpair"><span class="chg num" id="sysTot">—</span><span class="muted">累计</span></span>
         <span class="muted">本金 <span class="num" id="sysPrin">—</span></span>
       </div>
-      <div class="muted" id="sysSplit" style="display:none;margin-top:6px;font-size:13px"></div>
+      <div class="refline" id="sysSplit" style="display:none"></div>
+      <div class="muted" id="sysAll" style="display:none;margin-top:3px;font-size:12px"></div>
       <div class="startnote" id="sysStart" style="display:none"></div>
       <svg class="spark" id="sysSpark" style="height:66px;margin-top:14px"></svg>
       <div class="statgrid">
@@ -1218,7 +1221,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T21:27:18Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T21:27:18Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T22:03:49Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T22:03:49Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1333,6 +1336,9 @@ function setNum(node, value, fmt) {
     else if (TWEEN.get(node) === target) node.textContent = fmt(target);
   };
   requestAnimationFrame(step);
+  // rAF can stall (an embedded or power-saving view stopped it entirely while reporting itself visible): the number
+  // then froze on the PREVIOUS board's value after a switch (2026-10-04). The timer lands the final figure regardless.
+  setTimeout(() => { if (TWEEN.get(node) === target) node.textContent = fmt(target); }, dur + 80);
 }
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* On a phone a quote frame would start up to 53 independent 520 ms rAF chains for the eight numbers actually on
@@ -1607,6 +1613,7 @@ const I18N = {
     "Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。":
       "Robinhood's 24-hour market (Sunday 20:00 to Friday 20:00 ET). For the listed stocks, stop and target exits can also fill overnight, and Monday to Thursday a position may be held past the 16:00 close; it is flattened before the close on Fridays, before holidays and on the last day. Entries remain 09:45–15:30 only - that is the strategy's own rule. Each fill is capped at 1% of the 5-minute bar's volume; the share of bars that can take a whole position is 97.7% regular, 24.4% pre-market, 13.0% after-hours, 2.9% overnight.",
     "进化节奏": "Evolution cadence",
+    "参照槽：照常交易和计分，但不参与排名，也不计入上面的 Agent 合计": "Reference slot: traded and scored like the others, but not ranked and not in the agents' total above",
     "列表": "List", "卡片": "Cards", "目录": "Sections", "跳到某一部分": "Jump to a section", "回到顶部": "Back to top",
     "切换卡片 / 列表视图": "Switch between cards and a list", "页面导航": "Page navigation",
     "重点": "Focus",
@@ -3133,8 +3140,39 @@ function renderEmptyState(s) {
 function curveVals(c) {
   return (c || []).map(p => Array.isArray(p) ? p[1] : (p && p.equity_cents)).filter(isNum);
 }
+/* A board with a reference slot (the crypto board's S11): the hero reads the AGENTS alone (user 2026-10-04: "why is the
+   total over $100K when every agent is losing?" - the principal was 10 agents + the reference = $110,000). Every figure
+   is summed from the agents' own slots (unknown if any is unknown, never a partial sum); the curve and the drawdown
+   come from the server's agents block. Returns null on any other board, which then reads the system as before. */
+function agentsOnlySystem(s) {
+  const sys = s.system || {}, ag = sys.agents, pins = pinnedIds(s);
+  if (!ag || !pins.length) return null;
+  const xs = (s.slots || []).filter(a => !pins.includes(a.slot_id));
+  if (!xs.length) return null;
+  const sum = k => xs.every(a => isNum(a[k])) ? xs.reduce((t, a) => t + a[k], 0) : null;
+  const eq = sum("live_equity_cents"), prin = isNum(ag.principal_cents) ? ag.principal_cents : sum("principal_cents");
+  const dayPnl = sum("live_day_pnl_cents"), prev = sum("prev_close_equity_cents");
+  const ages = xs.map(a => a.live_price_max_age_s).filter(isNum);
+  return { ...sys, agentsOnly: true, n_agents: xs.length,
+    live_equity_cents: eq, principal_cents: prin,
+    live_pnl_cents: isNum(eq) && isNum(prin) ? eq - prin : null,
+    live_return_bp: isNum(eq) && isNum(prin) && prin ? Math.round((eq - prin) / prin * 10000) : null,
+    live_day_pnl_cents: dayPnl,
+    live_day_return_bp: isNum(dayPnl) && isNum(prev) && prev ? Math.round(dayPnl / prev * 10000) : null,
+    cash_cents: sum("cash_cents"), live_unrealized_cents: sum("live_unrealized_cents"),
+    fills_today: sum("fills_today"), open_positions: xs.reduce((t, a) => t + (a.positions || []).length, 0),
+    live_price_status: xs.some(a => a.live_price_status === "stale") ? "stale" : sys.live_price_status,
+    live_price_max_age_s: ages.length ? Math.max(...ages) : sys.live_price_max_age_s,
+    curve: ag.curve, max_dd_cents: ag.max_dd_cents, max_dd_status: ag.max_dd_status, max_dd_peak_cents: ag.max_dd_peak_cents,
+    max_dd_days_used: ag.max_dd_days_used, max_dd_days_total: ag.max_dd_days_total };
+}
+
 function renderHero(s) {
-  const sys = s.system || {}, ex = s.experiment || {};
+  const sysAll = s.system || {}, ex = s.experiment || {};
+  const sys = agentsOnlySystem(s) || sysAll;
+  $("eqlabel").textContent = sys.agentsOnly
+    ? (LANG === "en" ? `${sys.n_agents} agents · live equity` : `${sys.n_agents} 个 Agent 实时净值`)
+    : tr("全系统实时净值");
   const live = isNum(sys.live_equity_cents);
   setNum($("sysEq"), live ? sys.live_equity_cents : null, v => usd(v));
   // 实时 with a stale print inside it says so, and how stale: the published overnight board valued AAL on a
@@ -3178,8 +3216,29 @@ function renderHero(s) {
   // a board with a reference slot (the crypto board's S11): the total mixes the agents' money with the reference's,
   // and read against the agents' own principal it looked like a gain (user 2026-10-04: "$108K although every agent
   // is losing"). Said apart, each with its own P&L; left out when any of them is unknown
-  const split = $("sysSplit");
-  if (split) {
+  const split = $("sysSplit"), allLine = $("sysAll");
+  if (split && sys.agentsOnly) {
+    // the reference on its own line, and the whole system (agents + reference) in small print under it
+    const refs = (s.slots || []).filter(a => pinnedIds(s).includes(a.slot_id));
+    const sgn = v => !isNum(v) ? "" : v > 0 ? cssVar("--green-ink") : v < 0 ? cssVar("--red-ink") : "";
+    split.innerHTML = refs.map(a => {
+      const pnl = isNum(a.live_equity_cents) && isNum(a.principal_cents) ? a.live_equity_cents - a.principal_cents : null;
+      const bp = isNum(pnl) && a.principal_cents ? Math.round(pnl / a.principal_cents * 10000) : null;
+      const what = String(a.label_zh || "").replace(/^参照\s*·\s*/, "");
+      return `<span class="reftag">${LANG === "en" ? "reference" : "参照"}</span><span>${esc(a.slot_id)}${what && LANG !== "en" ? `（${esc(what)}）` : ""}</span>`
+        + `<b class="num">${isNum(a.live_equity_cents) ? usd(a.live_equity_cents) : tr(UNK)}</b>`
+        + `<span class="num" style="color:${sgn(bp)}">${isNum(bp) ? bpPct(bp) : tr(UNK)}</span>`;
+    }).join(" ");
+    split.title = tr("参照槽：照常交易和计分，但不参与排名，也不计入上面的 Agent 合计");
+    split.style.display = "";
+    if (allLine) {
+      allLine.textContent = LANG === "en"
+        ? `whole system incl. the reference ${isNum(sysAll.live_equity_cents) ? usd(sysAll.live_equity_cents) : tr(UNK)} · principal ${usd(sysAll.principal_cents, { cents: false })}`
+        : `全系统（含参照）${isNum(sysAll.live_equity_cents) ? usd(sysAll.live_equity_cents) : tr(UNK)} · 本金 ${usd(sysAll.principal_cents, { cents: false })}`;
+      allLine.style.display = "";
+    }
+  } else if (split) {
+    if (allLine) { allLine.textContent = ""; allLine.style.display = "none"; }
     const pins = pinnedIds(s), all = s.slots || [];
     const grp = f => {
       const xs = all.filter(f);
@@ -3221,7 +3280,7 @@ function renderHero(s) {
     : isNum(liveDD) ? tr("按每日冻结净值合计和当前实时净值（未冻结）计算：历史最高点到最低点的最大落差")
     : sys.max_dd_status === "unknown" ? tr("未知：还没有可合计的完整交易日") : tr("按每日冻结净值合计计算");
   $("sFills").textContent = isNum(sys.fills_today) ? sys.fills_today : UNK;
-  $("sAgents").textContent = `${Array.isArray(s.slots) ? s.slots.length : UNK} / ${isNum(sys.open_positions) ? sys.open_positions : UNK}`;
+  $("sAgents").textContent = `${sys.agentsOnly ? sys.n_agents : Array.isArray(s.slots) ? s.slots.length : UNK} / ${isNum(sys.open_positions) ? sys.open_positions : UNK}`;
   $("valnote").textContent = LANG === "en"
     ? "Live equity = cash + position x live price (display only: not frozen, not booked). Ledger equity is what the engine froze at the daily close. If any held symbol lacks a live price, live equity shows unknown — never 0."
     : (s.valuation_note_zh || "");
