@@ -1112,7 +1112,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T16:38:06Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T16:38:06Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T17:44:06Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T17:44:06Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1493,6 +1493,9 @@ const I18N = {
       "Robinhood's 24-hour market (Sunday 20:00 to Friday 20:00 ET). For the listed stocks, stop and target exits can also fill overnight, and Monday to Thursday a position may be held past the 16:00 close; it is flattened before the close on Fridays, before holidays and on the last day. Entries remain 09:45–15:30 only - that is the strategy's own rule. Each fill is capped at 1% of the 5-minute bar's volume; the share of bars that can take a whole position is 97.7% regular, 24.4% pre-market, 13.0% after-hours, 2.9% overnight.",
     "进化节奏": "Evolution cadence",
     "不进化 · 冻结": "no evolution · frozen",
+    "不进化，只计分": "no evolution, scored only",
+    "已进行的天数 / 计划天数 · 这个板块不进化，每个交易日只结算得分 · 策略版本总数与当前在岗数（全程不变）":
+      "days run / days planned · this board does not evolve: each trading day only settles scores · strategy versions in total and active now (unchanged throughout)",
     "不进化：版本在整个窗口内锁死，每天只计分": "none: the versions are locked for the whole window and only scored each day",
     "这个板块的模式不进化：不排名淘汰、不繁殖、不替换。它的配置里虽然带着进化规则，但引擎在这种模式下从不执行。":
       "This board's mode does not evolve: no ranking out, no breeding, no replacement. Its config carries an evolution rule, but the engine never runs it in this mode.",
@@ -5233,11 +5236,14 @@ function experimentBrief(s) {
   // "已进行 3 UTC 日（持续运行）" -> "3 UTC 日 / 持续"; the label above already says this row is 进展
   if (isNum(ex.day_index)) prog.push(`${ex.day_index} ${plu(ex.day_index, dayWord, STATE.crypto ? "UTC day" : "trading day")}${isNum(ex.n_days) ? ` / ${ex.n_days}` : ` / ${tr("持续")}`}`);
   const done = (rc.completed != null ? rc.completed : rc.c), tot = (rc.total != null ? rc.total : rc.t);
-  if (isNum(done) || isNum(tot)) prog.push(`${isNum(done) ? done : "?"} ${plu(done, tr("轮进化"), "evolution round")}${isNum(tot) && isNum(done) && tot > done ? par(`${tot - done} ${tr("轮数据不全")}`) : ""}`);
+  if (!boardEvolves(s)) prog.push(tr("不进化，只计分"));       // a frozen board has no evolution rounds to count (2026-10-04)
+  else if (isNum(done) || isNum(tot)) prog.push(`${isNum(done) ? done : "?"} ${plu(done, tr("轮进化"), "evolution round")}${isNum(tot) && isNum(done) && tot > done ? par(`${tot - done} ${tr("轮数据不全")}`) : ""}`);
   const vTot = (v.total != null ? v.total : v.t), vAct = (v.active != null ? v.active : v.a);
   if (isNum(vTot)) prog.push(`${vTot} ${tr("个版本")}${isNum(vAct) ? `${LANG === "en" ? ", " : "，"}${tr("在岗")} ${vAct}` : ""}`);
   if (prog.length) out.push({ k: tr("进展"), v: prog.join(" · "),
-                              tip: tr("已进行的天数 / 计划天数 · 已结算的进化轮数（括号内为数据不完整、未进化的轮次） · 出现过的策略版本总数与当前在岗数") });
+                              tip: tr(boardEvolves(s)
+                                ? "已进行的天数 / 计划天数 · 已结算的进化轮数（括号内为数据不完整、未进化的轮次） · 出现过的策略版本总数与当前在岗数"
+                                : "已进行的天数 / 计划天数 · 这个板块不进化，每个交易日只结算得分 · 策略版本总数与当前在岗数（全程不变）") });
 
   // the two rules a reader needs before reading any curve: when the agents may trade, and how often they evolve
   const th = ex.trading_hours;
@@ -5278,7 +5284,13 @@ function experimentBrief(s) {
       : `入场单上限：夜盘成交量薄，那里的入场单大多到期也成交不了，但每张都占用当天的下单次数——审计回放里 60 个槽日有 28 个`
         + `在常规盘开盘前就用完了当天的下单额度。所以非常规时段每天最多提交 ${qo} 张入场单。`);
     out.push({ k: tr("交易时段"),
-               v: (allS
+               v: (allS && isNum(ex.factor_pool_n) && isNum(th.n_all_day)
+                 // a multi-factor board picks from its whole pool (2026-10-04: the row read "40/40" for a 518-name pool);
+                 // only the frozen 24-hour list trades outside regular hours (execution.all_day_symbol)
+                 ? (LANG === "en"
+                   ? `around the clock: ${th.n_all_day} names · the other ${ex.factor_pool_n - th.n_all_day} of the ${ex.factor_pool_n}-name pool trade in regular hours only`
+                   : `全时段交易 ${th.n_all_day} 只 · 股票池 ${ex.factor_pool_n} 只，其余 ${ex.factor_pool_n - th.n_all_day} 只只在常规盘交易`) + `${quota}${oquota}`
+                 : allS
                  ? `${tr("24 小时交易")} ${th.n_all_day}/${th.n_universe} · ${tr("所有时段入场与出场")}${quota}${oquota}`
                  : `${tr("24 小时市场")} ${th.n_all_day}/${th.n_universe} · ${tr("入场 09:45–15:30")} · ${tr("夜盘可出场")}`) + nightV,
                tip: (allS
