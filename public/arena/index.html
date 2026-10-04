@@ -1113,7 +1113,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T19:59:19Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T19:59:19Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T20:30:20Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T20:30:20Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -3484,14 +3484,22 @@ function renderStockPool(s) {
   const sep = LANG === "en" ? ", " : "、";
   const stop = LANG === "en" ? "." : "。";
 
+  // a multi-factor board TRADES its whole pool; the frozen list is what trades around the clock and is quoted every
+  // 5 minutes from the start (user 2026-10-04: "40 只可交易" on a board that picks from 518). Older boards: unchanged
+  const fpool = isNum(ex.factor_pool_n) ? ex.factor_pool_n : null;
+  const listWords = fpool == null ? tr("只可交易") : (LANG === "en"
+    ? `trade around the clock, quoted every 5 minutes · the multi-factor portfolios pick from ${fpool} each month`
+    : `只全时段交易、每 5 分钟更新行情 · 多因子组合每月从 ${fpool} 只里选`);
+
   // the summary row, readable without opening anything: the count, the benchmarks, and that it is frozen
-  $("stsum").innerHTML = `<b>${syms.length}</b> ${tr("只可交易")}`
+  $("stsum").innerHTML = `<b>${syms.length}</b> ${esc(listWords)}`
     + (bm.length ? ` <span class="s">· ${tr("另有基准")} ${esc(bm.join(sep))}</span>` : "")
     + ` <span class="s">· ${tr("实验创建时冻结")}</span>`;
 
   $("stwhy").innerHTML =
     `<div><b>${tr("这不是选股推荐。")}</b>${tr("名单是实验开始前用机械规则筛一次定下来的，之后不再变动——不会因为哪只涨了就加进来，也不会因为哪只跌了就踢出去。")}</div>
-     <div>${tr("共计")} <b>${syms.length}</b> ${tr("只可交易")}${bm.length ? ` · ${tr("另有基准")} <b>${esc(bm.join(sep))}</b>${tr("，只用来判断大盘方向，永远不可买卖")}` : ""}${stop}</div>
+     <div>${tr("共计")} <b>${syms.length}</b> ${esc(listWords)}${fpool == null ? "" : (LANG === "en"
+       ? "; names outside this list trade in the regular session only" : "；名单外的只在常规盘交易")}${bm.length ? ` · ${tr("另有基准")} <b>${esc(bm.join(sep))}</b>${tr("，只用来判断大盘方向，永远不可买卖")}` : ""}${stop}</div>
      <div>${tr("冻结意味着：这一段时间里 Agent 之间的差别只可能来自策略本身，不可能来自「谁拿到了更好的名单」。")}</div>`
     // where the list came from, when the frozen config says (arena init --universe-report): the screen's rule version
     // and reference session. A board whose config names no source - 23e copied its list - says nothing new
