@@ -966,6 +966,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
         <span class="dpair"><span class="chg num" id="sysTot">—</span><span class="muted">累计</span></span>
         <span class="muted">本金 <span class="num" id="sysPrin">—</span></span>
       </div>
+      <div class="muted" id="sysSplit" style="display:none;margin-top:6px;font-size:13px"></div>
       <svg class="spark" id="sysSpark" style="height:66px;margin-top:14px"></svg>
       <div class="statgrid">
         <div class="stat"><div class="k">现金</div><div class="v num s" id="sCash">—</div></div>
@@ -1112,7 +1113,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T17:56:36Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T17:56:36Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T19:59:19Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T19:59:19Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1492,6 +1493,8 @@ const I18N = {
     "Robinhood 24 小时市场（周日 20:00 至周五 20:00 ET）。列表里的股票：止损/止盈出场在夜盘也可以成交，周一至周四持仓可跨过 16:00 收盘继续持有，周五、节假日前和最后一天收盘前平仓。入场仍然只在 09:45–15:30，那是策略本身的规则。每笔成交不超过该 5 分钟 K 线成交量的 1%：一整笔仓位能成交的 K 线，常规盘 97.7%、盘前 24.4%、盘后 13.0%、夜盘 2.9%。":
       "Robinhood's 24-hour market (Sunday 20:00 to Friday 20:00 ET). For the listed stocks, stop and target exits can also fill overnight, and Monday to Thursday a position may be held past the 16:00 close; it is flattened before the close on Fridays, before holidays and on the last day. Entries remain 09:45–15:30 only - that is the strategy's own rule. Each fill is capped at 1% of the 5-minute bar's volume; the share of bars that can take a whole position is 97.7% regular, 24.4% pre-market, 13.0% after-hours, 2.9% overnight.",
     "进化节奏": "Evolution cadence",
+    "按每日冻结净值合计和当前实时净值（未冻结）计算：历史最高点到最低点的最大落差":
+      "From the summed frozen daily closes and the current live (unfrozen) equity: the largest fall from a high to a later low",
     "不进化 · 冻结": "no evolution · frozen",
     "不进化，只计分": "no evolution, scored only",
     "已进行的天数 / 计划天数 · 这个板块不进化，每个交易日只结算得分 · 策略版本总数与当前在岗数（全程不变）":
@@ -3018,6 +3021,27 @@ function renderHero(s) {
   t.className = "chg num " + signCls(sys.live_pnl_cents);
   t.textContent = isNum(sys.live_pnl_cents) ? `${usd(sys.live_pnl_cents, { sign: true })} · ${bpPct(sys.live_return_bp)}` : UNK;
   $("sysPrin").textContent = usd(sys.principal_cents, { cents: false });
+  // a board with a reference slot (the crypto board's S11): the total mixes the agents' money with the reference's,
+  // and read against the agents' own principal it looked like a gain (user 2026-10-04: "$108K although every agent
+  // is losing"). Said apart, each with its own P&L; left out when any of them is unknown
+  const split = $("sysSplit");
+  if (split) {
+    const pins = pinnedIds(s), all = s.slots || [];
+    const grp = f => {
+      const xs = all.filter(f);
+      if (!xs.length || xs.some(a => !isNum(a.live_equity_cents) || !isNum(a.principal_cents))) return null;
+      const eq = xs.reduce((t, a) => t + a.live_equity_cents, 0), p = xs.reduce((t, a) => t + a.principal_cents, 0);
+      return { n: xs.length, eq, pnl: eq - p, ids: xs.map(a => a.slot_id) };
+    };
+    const ag = pins.length ? grp(a => !pins.includes(a.slot_id)) : null, rf = pins.length ? grp(a => pins.includes(a.slot_id)) : null;
+    if (ag && rf) {
+      const pn = v => `${usd(v, { sign: true, cents: false })}`;
+      split.textContent = LANG === "en"
+        ? `${ag.n} agents ${usd(ag.eq, { cents: false })} (${pn(ag.pnl)}) · reference ${rf.ids.join(" ")} ${usd(rf.eq, { cents: false })} (${pn(rf.pnl)})`
+        : `${ag.n} 个 Agent 合计 ${usd(ag.eq, { cents: false })}（${pn(ag.pnl)}） · ${rf.ids.join("、")} 参照 ${usd(rf.eq, { cents: false })}（${pn(rf.pnl)}）`;
+      split.style.display = "";
+    } else { split.textContent = ""; split.style.display = "none"; }
+  }
   setNum($("sCash"), sys.cash_cents, v => usd(v, { cents: false }));
   const posVal = isNum(sys.live_equity_cents) && isNum(sys.cash_cents) ? sys.live_equity_cents - sys.cash_cents : null;
   setNum($("sPos"), posVal, v => usd(v, { cents: false }));
@@ -3028,10 +3052,18 @@ function renderHero(s) {
   un.title = STATE.crypto ? tr("未实现（扣除买入费）") : "";
   un.style.color = isNum(sys.live_unrealized_cents) ? (sys.live_unrealized_cents > 0 ? cssVar("--green-ink") : sys.live_unrealized_cents < 0 ? cssVar("--red-ink") : "") : "";
   // drawdown is only shown when every scored day could be summed; "partial"/"unknown" render 未知, never $0
+  // 2026-10-04: the frozen figure alone read "$0" while the live total was 1.3% under the principal. With the live
+  // equity known, the trough includes it: max(frozen max drawdown, frozen peak - live equity), the peak being the
+  // highest summed frozen close (the principal before any). A partial frozen history stays unknown.
   const dd = $("sDD");
-  dd.textContent = isNum(sys.max_dd_cents) ? usd(sys.max_dd_cents, { cents: false }) : tr(UNK);
+  const peak = isNum(sys.max_dd_peak_cents) ? sys.max_dd_peak_cents : sys.principal_cents;
+  const liveDD = (sys.max_dd_status !== "partial" && isNum(sys.live_equity_cents) && isNum(peak))
+    ? Math.max(isNum(sys.max_dd_cents) ? sys.max_dd_cents : 0, peak - sys.live_equity_cents) : null;
+  const ddShown = isNum(liveDD) ? liveDD : sys.max_dd_cents;
+  dd.textContent = isNum(ddShown) ? usd(ddShown, { cents: false }) : tr(UNK);
   dd.title = sys.max_dd_status === "partial"
     ? `${tr("未知")}: ${sys.max_dd_days_used}/${sys.max_dd_days_total} ${tr("个交易日可合计（有槽当日估值未知）")}`
+    : isNum(liveDD) ? tr("按每日冻结净值合计和当前实时净值（未冻结）计算：历史最高点到最低点的最大落差")
     : sys.max_dd_status === "unknown" ? tr("未知：还没有可合计的完整交易日") : tr("按每日冻结净值合计计算");
   $("sFills").textContent = isNum(sys.fills_today) ? sys.fills_today : UNK;
   $("sAgents").textContent = `${Array.isArray(s.slots) ? s.slots.length : UNK} / ${isNum(sys.open_positions) ? sys.open_positions : UNK}`;
@@ -3042,7 +3074,10 @@ function renderHero(s) {
   // timestamp-aligned system history (built server-side; summing by position would mix different instants)
   const curve = curveVals(sys.curve);
   if (isNum(sys.live_equity_cents)) curve.push(sys.live_equity_cents);
-  const col = curve.length > 1 && curve[curve.length - 1] >= curve[0] ? cssVar("--green") : cssVar("--red");
+  // the colour follows the cumulative figure printed above it (live P&L vs the principal). Comparing the first and
+  // last of the drawn points painted a losing board green whenever the drawn stretch happened to rise (2026-10-04)
+  const col = isNum(sys.live_pnl_cents) ? (sys.live_pnl_cents >= 0 ? cssVar("--green") : cssVar("--red"))
+    : (curve.length > 1 && curve[curve.length - 1] >= curve[0] ? cssVar("--green") : cssVar("--red"));
   spark($("sysSpark"), curve, curve.length > 1 ? col : cssVar("--blue"));
 
   $("expName").textContent = s.experiment_id || UNK;
