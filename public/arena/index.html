@@ -252,10 +252,11 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .agents{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(296px,100%),1fr));gap:14px}
 .agent{position:relative;padding:17px 18px 15px;cursor:pointer;overflow:hidden}
 /* multi-factor boards: which group a card belongs to, as a stripe on its leading edge (2026-10-04) */
-.agent[data-fgroup]::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--fg,transparent)}
-.agent[data-fgroup="F"],.fcol[data-g="F"]{--fg:var(--blue)}
-.agent[data-fgroup="C"],.fcol[data-g="C"]{--fg:var(--purple)}
-.agent[data-fgroup="V"],.fcol[data-g="V"]{--fg:var(--ink3)}
+/* no group stripe on the agent cards (user 2026-10-04: the stock cards should look exactly like the crypto ones -
+   the code on the strategy chip, F01 / C01 / V01, already names the group); the colour stays on the group cards */
+.fcol[data-g="F"]{--fg:var(--blue)}
+.fcol[data-g="C"]{--fg:var(--purple)}
+.fcol[data-g="V"]{--fg:var(--ink3)}
 .fgroups{margin:0 0 6px}
 .aglist{padding:4px 0;margin-bottom:6px}
 /* the hidden attribute must win over the display these set (2026-10-04) */
@@ -379,15 +380,15 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .posrow .s{font-weight:650;min-width:46px;flex:none;white-space:nowrap}
 .posrow .q{color:var(--ink3);font-size:var(--fs-note);flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .posrow .u{margin-left:auto;font-weight:600;flex:none;white-space:nowrap}
+.posrow .swchip{white-space:nowrap}
 /* the card's notes (last decision round, finished record, re-entry gate, block tally, fee shadow), folded to their
    first line by default (user 2026-10-04: hide the lower text, expand on click); alerts - breakers, stale prices -
    are never folded */
-.amorewrap{display:flex;align-items:flex-start;gap:8px;min-width:0}
-.amore{flex:1 1 auto;min-width:0}
-.amore:not(.open)>:not(:first-child){display:none}
-.amore:not(.open)>:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.amore:not(.open)>.warnrow:first-child>span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.amorebtn{flex:none;margin-top:6px;font:inherit;font-size:var(--fs-chip);color:var(--blue-ink);background:none;border:0;
+/* fully collapsed (user 2026-10-04, second pass: "auto collapse" - not even a first line): only the toggle shows */
+.amorewrap{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.amore{min-width:0;width:100%}
+.amore:not(.open){display:none}
+.amorebtn{flex:none;margin-top:7px;font:inherit;font-size:var(--fs-chip);color:var(--blue-ink);background:none;border:0;
   padding:2px 0;cursor:pointer;white-space:nowrap}
 .amorebtn:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
 .empty{font-size:12px;color:var(--ink3);margin-top:11px;padding-top:10px;border-top:1px solid var(--hair2)}
@@ -1240,7 +1241,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-05T02:53:48Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-05T02:53:48Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-05T03:26:39Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-05T03:26:39Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1693,7 +1694,7 @@ const I18N = {
     "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
     "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
     "按名次": "By rank", "按槽位": "By slot", "末位 · 待替换": "Bottom · replacing", "暂不淘汰": "Not this round",
-    "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "展开": "More", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "共计": "A total of", "即将": "any moment",
+    "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "展开说明": "Show notes", "收起说明": "Hide notes", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "共计": "A total of", "即将": "any moment",
     "行情陈旧": "market data stale", "有新版本待生效": "a new version is pending", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
     "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
     "币池版本": "Pool version", "生效": "effective", "下次决策": "Next decision", "每": "every", "分钟": "min", "上次快照": "last snapshot",
@@ -2078,7 +2079,7 @@ const I18N = {
     "第1只": "name 1", "第2只": "name 2", "第3只": "name 3", "第4只": "name 4", "第5只": "name 5", "第6只": "name 6",
     "第7只": "name 7", "第8只": "name 8", "第9只": "name 9", "第10只": "name 10",
     "组合里的这只分给了别的槽位": "this portfolio name belongs to another slot", "本月组合还没决定（数据未齐）": "this month's portfolio is not decided yet (data incomplete)",
-    "多因子组合只在常规盘买入": "the multi-factor portfolio buys in the regular session only",
+    "此时段不买（只在常规盘交易）": "not bought in this session (regular session only)",
     "止损卖出后等下个月重新排名": "stopped out: waits for next month's ranking", "组合里的股票都已有槽位持有": "every portfolio name is held by a slot",
     "已持有组合里的一只": "holding a portfolio name",
     "进化冠军": "evolved champion", "随机对照": "random control", "相对强势": "relative strength",
@@ -4206,7 +4207,7 @@ const BLOCK_ZH = {
   benchmark_daily_insufficient: "大盘指数日线不够", no_intraday_turn: "今天还没从开盘价拐头向上", unknown_swing_strategy: "未知波段策略",
   // the multi-factor portfolio (arena/factor_live.py, 2026-10-03)
   factor_rank_elsewhere: "组合里的这只分给了别的槽位", factor_decision_pending: "本月组合还没决定（数据未齐）",
-  factor_regular_session_only: "多因子组合只在常规盘买入", stopped_out_until_next_decision: "止损卖出后等下个月重新排名",
+  factor_regular_session_only: "此时段不买（只在常规盘交易）", stopped_out_until_next_decision: "止损卖出后等下个月重新排名",
   portfolio_fully_held: "组合里的股票都已有槽位持有", slot_holding: "已持有组合里的一只",
   // the heads of a family whose tail is printed as it was written
   "risk_limit:*": "风控上限", "skip:*": "跳过", "breaker:*": "熔断",
@@ -5368,7 +5369,7 @@ function renderAgents(s) {
       wb.innerHTML = (warns.length ? `<div class="warnrow"><span>●</span><span>${esc(warns.join(" · "))}</span></div>` : "")
         + (staleLine ? `<div class="warnrow" style="color:var(--orange-ink)"><span>◦</span><span>${esc(staleLine)}</span></div>` : "")
         + (notes.length ? `<div class="amorewrap"><div class="amore${open ? " open" : ""}">${notes.join("")}</div>`
-          + `<button type="button" class="amorebtn" data-slot="${esc(a.slot_id)}" aria-expanded="${open}">${open ? tr("收起") : tr("展开")}</button></div>` : "");
+          + `<button type="button" class="amorebtn" data-slot="${esc(a.slot_id)}" aria-expanded="${open}">${open ? tr("收起说明") : tr("展开说明")} <span aria-hidden="true">${open ? "▴" : "▾"}</span></button></div>` : "");
       if (!wb.dataset.wired) {
         // its own handler, stopped here: the card's click and Enter open the drawer, and a fold toggle must not
         wb.dataset.wired = "1";
@@ -5381,7 +5382,7 @@ function renderAgents(s) {
           if (now) CARD_NOTES_OPEN.add(id); else CARD_NOTES_OPEN.delete(id);
           const box = btn.parentNode && btn.parentNode.querySelector(".amore");
           if (box) box.classList.toggle("open", now);
-          btn.textContent = now ? tr("收起") : tr("展开");
+          btn.innerHTML = `${now ? tr("收起说明") : tr("展开说明")} <span aria-hidden="true">${now ? "▴" : "▾"}</span>`;
           btn.setAttribute("aria-expanded", String(now));
         };
         wb.addEventListener("click", toggle);
@@ -5928,9 +5929,14 @@ function swingHeld(p) {
   if (w.factor) {
     // a multi-factor position (arena/factor_live.py): no holding limit - held until a month's decision drops it
     const t = isNum(w.held_days) ? (en ? `day ${w.held_days} · monthly` : `第 ${w.held_days} 天 · 月度调仓`) : (en ? "monthly" : "月度调仓");
+    // a board frozen with entry_sessions=robinhood_24_5 sells a name on its 24-hour list from the next trading day's
+    // first session (the overnight session, the evening before); every other name from the regular open
+    const snap = STATE.snap || {};
+    const ext = (snap.factor_view || {}).entry_sessions === "robinhood_24_5"
+      && ((snap.experiment || {}).universe || []).includes(p.symbol);
     const tip = en
-      ? `A multi-factor portfolio position: held since ${w.entry_day || "?"}; sold at the regular open after a month's last close if the new ranking drops it, or at its 30% disaster stop.`
-      : `多因子组合持仓：${w.entry_day || "?"} 买入；每个月最后一个交易日收盘后重新排名，掉出前十就在下一个常规盘开盘后卖出；另有 30% 的灾难止损。`;
+      ? `A multi-factor portfolio position: held since ${w.entry_day || "?"}; sold ${ext ? "from the first session (overnight) of the next trading day" : "at the regular open"} after a month's last close if the new ranking drops it, or at its 30% disaster stop.`
+      : `多因子组合持仓：${w.entry_day || "?"} 买入；每个月最后一个交易日收盘后重新排名，掉出前十就${ext ? "从下一个交易日的第一个时段（夜盘）起卖出" : "在下一个常规盘开盘后卖出"}；另有 30% 的灾难止损。`;
     return ` <span class="swchip" title="${esc(tip)}">${esc(t)}</span>`;
   }
   const t = isNum(w.held_days)
