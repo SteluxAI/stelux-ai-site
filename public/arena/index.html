@@ -363,14 +363,33 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .acash .v{color:var(--ink2);font-weight:600}
 .acash .v.zero{color:var(--ink3)}
 .acash .k.why{color:var(--orange-ink);font-weight:600}
-.arow{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap}
+/* ONE line (2026-10-04): with the wider brand font the row wrapped 「· 并列」 onto a line of its own and every card grew
+   26px. The tie marker moved up beside the slot id; the tenure figure, last, gives way with an ellipsis (full in its
+   hover) rather than the card growing. */
+.arow{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:nowrap;min-width:0;white-space:nowrap;overflow:hidden}
+.arow>*{flex:none}
+.arow>:last-child{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.tiechip{font-size:var(--fs-chip);color:var(--ink3);white-space:nowrap}
 .chg.s{font-size:13px;padding:2px 8px}
 .spark{height:38px;margin:11px -4px 0;display:block;width:calc(100% + 8px)}
 .pos{margin-top:11px;padding-top:10px;border-top:1px solid var(--hair2);display:grid;gap:6px}
-.posrow{display:flex;align-items:center;gap:8px;font-size:12.5px}
-.posrow .s{font-weight:650;min-width:46px}
-.posrow .q{color:var(--ink3);font-size:var(--fs-note)}
-.posrow .u{margin-left:auto;font-weight:600}
+/* one line per holding (2026-10-04): "11577.03349792 ADA @ $0.2591" wrapped to two lines and so did the P&L beside
+   it; the quantity is shortened on the card (exact in the hover and the drawer) and the middle column gives way */
+.posrow{display:flex;align-items:center;gap:8px;font-size:12.5px;min-width:0}
+.posrow .s{font-weight:650;min-width:46px;flex:none;white-space:nowrap}
+.posrow .q{color:var(--ink3);font-size:var(--fs-note);flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.posrow .u{margin-left:auto;font-weight:600;flex:none;white-space:nowrap}
+/* the card's notes (last decision round, finished record, re-entry gate, block tally, fee shadow), folded to their
+   first line by default (user 2026-10-04: hide the lower text, expand on click); alerts - breakers, stale prices -
+   are never folded */
+.amorewrap{display:flex;align-items:flex-start;gap:8px;min-width:0}
+.amore{flex:1 1 auto;min-width:0}
+.amore:not(.open)>:not(:first-child){display:none}
+.amore:not(.open)>:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.amore:not(.open)>.warnrow:first-child>span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.amorebtn{flex:none;margin-top:6px;font:inherit;font-size:var(--fs-chip);color:var(--blue-ink);background:none;border:0;
+  padding:2px 0;cursor:pointer;white-space:nowrap}
+.amorebtn:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
 .empty{font-size:12px;color:var(--ink3);margin-top:11px;padding-top:10px;border-top:1px solid var(--hair2)}
 .warnrow{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:var(--fs-note);color:var(--red-ink);font-weight:550}
 
@@ -1221,7 +1240,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-05T01:58:30Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-05T01:58:30Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-05T02:53:48Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-05T02:53:48Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1674,7 +1693,7 @@ const I18N = {
     "展开全部 40 个候选（含活跃池与未入池的候选，状态见币池表）": "show all 40 candidates (active pool and the rest; states in the pool table)",
     "今日 = UTC 日（00:00 UTC 起），24/7 连续": "today = the UTC day (from 00:00 UTC), continuous 24/7",
     "按名次": "By rank", "按槽位": "By slot", "末位 · 待替换": "Bottom · replacing", "暂不淘汰": "Not this round",
-    "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "共计": "A total of", "即将": "any moment",
+    "进化已暂停": "evolution is paused", "可排名的 Agent 不足": "not enough ranked agents", "有 Agent 估值未知": "an agent's valuation is unknown", "币池": "Pool", "全部候选": "All candidates", "展开明细": "Details", "收起": "Hide", "展开": "More", "个候选": "candidates", "个币可交易": "coins tradable", "共": "of", "共计": "A total of", "即将": "any moment",
     "行情陈旧": "market data stale", "有新版本待生效": "a new version is pending", "只看活跃与持有": "Active + held only", "候选": "candidates", "活跃": "active", "版本": "version", "待生效": "pending",
     "合格未入池": "eligible, not seated", "预热": "warming up", "观察": "observe-only", "过期": "stale", "不可用": "unavailable", "持有已出池": "held, left pool",
     "币池版本": "Pool version", "生效": "effective", "下次决策": "Next decision", "每": "every", "分钟": "min", "上次快照": "last snapshot",
@@ -2268,6 +2287,8 @@ function wireLangToggle() {
   b.addEventListener("click", () => setLang(LANG === "en" ? "zh" : "en"));
 }
 
+// the agent cards whose notes the reader unfolded; kept across re-renders (the warnbox is rewritten every frame)
+const CARD_NOTES_OPEN = new Set();
 const STATE = { snap: null, exp: null, prices: {}, seenFills: new Set(), first: true, es: null, pollTimer: null,
   lastOk: 0, openSlot: null, tradeDay: "today",
   tradeSlot: "all",        // "all" or a slot_id: which agent's fills the tape shows
@@ -5116,7 +5137,7 @@ function renderAgents(s) {
         // varies from card to card, so 原版 / 初代 / 末位·待替换 landed on a different line and a different
         // side on every card and the eye could not scan a column of them. Row 1 carries the chips at constant
         // positions; row 2 carries the only variable-length thing, where its wrapping moves nothing.
-        n.innerHTML = `<div class="ahead"><div class="ahtop"><span class="rank"></span><span class="slotid"></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="finchip" hidden></span><span class="riskchip" hidden></span><span class="tag"></span></div><span class="vchip"></span><div class="swrow" hidden></div></div>
+        n.innerHTML = `<div class="ahead"><div class="ahtop"><span class="rank"></span><span class="slotid"></span><span class="tiechip" hidden></span><span class="gen"></span><span class="gen night" style="display:none">可隔夜</span><span class="spacer" style="flex:1"></span><span class="finchip" hidden></span><span class="riskchip" hidden></span><span class="tag"></span></div><span class="vchip"></span><div class="swrow" hidden></div></div>
           <div class="aeqrow"><div class="aeq num"></div><div class="acash" hidden></div></div><div class="arow"></div><svg class="spark"></svg><div class="posbox"></div><div class="warnbox"></div>`;
         n.addEventListener("click", () => openSheet(a.slot_id));
         n.setAttribute("role", "button");
@@ -5256,8 +5277,16 @@ function renderAgents(s) {
         : `<span class="chg s num ${dayCls}">${isNum(a.live_day_return_bp) ? bpPct(a.live_day_return_bp) : UNK}</span>
         <span class="muted" title="${esc(db.tip)}">${esc(db.k)}</span>`) + `
         <span class="muted num">累计 <b style="color:${isNum(a.live_return_bp) ? (a.live_return_bp > 0 ? cssVar("--green-ink") : a.live_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_return_bp) ? bpPct(a.live_return_bp) : UNK}</b></span>
-        <span class="muted num" title="${tr("策略任内收益：本策略版本接手这个资金槽之后的收益，不含前任的盈亏")}">${tr("任内")} <b style="color:${isNum(a.live_tenure_return_bp) ? (a.live_tenure_return_bp > 0 ? cssVar("--green-ink") : a.live_tenure_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_tenure_return_bp) ? bpPct(a.live_tenure_return_bp) : UNK}</b>${isNum(a.tenure_sessions) ? ` <span class="muted">· ${a.tenure_sessions} ${plu(a.tenure_sessions, tr("日"), "day")}</span>` : ""}</span>
-        ${rankTiedOf(a, s) ? `<span class="muted" title="${tr(wk ? "本周涨幅相同，名次由 tie-break 决定" : "当日收益相同，名次由 tie-break 决定")}">· ${tr("并列")}</span>` : ""}`;
+        <span class="muted num" title="${tr("策略任内收益：本策略版本接手这个资金槽之后的收益，不含前任的盈亏")}">${tr("任内")} <b style="color:${isNum(a.live_tenure_return_bp) ? (a.live_tenure_return_bp > 0 ? cssVar("--green-ink") : a.live_tenure_return_bp < 0 ? cssVar("--red-ink") : "") : ""}">${isNum(a.live_tenure_return_bp) ? bpPct(a.live_tenure_return_bp) : UNK}</b>${isNum(a.tenure_sessions) ? ` <span class="muted">· ${a.tenure_sessions} ${plu(a.tenure_sessions, tr("日"), "day")}</span>` : ""}</span>`;
+      let tie = n.querySelector(".tiechip");
+      if (!tie) {                                            // a card built before the marker moved here
+        tie = el("span", "tiechip");
+        const sid = n.querySelector(".slotid");
+        if (sid) sid.after(tie);
+      }
+      tie.hidden = !rankTiedOf(a, s);
+      tie.textContent = tr("并列");
+      tie.title = tr(wk ? "本周涨幅相同，名次由 tie-break 决定" : "当日收益相同，名次由 tie-break 决定");
       const pts = curveVals(a.curve);
       if (isNum(a.live_equity_cents)) pts.push(a.live_equity_cents);
       spark(n.querySelector(".spark"), pts, !isNum(a.live_day_return_bp) ? cssVar("--ink3")
@@ -5268,7 +5297,7 @@ function renderAgents(s) {
         pb.innerHTML = a.positions.map(p => {
           const u = p.unrealized_cents;
           // a position valued on a stale print says so on its own row, not only in the drawer
-          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}${p.price_status === "stale" ? ` <span class="qmark"${isNum(p.price_age_s) ? ` title="${esc(ago(p.price_age_s))}"` : ""}>${tr("陈旧")}</span>` : ""}</span><span class="q num">${fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}${swingHeld(p)}</span>
+          return `<div class="posrow"><span class="s">${esc(p.symbol)}${p.dust ? ` <span class="muted" title="${tr("余尘：低于交易所最小下单量，无法卖出，仍按市价估值")}">${tr("余尘")}</span>` : ""}${p.price_status === "stale" ? ` <span class="qmark"${isNum(p.price_age_s) ? ` title="${esc(ago(p.price_age_s))}"` : ""}>${tr("陈旧")}</span>` : ""}</span><span class="q num" title="${esc(fmtQty(p.qty))} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${esc(String(p.avg_cost))}">${STATE.crypto ? qtyShort(p.qty) : fmtQty(p.qty)} ${STATE.crypto ? esc(p.symbol) : tr("股")} @ ${px(p.avg_cost)}${swingHeld(p)}</span>
             <span class="u num" style="color:${isNum(u) ? (u > 0 ? cssVar("--green-ink") : u < 0 ? cssVar("--red-ink") : "") : cssVar("--ink3")}">${isNum(u) ? usd(u, { sign: u > 0 }) : UNK}${isNum(p.unrealized_bp) ? ` <span class="muted">${bpPct(p.unrealized_bp, 1)}</span>` : ""}</span></div>`;
         }).join("");
       } else if (a.ledger_readable === false || a.live_equity_status === "unreadable") {
@@ -5328,13 +5357,36 @@ function renderAgents(s) {
         ? `${tr("估值含陈旧价")}${col()}${(a.live_stale_symbols || []).join(" ")}`
           + (isNum(a.live_price_max_age_s) ? par(`${tr("最旧")} ${dur(a.live_price_max_age_s)}`) : "")
         : "";
+      const notes = [
+        dec ? `<div class="warnrow" style="color:var(--ink3)"><span>◦</span><span>${dec}</span></div>` : "",
+        fzLine ? `<div class="warnrow" style="color:var(--ink2)"><span>◦</span><span>${esc(fzLine)}</span></div>` : "",
+        reLine ? `<div class="warnrow" style="color:var(--orange-ink)"><span>◦</span><span>${reLine}</span></div>` : "",
+        btLine ? `<div class="btline" title="${esc(tr("一次检查 = 排序入场路径看过的一个（K 线，股票），或被槽位级跳过拦下的一个。拦下最多的是各策略自己的拒绝原因和槽位级原因，不含“没有策略给出信号”这个总括；逐时段、逐策略的明细在 Agent 详情里。"))}">${btLine}</div>` : "",
+        fsLine ? `<div class="fsline" title="${esc(LANG === "en" ? (fsb.guard_en || "") : (fsb.guard_zh || ""))}">${fsLine}</div>` : "",
+      ].filter(Boolean);
+      const open = CARD_NOTES_OPEN.has(a.slot_id);
       wb.innerHTML = (warns.length ? `<div class="warnrow"><span>●</span><span>${esc(warns.join(" · "))}</span></div>` : "")
         + (staleLine ? `<div class="warnrow" style="color:var(--orange-ink)"><span>◦</span><span>${esc(staleLine)}</span></div>` : "")
-        + (dec ? `<div class="warnrow" style="color:var(--ink3)"><span>◦</span><span>${dec}</span></div>` : "")
-        + (fzLine ? `<div class="warnrow" style="color:var(--ink2)"><span>◦</span><span>${esc(fzLine)}</span></div>` : "")
-        + (reLine ? `<div class="warnrow" style="color:var(--orange-ink)"><span>◦</span><span>${reLine}</span></div>` : "")
-        + (btLine ? `<div class="btline" title="${esc(tr("一次检查 = 排序入场路径看过的一个（K 线，股票），或被槽位级跳过拦下的一个。拦下最多的是各策略自己的拒绝原因和槽位级原因，不含“没有策略给出信号”这个总括；逐时段、逐策略的明细在 Agent 详情里。"))}">${btLine}</div>` : "")
-        + (fsLine ? `<div class="fsline" title="${esc(LANG === "en" ? (fsb.guard_en || "") : (fsb.guard_zh || ""))}">${fsLine}</div>` : "");
+        + (notes.length ? `<div class="amorewrap"><div class="amore${open ? " open" : ""}">${notes.join("")}</div>`
+          + `<button type="button" class="amorebtn" data-slot="${esc(a.slot_id)}" aria-expanded="${open}">${open ? tr("收起") : tr("展开")}</button></div>` : "");
+      if (!wb.dataset.wired) {
+        // its own handler, stopped here: the card's click and Enter open the drawer, and a fold toggle must not
+        wb.dataset.wired = "1";
+        const toggle = ev => {
+          const btn = ev.target.closest && ev.target.closest(".amorebtn");
+          if (!btn) return;
+          ev.stopPropagation();
+          if (ev.type === "keydown") { if (ev.key !== "Enter" && ev.key !== " ") return; ev.preventDefault(); }
+          const id = btn.dataset.slot, now = !CARD_NOTES_OPEN.has(id);
+          if (now) CARD_NOTES_OPEN.add(id); else CARD_NOTES_OPEN.delete(id);
+          const box = btn.parentNode && btn.parentNode.querySelector(".amore");
+          if (box) box.classList.toggle("open", now);
+          btn.textContent = now ? tr("收起") : tr("展开");
+          btn.setAttribute("aria-expanded", String(now));
+        };
+        wb.addEventListener("click", toggle);
+        wb.addEventListener("keydown", toggle);
+      }
     } catch (e) {
       RENDER_FAILS.set("agents:" + (a && a.slot_id || i), (e && e.message) || String(e));
       console.error("[render:agent]", a && a.slot_id, e);
