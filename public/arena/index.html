@@ -252,11 +252,16 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .agents{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(296px,100%),1fr));gap:14px}
 .agent{position:relative;padding:17px 18px 15px;cursor:pointer;overflow:hidden}
 /* multi-factor boards: which group a card belongs to, as a stripe on its leading edge (2026-10-04) */
-/* no group stripe on the agent cards (user 2026-10-04: the stock cards should look exactly like the crypto ones -
-   the code on the strategy chip, F01 / C01 / V01, already names the group); the colour stays on the group cards */
-.fcol[data-g="F"]{--fg:var(--blue)}
-.fcol[data-g="C"]{--fg:var(--purple)}
-.fcol[data-g="V"]{--fg:var(--ink3)}
+/* The factor board's three groups, told apart by COLOUR, not by a stripe (user 2026-10-04: the bar down the left edge
+   was disliked). F original champion = blue, C clean-data champion = purple, V high-volatility control = orange (teal
+   sat too close to blue in dark mode; the control's old grey read as disabled). Green and red stay P&L-only. A card
+   carries its group as a soft wash across its top and its strategy chip in the group's colour; the group comparison
+   cards and the list view use the same three. */
+.agent[data-fgroup="F"],.fcol[data-g="F"],.agtable tr[data-fgroup="F"]{--fg:var(--blue);--fg-ink:var(--blue-ink)}
+.agent[data-fgroup="C"],.fcol[data-g="C"],.agtable tr[data-fgroup="C"]{--fg:var(--purple);--fg-ink:var(--purple-ink)}
+.agent[data-fgroup="V"],.fcol[data-g="V"],.agtable tr[data-fgroup="V"]{--fg:var(--orange);--fg-ink:var(--orange-ink)}
+.agent[data-fgroup]{background:linear-gradient(180deg,color-mix(in srgb,var(--fg) 11%,var(--card)) 0,var(--card) 120px)}
+.agent[data-fgroup] .vchip{background:color-mix(in srgb,var(--fg) 16%,transparent);color:var(--fg-ink)}
 .fgroups{margin:0 0 6px}
 .aglist{padding:4px 0;margin-bottom:6px}
 /* the hidden attribute must win over the display these set (2026-10-04) */
@@ -265,7 +270,6 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .agtable th.r,.agtable td.r{text-align:right}
 .agtable tbody tr{cursor:pointer}
 .agtable td .ag-g{display:inline-block;width:3px;height:14px;border-radius:2px;margin-right:7px;vertical-align:-2px;background:var(--fg,var(--hair))}
-.agtable tr[data-fgroup="F"]{--fg:var(--blue)} .agtable tr[data-fgroup="C"]{--fg:var(--purple)} .agtable tr[data-fgroup="V"]{--fg:var(--ink3)}
 .agtable td.strat{max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2)}
 .agtable td.pos{color:var(--ink2);white-space:nowrap}
 .fabs{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:70;
@@ -287,8 +291,9 @@ select.exp{height:28px;border-radius:999px;background:var(--hair2);color:var(--i
 .fghead .note{font-size:var(--fs-meta);color:var(--ink3)}
 .fgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 @media(max-width:860px){.fgrid{grid-template-columns:minmax(0,1fr)}}
-.fcol{border-radius:var(--r-md);padding:14px 16px;background:var(--hair2);border-top:3px solid var(--fg);min-width:0}
-.fcol .fgname{font-size:13px;font-weight:600;color:var(--ink2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fcol{border-radius:var(--r-md);padding:14px 16px;min-width:0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--fg) 13%,transparent) 0,var(--hair2) 110px)}
+.fcol .fgname{font-size:13px;font-weight:650;color:var(--fg-ink,var(--ink2));display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .fcol .fgtag{font-size:var(--fs-chip);font-weight:600;padding:2px 7px;border-radius:999px;background:var(--hair);color:var(--ink2)}
 .fcol .fgret{font-size:28px;font-weight:650;letter-spacing:-.03em;margin:6px 0 2px}
 .fcol .fgrow{font-size:var(--fs-meta);color:var(--ink3);display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
@@ -1241,7 +1246,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-05T03:26:39Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-05T03:26:39Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-05T03:37:44Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-05T03:37:44Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -5107,7 +5112,9 @@ function renderAgents(s) {
   if ((s.controls || {}).pause_evolution) inert.push(tr("进化已暂停"));
   if (!enough) inert.push(tr("可排名的 Agent 不足"));
   if (byIndex.some(a => a.live_equity_status && a.live_equity_status !== "known")) inert.push(tr("有 Agent 估值未知"));
-  const riskIds = new Set(nRep > 0 && sameMetric && enough
+  // a board that never evolves replaces nobody (2026-10-04: the frozen factor board carried 「末位 · 待替换」 on its
+  // bottom nine, read from a replace_bottom no round ever applies)
+  const riskIds = new Set(boardEvolves(s) && nRep > 0 && sameMetric && enough
     ? byRank.slice(-nRep).map(a => a.slot_id) : []);
   if (btn) {
     btn.textContent = ranked ? tr("按名次") : tr("按槽位");
