@@ -1221,7 +1221,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-04T22:03:49Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-04T22:03:49Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-05T01:58:30Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-05T01:58:30Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005b","experiments":["stock-factor-20261005b","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -2313,6 +2313,8 @@ const API = STATIC ? {
    applies (injected as fresh_s), so a price that has aged past its window reads as 陈旧 here too.
    The runner's heartbeat is deliberately NOT aged: the publisher saw it at publish time, and our not having
    looked since is not evidence that the engine died. The header states the publish time either way. */
+// above the longest publish cadence (arena publish: 1800 s on a closed market) plus a CDN refresh
+const STALE_PUBLISH_S = 2700;
 function publishLagS(s) {
   if (!STATIC || !s || !s.published_utc) return null;
   const t = Date.parse(s.published_utc);
@@ -3093,6 +3095,15 @@ function renderBanners(s) {
   if (c.pause_evolution) add("", "<span>⏸</span><span><b>已暂停进化</b>：每日仍评分，但不替换任何策略。</span>");
   const f = s.feed || {};
   if (ex.is_live && f.enabled && f.last_error) add("err", `<span>⚠️</span><span><b>行情源异常</b>：${esc(f.last_error)}${f.backoff_active ? "（退避重试中）" : ""}。价格与实时净值可能陈旧，页面按时间标注为陈旧/未知，不会用旧价冒充实时。</span>`);
+  // the published page, when the local simulation has stopped publishing (2026-10-04, production readiness): the data
+  // sits on one machine with no auto-start, so a sleep, a restart or a lost network freezes it. Past 45 minutes -
+  // above the longest publish cadence (30 min on a closed market) - the page says so at the top, not only in a chip.
+  const plag = isNum(s.publish_lag_s) ? s.publish_lag_s : publishLagS(s);
+  if (!API.live && ex.is_live && isNum(plag) && plag > STALE_PUBLISH_S) {
+    add("warn", LANG === "en"
+      ? `<span>⏳</span><span><b>No new data for ${esc(dur(plag))}</b>: the simulation that publishes this page may have stopped (the machine asleep, restarted or offline). What follows is the last published data; the page picks up new data on its own once publishing resumes.</span>`
+      : `<span>⏳</span><span><b>数据已 ${esc(dur(plag))}未更新</b>：发布这个页面的本地模拟可能已停止（电脑休眠、重启或断网）。下面是最后一次发布的数据；恢复发布后页面会自动更新。</span>`);
+  }
   const r = s.runner;
   if (ex.is_live && r && r.alive === null) add("", `<span>⁉️</span><span><b>Runner 状态未知</b>：心跳时间戳比本机时钟还新，说明本机时钟刚被调整过。在下一次心跳到达前，无法判断引擎是否还在运行；账本可能已经停止更新。</span>`);
   if (ex.is_live && (!r || r.alive === false)) add("", `<span>💤</span><span><b>Runner 未在运行</b>${r && isNum(r.age_s) ? `（最后心跳 ${ago(r.age_s)}）` : ""}：账本不再更新，页面显示的是最后状态；实时价仍在刷新。启动：<code>scripts\\arena_start.ps1 -Id ${esc(s.experiment_id || "")}</code></span>`);
