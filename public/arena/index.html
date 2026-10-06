@@ -1246,7 +1246,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-05T03:37:44Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-05T03:37:44Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-06T04:02:23Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-06T04:02:23Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -2369,12 +2369,23 @@ function applyPublishLag(s) {
   const limit = isNum(m.fresh_s) ? m.fresh_s
     : (sess && isNum(fresh[sess])) ? fresh[sess] : (sess === "closed" ? closed : (STATIC.fresh_default_s || 120));
   const unknownAfter = isNum(m.unknown_s) ? m.unknown_s : (STATIC.unknown_s || 86400);
+  /* the server's trading-day window (live.mark_window, 2026-10-05): a print from the current or most recent trading
+     day is never unknown, and while the market is closed one from after the last regular close is the closing mark.
+     Without it a weekend blanked every stock price here (Friday's last print passes 24 h on Saturday evening). A
+     snapshot without the window (crypto, an older publisher) keeps the plain thresholds. */
+  const pub = Date.parse(s.published_utc || ""), since = Date.parse(m.mark_since_utc || ""), closeMark = Date.parse(m.closing_mark_utc || "");
+  const grade = (ageRaw, age) => {
+    const tp = isFinite(pub) && isNum(ageRaw) ? pub - ageRaw * 1000 : NaN;
+    if (age > unknownAfter && !(isFinite(since) && isFinite(tp) && tp >= since)) return "unknown";
+    if (sess === "closed" && isFinite(closeMark) && isFinite(tp)) return tp >= closeMark ? "fresh" : "stale";
+    return age <= limit ? "fresh" : "stale";
+  };
   Object.values(s.quotes || {}).forEach(q => {
     if (!isNum(q.age_s) && !isNum(q.age_s_raw)) return;
     if (!isNum(q.age_s_raw)) q.age_s_raw = q.age_s;     // remember the publisher's own number, once
     if (q.status_raw === undefined) q.status_raw = q.status;
     q.age_s = q.age_s_raw + lag;
-    q.status = q.age_s <= limit ? "fresh" : (q.age_s <= unknownAfter ? "stale" : "unknown");
+    q.status = grade(q.age_s_raw, q.age_s);
     if (q.status_raw === "unknown") q.status = "unknown";
     if (q.status === "unknown") { q.price = q.price_f = q.change = q.change_pct = null; }
   });
@@ -2388,7 +2399,7 @@ function applyPublishLag(s) {
     if (p.price_status_raw === undefined) p.price_status_raw = p.price_status;
     p.price_age_s = p.price_age_s_raw + lag;
     if (p.price_status_raw === "fresh" || p.price_status_raw === "stale") {
-      p.price_status = p.price_age_s <= limit ? "fresh" : (p.price_age_s <= unknownAfter ? "stale" : "unknown");
+      p.price_status = grade(p.price_age_s_raw, p.price_age_s);
     }
   }));
   lagStaleness(s);
