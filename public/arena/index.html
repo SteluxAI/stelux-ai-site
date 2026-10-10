@@ -1246,7 +1246,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-06T04:02:23Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-06T04:02:23Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-10T17:47:22Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-10T17:47:22Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -1534,7 +1534,7 @@ const I18N = {
     "全系统实时净值": "System live equity", "今日": "Today", "本金": "Principal",
     "自建仓起": "Since inception",
     "现金": "Cash", "持仓市值": "Positions", "未实现": "Unrealised", "最大回撤": "Max drawdown",
-    "今日成交": "Fills today", "活跃 / 持仓": "Active / holding", "实验": "Experiment",
+    "今日成交": "Fills today", "休市：今天没有交易时段，不会有成交": "Market closed: no session today, so no fills today", "活跃 / 持仓": "Active / holding", "实验": "Experiment",
     "排名口径": "Ranking metric", "轮次": "Rounds",
     "运行状态": "Runner", "行情源": "Quote feed", "未知": "unknown",
     // ---- quote strip
@@ -3328,7 +3328,11 @@ function renderHero(s) {
     ? `${tr("未知")}: ${sys.max_dd_days_used}/${sys.max_dd_days_total} ${tr("个交易日可合计（有槽当日估值未知）")}`
     : isNum(liveDD) ? tr("按每日冻结净值合计和当前实时净值（未冻结）计算：历史最高点到最低点的最大落差")
     : sys.max_dd_status === "unknown" ? tr("未知：还没有可合计的完整交易日") : tr("按每日冻结净值合计计算");
-  $("sFills").textContent = isNum(sys.fills_today) ? sys.fills_today : UNK;
+  // a closed market (weekend, holiday) has no trading day: there is no session today, so there are no fills today -
+  // a fact, not an unknown (2026-10-10: the hero read 「今日成交 未知」 every Saturday)
+  const mkt = s.market || {}, noSession = mkt.session === "closed" && !mkt.trading_day;
+  $("sFills").textContent = isNum(sys.fills_today) ? sys.fills_today : noSession ? "0" : UNK;
+  $("sFills").title = !isNum(sys.fills_today) && noSession ? tr("休市：今天没有交易时段，不会有成交") : "";
   $("sAgents").textContent = `${sys.agentsOnly ? sys.n_agents : Array.isArray(s.slots) ? s.slots.length : UNK} / ${isNum(sys.open_positions) ? sys.open_positions : UNK}`;
   $("valnote").textContent = LANG === "en"
     ? "Live equity = cash + position x live price (display only: not frozen, not booked). Ledger equity is what the engine froze at the daily close. If any held symbol lacks a live price, live equity shows unknown — never 0."
