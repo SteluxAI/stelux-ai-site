@@ -1246,7 +1246,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-10T17:47:22Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-10T17:47:22Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-11T15:02:03Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-11T15:02:03Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -2756,10 +2756,32 @@ function renderHeader(s) {
    instead of being silenced for ever by a click made hours earlier. Per experiment, because the boards have
    separate histories. localStorage can throw (private window, blocked site data); a dismissal that cannot be
    stored just does not persist, and the notice is honest either way. */
-function faultAckKey(s) { return "arena.faultack." + (((s || {}).experiment_id) || ""); }
-function faultAcked(s, sig) {
-  try { return localStorage.getItem(faultAckKey(s)) === sig; } catch (e) { return false; }
+/* Every notice can be closed with its × (user 2026-10-11: "notification ... 加入 x 可以让玩家看过后关闭"). A closed
+   notice stays closed in this browser until its CONTENT changes - a new fault, a new outage, another stale period - so
+   closing never hides something that has not been seen. Each notice names what makes it "the same one" (its sig):
+   a fault banner's sig is the fault count and the newest fault's time, not its text, whose "N hours without a
+   recurrence" changes every minute. Kept per experiment, at most 60 entries, in localStorage (a private window simply
+   shows them again). */
+function bannerAckKey(s) { return "arena.bannerack." + (((s || {}).experiment_id) || ""); }
+function bannerAcks(s) {
+  try { const v = JSON.parse(localStorage.getItem(bannerAckKey(s)) || "[]"); return Array.isArray(v) ? v : []; }
+  catch (e) { return []; }
 }
+function bannerAck(s, sig) {
+  try {
+    const v = bannerAcks(s).filter(x => x !== sig);
+    v.push(sig);
+    localStorage.setItem(bannerAckKey(s), JSON.stringify(v.slice(-60)));
+  } catch (e) { }
+}
+function bannerSig(text) {
+  // a short stable id for a notice whose identity is its text (djb2): the attribute stays small
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
+  return "t" + (h >>> 0).toString(36);
+}
+// a recovered fault stops being a notice after a day without a recurrence (the log keeps it; the banner was its echo)
+const RECOVERED_NOTICE_S = 86400;
 
 function faultBanner(s, add) {
   const f = s.faults;
@@ -2790,17 +2812,15 @@ function faultBanner(s, add) {
        Nothing is hidden and no count changes; what changes is the CLAIM. `live === null` is unknown - an older
        runner writes no counters, and a runner we cannot read cannot tell us it recovered - and unknown keeps
        the warning, because unknown is not "fine". */
+    const sig = `fault|${f.total}|${last.ts_ny || ""}`;   // the same faults: closed stays closed until a new one
     if (f.live === false) {
+      if (isNum(f.age_s) && f.age_s > RECOVERED_NOTICE_S) return;
       const clean = LANG === "en" ? `no recurrence in ${dur(f.age_s)}`
                                   : `此后 ${dur(f.age_s)} 没有再发生`;
-      const sig = `${f.total}|${last.ts_ny || ""}`;
-      if (faultAcked(s, sig)) return;            // dismissed, and nothing has happened since
-      add("ok", `<span>✅</span><span>${body} · <b>${tr("已恢复")}</b>${par(esc(clean))}</span>`
-        + `<button type="button" class="bx" data-ack="${esc(sig)}" title="${esc(tr("知道了，收起"))}"`
-        + ` aria-label="${esc(tr("知道了，收起"))}">×</button>`);
+      add("ok", `<span>✅</span><span>${body} · <b>${tr("已恢复")}</b>${par(esc(clean))}</span>`, sig);
     } else {
       add("warn", `<span>⚠️</span><span>${body}`
-        + `${f.live === null ? " · " + tr("是否已恢复：未知") : ""}</span>`);
+        + `${f.live === null ? " · " + tr("是否已恢复：未知") : ""}</span>`, sig + `|${f.live}`);
     }
   }
   const r = s.runner;
@@ -3102,7 +3122,7 @@ function renderBanners(s) {
     b.addEventListener("click", ev => {
       const btn = ev.target.closest && ev.target.closest("button[data-ack]");
       if (!btn) return;
-      try { localStorage.setItem(faultAckKey(STATE.snap || {}), btn.getAttribute("data-ack")); } catch (e) { }
+      bannerAck(STATE.snap || {}, btn.getAttribute("data-ack"));
       renderBanners(STATE.snap || {});
     });
   }
@@ -3110,7 +3130,15 @@ function renderBanners(s) {
   // runner-down banner exists to hand the user a command to COPY -- rebuilding the node ~1x/s wipes
   // any text selection inside it, so the command can never actually be selected.
   const items = [];
-  const add = (cls, html) => items.push(cls + "\u0000" + html);
+  const acked = new Set(bannerAcks(s));
+  const closeLbl = esc(tr("知道了，收起"));
+  // `sig`: what makes this notice "the same one" (see bannerAcks); a notice without one is identified by its text
+  const add = (cls, html, sig) => {
+    const k = sig ? String(sig) : bannerSig(cls + "|" + html);
+    if (acked.has(k)) return;
+    items.push(cls + "\u0000" + html
+      + `<button type="button" class="bx" data-ack="${esc(k)}" title="${closeLbl}" aria-label="${closeLbl}">×</button>`);
+  };
   retiredBanner(s, add);
   faultBanner(s, add);
   const paint = () => {
@@ -3132,7 +3160,7 @@ function renderBanners(s) {
   if (c.pause_trading) add("", "<span>⏸</span><span><b>已暂停交易</b>：不再提交新入场；出场、估值与对账继续。</span>");
   if (c.pause_evolution) add("", "<span>⏸</span><span><b>已暂停进化</b>：每日仍评分，但不替换任何策略。</span>");
   const f = s.feed || {};
-  if (ex.is_live && f.enabled && f.last_error) add("err", `<span>⚠️</span><span><b>行情源异常</b>：${esc(f.last_error)}${f.backoff_active ? "（退避重试中）" : ""}。价格与实时净值可能陈旧，页面按时间标注为陈旧/未知，不会用旧价冒充实时。</span>`);
+  if (ex.is_live && f.enabled && f.last_error) add("err", `<span>⚠️</span><span><b>行情源异常</b>：${esc(f.last_error)}${f.backoff_active ? "（退避重试中）" : ""}。价格与实时净值可能陈旧，页面按时间标注为陈旧/未知，不会用旧价冒充实时。</span>`, `feed|${f.last_error}`);
   // the published page, when the local simulation has stopped publishing (2026-10-04, production readiness): the data
   // sits on one machine with no auto-start, so a sleep, a restart or a lost network freezes it. Past 45 minutes -
   // above the longest publish cadence (30 min on a closed market) - the page says so at the top, not only in a chip.
@@ -3140,11 +3168,12 @@ function renderBanners(s) {
   if (!API.live && ex.is_live && isNum(plag) && plag > STALE_PUBLISH_S) {
     add("warn", LANG === "en"
       ? `<span>⏳</span><span><b>No new data for ${esc(dur(plag))}</b>: the simulation that publishes this page may have stopped (the machine asleep, restarted or offline). What follows is the last published data; the page picks up new data on its own once publishing resumes.</span>`
-      : `<span>⏳</span><span><b>数据已 ${esc(dur(plag))}未更新</b>：发布这个页面的本地模拟可能已停止（电脑休眠、重启或断网）。下面是最后一次发布的数据；恢复发布后页面会自动更新。</span>`);
+      : `<span>⏳</span><span><b>数据已 ${esc(dur(plag))}未更新</b>：发布这个页面的本地模拟可能已停止（电脑休眠、重启或断网）。下面是最后一次发布的数据；恢复发布后页面会自动更新。</span>`,
+      `stale|${s.published_utc || ""}`);
   }
   const r = s.runner;
-  if (ex.is_live && r && r.alive === null) add("", `<span>⁉️</span><span><b>Runner 状态未知</b>：心跳时间戳比本机时钟还新，说明本机时钟刚被调整过。在下一次心跳到达前，无法判断引擎是否还在运行；账本可能已经停止更新。</span>`);
-  if (ex.is_live && (!r || r.alive === false)) add("", `<span>💤</span><span><b>Runner 未在运行</b>${r && isNum(r.age_s) ? `（最后心跳 ${ago(r.age_s)}）` : ""}：账本不再更新，页面显示的是最后状态；实时价仍在刷新。启动：<code>scripts\\arena_start.ps1 -Id ${esc(s.experiment_id || "")}</code></span>`);
+  if (ex.is_live && r && r.alive === null) add("", `<span>⁉️</span><span><b>Runner 状态未知</b>：心跳时间戳比本机时钟还新，说明本机时钟刚被调整过。在下一次心跳到达前，无法判断引擎是否还在运行；账本可能已经停止更新。</span>`, `runner-unknown|${(r && r.ts_utc) || ""}`);
+  if (ex.is_live && (!r || r.alive === false)) add("", `<span>💤</span><span><b>Runner 未在运行</b>${r && isNum(r.age_s) ? `（最后心跳 ${ago(r.age_s)}）` : ""}：账本不再更新，页面显示的是最后状态；实时价仍在刷新。启动：<code>scripts\\arena_start.ps1 -Id ${esc(s.experiment_id || "")}</code></span>`, `runner-down|${(r && r.ts_utc) || ""}`);
   paint();
 }
 
