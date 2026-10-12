@@ -52,25 +52,28 @@
     <div class="nav-veil" aria-hidden="true"></div>
     <nav id="nav" aria-label="Primary" class="pointer-events-auto relative mx-auto flex h-[68px] max-w-7xl items-center px-5 sm:h-[76px] sm:px-8">
       <a href="#top" class="flex items-center gap-2.5 py-2" aria-label="Stelux AI home">
-        <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
-          <defs><linearGradient id="lg-nav" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
-          <rect width="64" height="64" rx="16" fill="#0f1514"/>
-          <path d="M42 22.5c-1.8-3.3-5.4-5-9.8-5-5.8 0-9.7 3-9.7 7.4 0 3.8 2.7 5.8 8.2 7.1l3.4.8c4.2 1 5.6 2.1 5.6 4.3 0 2.8-2.7 4.6-6.9 4.6-4.4 0-7.6-1.9-8.8-5.2" fill="none" stroke="url(#lg-nav)" stroke-width="4.2" stroke-linecap="round"/>
-          <circle cx="45" cy="19" r="3.2" fill="#67e8f9"/><circle cx="19" cy="45" r="3.2" fill="#34d399"/>
-        </svg>
+        <img src="/favicon.svg" width="28" height="28" alt="" aria-hidden="true" decoding="async">
         <span class="font-display text-[17px] font-semibold tracking-tight">Stelux AI</span>
       </a>
-      <ul class="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 text-[14px] md:flex">
-        <li><a class="nav-link" href="#products">Products</a></li>
-        <li class="hidden lg:block"><a class="nav-link" href="#platform">Platform</a></li>
-        <li><a class="nav-link" href="/arena/?experiment=stock-research-20260928">Arena</a></li>
-        <li class="hidden lg:block"><a class="nav-link" href="#bumphony">Games</a></li>
-        <li><a class="nav-link" href="#pricing">Pricing</a></li>
+      <ul class="mx-auto hidden min-w-0 items-center gap-0.5 whitespace-nowrap px-3 text-[14px] md:flex lg:gap-1">
+        <li><a class="nav-link" href="#products" data-i18n="navProducts">Products</a></li>
+        <li class="hidden lg:block"><a class="nav-link" href="#platform" data-i18n="navPlatform">Platform</a></li>
+        <li><a class="nav-link" href="/arena/">Arena</a></li>
+        <li class="hidden lg:block"><a class="nav-link" href="#cheek-beat" data-i18n="navGames">Games</a></li>
+        <li><a class="nav-link" href="#pricing" data-i18n="navPricing">Pricing</a></li>
       </ul>
-      <div class="ml-auto flex items-center gap-2 sm:gap-3">
-        <a href="mailto:steluxai@gmail.com" class="hidden rounded-full px-3.5 py-2.5 text-[14px] text-white/75 transition-colors hover:text-white sm:inline-flex">Contact</a>
-        <a href="#pricing" class="nav-cta">Launch Platform</a>
-        <button id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"
+      <div class="ml-auto flex flex-none items-center gap-2 sm:gap-3 md:ml-0">
+        <div class="lang-wrap" data-lang-menu>
+          <button type="button" class="lang-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="lang-menu" aria-label="Language: English">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>
+            <span class="lang-short">English</span>
+            <svg class="lang-caret" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg>
+          </button>
+          <div id="lang-menu" class="lang-menu" role="menu" aria-label="Language" data-i18n-aria="langLabel" data-lenis-prevent hidden></div>
+        </div>
+        <a href="mailto:steluxai@gmail.com" class="hidden rounded-full px-3.5 py-2.5 text-[14px] text-white/75 transition-colors hover:text-white xl:inline-flex" data-i18n="navContact">Contact</a>
+        <a href="#pricing" class="nav-cta" data-i18n="launch">Launch Platform</a>
+        <button id="menu-btn" type="button" aria-label="Open menu" data-i18n-aria="menuOpen" aria-expanded="false" aria-controls="mobile-menu"
                 class="ml-1 flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] text-white/85 md:hidden">
           <svg class="ico-burger" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4.5h12"/><path d="M2 8h12"/><path d="M2 11.5h12"/></svg>
           <svg class="ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg>
@@ -79,22 +82,22 @@
     </nav>
   </header>
 
-  <div id="mobile-menu" hidden role="dialog" aria-modal="true" aria-label="Menu" data-lenis-prevent class="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-[#08080a]/92 backdrop-blur-2xl">
+  <div id="mobile-menu" hidden role="dialog" aria-modal="true" aria-label="Menu" data-i18n-aria="menuLabel" data-lenis-prevent class="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-[#08080a]/92 backdrop-blur-2xl">
     <div class="flex min-h-full flex-col px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-24">
       <nav class="flex flex-col gap-1" aria-label="Mobile">
-        <a class="menu-link" href="#products">Products</a>
-        <a class="menu-link" href="/arena/?experiment=stock-research-20260928">Arena</a>
-        <a class="menu-link" href="#bumphony">Cheek Beat · Music game</a>
-        <a class="menu-link" href="#platform">Platform</a>
-        <a class="menu-link" href="#agents">Agents</a>
-        <a class="menu-link" href="#data">Data</a>
-        <a class="menu-link" href="#compute">Compute</a>
-        <a class="menu-link" href="#showcase">Developers</a>
-        <a class="menu-link" href="#pricing">Pricing</a>
+        <a class="menu-link" href="#products" data-i18n="navProducts">Products</a>
+        <a class="menu-link" href="/arena/">Arena</a>
+        <a class="menu-link" href="#cheek-beat" data-i18n="menuGame">Cheek Beat · Music game</a>
+        <a class="menu-link" href="#platform" data-i18n="navPlatform">Platform</a>
+        <a class="menu-link" href="#agents" data-i18n="menuAgents">Agents</a>
+        <a class="menu-link" href="#data" data-i18n="menuData">Data</a>
+        <a class="menu-link" href="#compute" data-i18n="menuCompute">Compute</a>
+        <a class="menu-link" href="#showcase" data-i18n="menuDevelopers">Developers</a>
+        <a class="menu-link" href="#pricing" data-i18n="navPricing">Pricing</a>
       </nav>
       <div class="mt-auto flex flex-col gap-3 pt-8">
-        <a href="#pricing" class="btn-glow px-5 py-3.5 text-[15px]">Launch Platform</a>
-        <a href="mailto:steluxai@gmail.com" class="btn-ghost px-5 py-3.5 text-[15px]">Talk to us</a>
+        <a href="#pricing" class="btn-glow px-5 py-3.5 text-[15px]" data-i18n="launch">Launch Platform</a>
+        <a href="mailto:steluxai@gmail.com" class="btn-ghost px-5 py-3.5 text-[15px]" data-i18n="talkToUs">Talk to us</a>
       </div>
     </div>
   </div>
@@ -119,14 +122,14 @@
 
       <div class="hero-content relative z-10 mx-auto max-w-7xl px-5 pt-32 sm:px-8 sm:pt-36">
         <div class="hero-copy mx-auto max-w-4xl text-center">
-          <span class="pill">Enterprise agent platform · Early access</span>
-          <h1 class="hero-h1 mt-5">Orchestrate intelligence<br class="hidden sm:inline"> at enterprise scale.</h1>
-          <p class="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-white/70 sm:text-[17px]">
+          <span class="pill" data-i18n="heroPill">Enterprise agent platform · Early access</span>
+          <h1 class="hero-h1 mt-5" data-i18n="heroH1">Orchestrate intelligence<br class="hidden sm:inline"> at enterprise scale.</h1>
+          <p class="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-white/70 sm:text-[17px]" data-i18n="heroP">
             Stelux AI runs autonomous agent swarms on your data and your GPUs — local racks or cloud fleets — from one control plane. The same platform behind every Stelux product.
           </p>
           <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href="#pricing" class="btn-light px-6 py-3 text-[15px]">Launch Platform</a>
-            <a href="#products" class="btn-ghost px-6 py-3 text-[15px]">Explore products</a>
+            <a href="#pricing" class="btn-light px-6 py-3 text-[15px]" data-i18n="launch">Launch Platform</a>
+            <a href="#products" class="btn-ghost px-6 py-3 text-[15px]" data-i18n="exploreProducts">Explore products</a>
           </div>
         </div>
 
@@ -135,18 +138,18 @@
           <div id="terminal" class="terminal mx-auto mt-10 max-w-[960px]">
           <div class="terminal-inner dash relative overflow-hidden rounded-2xl sm:rounded-[22px]">
             <div class="grid md:grid-cols-[228px_1fr]">
-              <aside class="dash-side hidden flex-col p-4 pt-5 md:flex" aria-label="Dashboard views">
+              <aside class="dash-side hidden flex-col p-4 pt-5 md:flex" aria-label="Dashboard views" data-i18n-aria="dashViews">
                 <div class="mb-5 flex items-center gap-3 px-1">
                   <span class="h-4 w-16 rounded bg-white/12"></span>
                   <svg class="ml-auto h-4 w-4 text-white/45" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
                 </div>
-                <button type="button" class="dash-nav active" data-view="overview"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Overview</button>
-                <button type="button" class="dash-nav" data-view="agents"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="5" r="2.5"/><path d="M3 13.5c0-2.5 2.2-4 5-4s5 1.5 5 4"/></svg>Agents</button>
-                <button type="button" class="dash-nav" data-view="tasks"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 4.5h10M3 8h10M3 11.5h6"/></svg>Tasks</button>
-                <button type="button" class="dash-nav" data-view="data"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="8" cy="4" rx="5" ry="2"/><path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/></svg>Data</button>
-                <button type="button" class="dash-nav" data-view="compute"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h3"/></svg>Compute</button>
-                <button type="button" class="dash-nav" data-view="logs"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3h12v10H2z"/><path d="M4.5 6.5l2 1.5-2 1.5M8 9.5h3"/></svg>Logs</button>
-                <button type="button" class="dash-nav" data-view="products"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 2l5.5 3v6L8 14l-5.5-3V5z"/><path d="M8 8l5.5-3M8 8L2.5 5M8 8v6"/></svg>Products</button>
+                <button type="button" class="dash-nav active" data-view="overview"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span data-i18n="dashOverview">Overview</span></button>
+                <button type="button" class="dash-nav" data-view="agents"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="5" r="2.5"/><path d="M3 13.5c0-2.5 2.2-4 5-4s5 1.5 5 4"/></svg><span data-i18n="menuAgents">Agents</span></button>
+                <button type="button" class="dash-nav" data-view="tasks"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 4.5h10M3 8h10M3 11.5h6"/></svg><span data-i18n="dashTasks">Tasks</span></button>
+                <button type="button" class="dash-nav" data-view="data"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="8" cy="4" rx="5" ry="2"/><path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/></svg><span data-i18n="menuData">Data</span></button>
+                <button type="button" class="dash-nav" data-view="compute"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h3"/></svg><span data-i18n="menuCompute">Compute</span></button>
+                <button type="button" class="dash-nav" data-view="logs"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3h12v10H2z"/><path d="M4.5 6.5l2 1.5-2 1.5M8 9.5h3"/></svg><span data-i18n="dashLogs">Logs</span></button>
+                <button type="button" class="dash-nav" data-view="products"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 2l5.5 3v6L8 14l-5.5-3V5z"/><path d="M8 8l5.5-3M8 8L2.5 5M8 8v6"/></svg><span data-i18n="navProducts">Products</span></button>
                 <div class="mt-auto space-y-1 px-2.5 pt-8 font-mono text-[10.5px] text-white/35">
                   <div>ws: <span class="text-white/55">finance</span></div>
                   <div>region: <span class="text-white/55">us-east-2</span></div>
@@ -159,17 +162,19 @@
                 <div class="dash-identity dash-pane relative flex-col items-center px-5 pt-10 text-center sm:px-6 sm:pt-9">
                   <div class="dash-avatar" aria-hidden="true">S</div>
                   <div id="dash-title" class="mt-3 text-[16px] font-semibold tracking-tight text-[#1b191e]">Stelux Orchestrator</div>
-                  <div id="dash-sub" class="mt-1 flex items-center justify-center gap-2 text-[13px] text-[#4f4a57]"><span class="live-dot"></span><span id="term-live">6 agents live</span><span class="text-[#8d8794]">&middot;</span><span id="dash-sub-text">research-desk</span></div>
+                  <div id="dash-sub" class="mt-1 flex items-center justify-center gap-2 text-[13px] text-[#4f4a57]"><span class="live-dot"></span><span id="term-live" data-i18n="dashAgentsLive">6 agents live</span><span class="text-[#8d8794]">&middot;</span><span id="dash-sub-text">research-desk</span></div>
                   <div id="dash-ticker" class="mt-3 w-full max-w-md truncate font-mono text-[11px] text-[#464150]" aria-live="polite"></div>
-                  <a href="#pricing" class="dash-cta mt-6">Open workspace</a>
+                  <a href="#pricing" class="dash-cta mt-6" data-i18n="dashOpen">Open workspace</a>
                 </div>
 
                 <div class="dash-products dash-pane relative px-5 pt-8 sm:px-8">
-                  <div class="dash-pane-title">Stelux products</div>
+                  <div class="dash-pane-title" data-i18n="viewProducts">Stelux products</div>
                   <ul class="dash-list mt-3">
-                    <li><span>Michigan Property Intelligence</span><span class="status-live">Live</span></li>
-                    <li><span>Market Signal Pro</span><span class="status-soon">Soon</span></li>
-                    <li><span>Lux AI Assistant</span><span class="status-soon">Soon</span></li>
+                    <li><span>Arena · Stock Research</span><span class="status-live" data-i18n="liveLabel">Live</span></li>
+                    <li><span>Cheek Beat</span><span class="status-live" data-i18n="liveLabel">Live</span></li>
+                    <li><span>Michigan Property Intelligence</span><span class="status-live" data-i18n="liveLabel">Live</span></li>
+                    <li><span>Market Signal Pro</span><span class="status-soon" data-i18n="soonTiny">Soon</span></li>
+                    <li><span>Lux AI Assistant</span><span class="status-soon" data-i18n="soonTiny">Soon</span></li>
                   </ul>
                 </div>
 
@@ -203,84 +208,280 @@
       <div class="hero-fade" aria-hidden="true"></div>
     </section>
 
-    <!-- ===== Products ===== -->
+    <!-- ===== Products: one spotlight per product, each with its own brand colour and a live or visual preview ===== -->
     <section id="products" class="relative pb-24 pt-16 sm:pb-32 sm:pt-24">
       <div class="mx-auto max-w-7xl px-5 sm:px-8">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between" data-reveal>
           <div class="max-w-2xl">
-            <span class="eyebrow">What we build</span>
-            <h2 class="h2 mt-4">Our products.</h2>
+            <span class="eyebrow" data-i18n="prodEyebrow">What we build</span>
+            <h2 class="h2 mt-4" data-i18n="prodTitle">Our products.</h2>
           </div>
-          <p class="lead max-w-md lg:text-right">Explore our AI tools, follow the Arena research experiment, or find your rhythm with Cheek Beat.</p>
+          <p class="lead max-w-md lg:text-right" data-i18n="prodLead">Each one built to stand on its own. Watch AI strategies compete, find your rhythm, or wake up to tomorrow's best rental deals.</p>
         </div>
 
-        <div class="mt-12 grid gap-4 md:grid-cols-2" data-reveal>
-          <a id="arena" href="/arena/?experiment=stock-research-20260928" class="product product-featured">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <span class="product-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18M6 15l4-5 4 3 6-8"/><path d="M16 5h4v4"/></svg></span>
-              <span class="status-live">Research experiment</span>
-            </div>
-            <h3 class="product-h3">Arena · Stock Research</h3>
-            <p class="product-p">Follow ten AI strategy slots in one stock-research arena. Explore portfolio performance, positions, trades, and the progress of the experiment.</p>
-            <p class="mt-3 text-[12px] leading-relaxed text-white/55">Real market data · Simulated trades</p>
-            <span class="product-cta">Explore Arena <span aria-hidden="true">→</span></span>
+        <!-- product dock: an app-icon jump list -->
+        <nav class="dock mt-10" aria-label="Products" data-i18n-aria="prodDockLabel" data-reveal>
+          <a class="dock-item" href="#arena" style="--accent-rgb:94,176,255">
+            <span class="dock-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16M7 15l4-5 3 3 5-7"/></svg></span>
+            <span><b>Arena</b><small data-i18n="dockArena">Stock research</small></span>
           </a>
-          <article id="bumphony" class="product product-game" aria-labelledby="bumphony-title">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <a href="/cheek-beat/" aria-label="Cheek Beat — game site"><img class="game-icon" src="/img/bumphony-icon.png" width="64" height="64" alt="" loading="lazy" decoding="async"></a>
-              <span class="status-live">Music game</span>
-            </div>
-            <h3 id="bumphony-title" class="product-h3"><a href="/cheek-beat/">Cheek Beat</a></h3>
-            <p class="product-p">Every cheek has a beat. Tap to the music, hold the notes, and build your combo in an original comedy rhythm game with four expressive performers.</p>
-            <div class="game-downloads">
-              <a class="game-download" href="https://play.google.com/store/apps/details?id=ai.stelux.bumphony" target="_blank" rel="noopener noreferrer" aria-label="Download Cheek Beat for Android on Google Play">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg>
-                <span><small>Download for Android</small><strong>Google Play</strong></span>
-                <span aria-hidden="true">↗</span>
-              </a>
-              <!-- Add the approved App Store URL here when the iPhone update is ready. -->
-              <div class="game-download game-download-pending">
-                <span><small>iPhone · App Store</small><strong>Update in review</strong></span>
+          <a class="dock-item" href="#cheek-beat" style="--accent-rgb:255,216,61">
+            <img class="dock-ico" src="/img/bumphony-icon.png" width="40" height="40" alt="" loading="lazy" decoding="async">
+            <span><b>Cheek Beat</b><small data-i18n="dockGame">Rhythm game</small></span>
+          </a>
+          <a class="dock-item" href="#michigan" style="--accent-rgb:129,140,248">
+            <span class="dock-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
+            <span><b>Michigan Property</b><small data-i18n="dockMichigan">Rental deal finder</small></span>
+          </a>
+          <a class="dock-item" href="#market-signal" style="--accent-rgb:245,181,68">
+            <span class="dock-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 4-7 5 5"/><path d="M3 21h18"/></svg></span>
+            <span><b>Market Signal Pro</b><small data-i18n="soonShort">Coming soon</small></span>
+          </a>
+          <a class="dock-item" href="#lux" style="--accent-rgb:182,156,255">
+            <span class="dock-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/></svg></span>
+            <span><b>Lux AI</b><small data-i18n="soonShort">Coming soon</small></span>
+          </a>
+        </nav>
+
+        <div class="mt-8 flex flex-col gap-6 sm:mt-10 sm:gap-8">
+
+          <!-- ── Arena ── -->
+          <article id="arena" class="spot" style="--accent:#7cc0ff; --accent-rgb:94,176,255" aria-labelledby="arena-title" data-reveal>
+            <div class="spot-copy">
+              <div class="spot-brand">
+                <span class="spot-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16M7 15l4-5 3 3 5-7"/><path d="M15 6h4v4"/></svg></span>
+                <div class="min-w-0">
+                  <h3 id="arena-title" class="spot-name">Arena</h3>
+                  <div class="spot-kind" data-i18n="arenaKind">Stock research · AI strategies</div>
+                </div>
+                <span class="spot-status"><span class="live-dot"></span><span data-i18n="arenaStatus">Live experiment</span></span>
+              </div>
+              <p class="spot-h" data-i18n="arenaH">Watch AI strategies compete, live.</p>
+              <p class="spot-p" data-i18n="arenaP">Dozens of AI strategy slots trade the same stock universe side by side on real market data with simulated money. See who leads, what each one holds, every trade, and how the experiment evolves.</p>
+              <ul class="spot-points">
+                <li data-i18n="arenaB1">Live leaderboard, equity curves and positions</li>
+                <li data-i18n="arenaB2">Every trade logged with the strategy's intent</li>
+                <li data-i18n="arenaB3">Real market data · simulated trades only</li>
+              </ul>
+              <div class="spot-ctas">
+                <a class="spot-btn" href="/arena/"><span data-i18n="arenaCta">Open the live Arena</span> <span aria-hidden="true">→</span></a>
               </div>
             </div>
-            <p class="mt-3 text-[12px] leading-relaxed text-white/55">The iPhone download link will be added after the update is approved.</p>
-            <a class="product-cta" href="/cheek-beat/">Watch the trailer &amp; meet the cast <span aria-hidden="true">→</span></a>
+
+            <a class="spot-preview arena-pv" href="/arena/" aria-label="Open the live Arena" data-i18n-aria="arenaCta" data-arena-preview>
+              <div class="pv-window">
+                <div class="pv-chrome" aria-hidden="true"><i></i><i></i><i></i><span>stelux.ai/arena</span><b class="pv-chip">PAPER ONLY</b></div>
+                <div class="arena-body">
+                  <div class="arena-top">
+                    <div class="min-w-0">
+                      <div class="pv-label" data-i18n="arenaPvEquity">Total paper equity</div>
+                      <div class="arena-equity" data-a="equity"><span class="sk w-40"></span></div>
+                      <div class="arena-deltas">
+                        <span class="arena-delta" data-a="total"><span class="sk w-16"></span></span>
+                        <span class="arena-delta" data-a="day"><span class="sk w-16"></span></span>
+                      </div>
+                    </div>
+                    <div class="arena-meta" data-a="meta" aria-hidden="true"></div>
+                  </div>
+                  <svg class="arena-curve" viewBox="0 0 400 110" preserveAspectRatio="none" aria-hidden="true">
+                    <defs><linearGradient id="arena-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc0ff" stop-opacity="0.35"/><stop offset="1" stop-color="#7cc0ff" stop-opacity="0"/></linearGradient></defs>
+                    <path class="arena-area" data-a="area" d="M0,78 C40,70 60,84 100,72 S160,40 200,52 S270,30 300,38 S360,20 400,26 L400,110 L0,110Z" fill="url(#arena-fill)"/>
+                    <path class="arena-line" data-a="line" d="M0,78 C40,70 60,84 100,72 S160,40 200,52 S270,30 300,38 S360,20 400,26" fill="none" stroke="#7cc0ff" stroke-width="2" vector-effect="non-scaling-stroke"/>
+                  </svg>
+                  <div class="arena-board">
+                    <div class="pv-label flex items-center justify-between"><span data-i18n="arenaPvLeaders">Leaders right now</span><span class="font-mono normal-case tracking-normal text-white/35" data-a="slots"></span></div>
+                    <ol class="arena-rows" data-a="rows">
+                      <li><span class="sk w-full"></span></li><li><span class="sk w-full"></span></li><li><span class="sk w-full"></span></li><li><span class="sk w-full"></span></li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+              <span class="pv-foot" data-a="foot" data-i18n="arenaPvFoot">Live data from the Arena · simulated money, not investment advice</span>
+            </a>
           </article>
-          <a href="https://michigan.stelux.ai" target="_blank" rel="noopener" class="product">
-            <div class="flex items-start justify-between gap-4">
-              <span class="product-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
-              <span class="status-live"><span class="live-dot"></span> Live</span>
+
+          <!-- ── Cheek Beat ── -->
+          <article id="cheek-beat" class="spot spot-flip spot-game" style="--accent:#ffd83d; --accent-rgb:255,216,61" aria-labelledby="cb-title" data-reveal>
+            <span id="bumphony" class="sr-anchor" aria-hidden="true"></span>
+            <div class="spot-copy">
+              <div class="spot-brand">
+                <a href="/cheek-beat/" tabindex="-1" aria-hidden="true"><img class="spot-mark spot-mark-img" src="/img/bumphony-icon.png" width="56" height="56" alt="" loading="lazy" decoding="async"></a>
+                <div class="min-w-0">
+                  <h3 id="cb-title" class="spot-name"><a href="/cheek-beat/">Cheek Beat</a></h3>
+                  <div class="spot-kind" data-i18n="cbKind">Comedy rhythm game · Android &amp; iPhone</div>
+                </div>
+                <span class="spot-status"><span data-i18n="cbStatus">Out now</span></span>
+              </div>
+              <p class="spot-h" data-i18n="cbH">Every cheek has a beat.</p>
+              <p class="spot-p" data-i18n="cbP">Tap to the music, hold the notes and build your combo in an original comedy rhythm game with four expressive performers, each with their own instrument and groove.</p>
+              <ul class="spot-tags" aria-label="The promise" data-i18n-aria="cbPromise">
+                <li data-i18n="cbT1">Free to play</li><li data-i18n="cbT2">No ads</li><li data-i18n="cbT3">No gacha</li><li data-i18n="cbT4">Plays offline</li>
+              </ul>
+              <div class="game-downloads">
+                <a class="game-download" href="https://play.google.com/store/apps/details?id=ai.stelux.bumphony" target="_blank" rel="noopener noreferrer" aria-label="Download Cheek Beat for Android on Google Play" data-i18n-aria="cbPlayAria">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg>
+                  <span><small data-i18n="cbAndroid">Download for Android</small><strong>Google Play</strong></span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+                <!-- Add the approved App Store URL here when the iPhone update is ready. -->
+                <div class="game-download game-download-pending">
+                  <span><small>iPhone · App Store</small><strong data-i18n="cbIos">Update in review</strong></span>
+                </div>
+              </div>
+              <p class="mt-3 text-[12px] leading-relaxed text-white/50" data-i18n="cbIosNote">The iPhone download link will be added after the update is approved.</p>
+              <a class="spot-link" href="/cheek-beat/"><span data-i18n="cbCta">Watch the trailer &amp; meet the cast</span> <span aria-hidden="true">→</span></a>
             </div>
-            <h3 class="product-h3">Michigan Property Intelligence</h3>
-            <p class="product-p">Daily AI-curated investment property analysis for the Detroit metro market. Cash flow projections, condition ratings, and deal scoring — delivered every morning before the market moves.</p>
-            <span class="product-cta">View Product <span aria-hidden="true">→</span></span>
-          </a>
-          <div class="product is-soon">
-            <div class="flex items-start justify-between gap-4">
-              <span class="product-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 4-7 5 5"/><path d="M3 21h18"/></svg></span>
-              <span class="status-soon">Coming soon</span>
+
+            <div class="spot-preview cb-pv">
+              <div class="cb-stage" aria-hidden="true"></div>
+              <img class="cb-char cb-c1" src="/cheek-beat/assets/img/chars/peach.webp" width="337" height="470" alt="" loading="lazy" decoding="async">
+              <img class="cb-char cb-c2" src="/cheek-beat/assets/img/chars/bread.webp" width="367" height="470" alt="" loading="lazy" decoding="async">
+              <img class="cb-char cb-c3" src="/cheek-beat/assets/img/chars/jelly.webp" width="337" height="470" alt="" loading="lazy" decoding="async">
+              <img class="cb-char cb-c4" src="/cheek-beat/assets/img/chars/robot.webp" width="337" height="470" alt="" loading="lazy" decoding="async">
+              <div class="cb-phone">
+                <video class="cb-video" data-src="/cheek-beat/assets/video/cheek-beat-teaser.mp4" poster="/cheek-beat/assets/video/cheek-beat-teaser-poster.jpg" muted loop playsinline preload="none" width="720" height="1280" aria-label="Cheek Beat gameplay teaser" data-i18n-aria="cbVideoAria"></video>
+                <button type="button" class="cb-play" aria-label="Play the gameplay teaser" data-i18n-aria="cbPlay"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></button>
+              </div>
+              <span class="cb-sticker cb-s1" aria-hidden="true">PERFECT!</span>
+              <span class="cb-sticker cb-s2" aria-hidden="true">FEVER</span>
             </div>
-            <h3 class="product-h3">Market Signal Pro</h3>
-            <p class="product-p">Real-time market intelligence for equity investors. AI-powered earnings analysis, sentiment scoring, and portfolio risk metrics — all in one clean daily brief.</p>
-            <span class="product-cta muted">In development</span>
-          </div>
-          <div class="product is-soon">
-            <div class="flex items-start justify-between gap-4">
-              <span class="product-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg></span>
-              <span class="status-soon">Coming soon</span>
+          </article>
+
+          <!-- ── Michigan Property Intelligence ── -->
+          <article id="michigan" class="spot" style="--accent:#a5b4fc; --accent-rgb:129,140,248" aria-labelledby="mi-title" data-reveal>
+            <div class="spot-copy">
+              <div class="spot-brand">
+                <span class="spot-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
+                <div class="min-w-0">
+                  <h3 id="mi-title" class="spot-name">Michigan Property Intelligence</h3>
+                  <div class="spot-kind" data-i18n="miKind">Rental investing · Metro Detroit</div>
+                </div>
+                <span class="spot-status"><span class="live-dot"></span><span data-i18n="liveLabel">Live</span></span>
+              </div>
+              <p class="spot-h" data-i18n="miH">The best cash-flow deals, in your inbox by 8 AM.</p>
+              <p class="spot-p" data-i18n="miP">Every morning, AI scans Metro Detroit listings, works out true monthly cash flow after mortgage, tax, insurance and vacancy, and grades every deal from A+ to D, so you can move before the market does.</p>
+              <dl class="spot-stats">
+                <div><dt data-i18n="miS1">Metro Detroit cities scanned</dt><dd>30+</dd></div>
+                <div><dt data-i18n="miS2">Deal grades, numbers first</dt><dd>A+&ndash;D</dd></div>
+                <div><dt data-i18n="miS3">New report every morning</dt><dd data-i18n="miS3v">8 AM</dd></div>
+              </dl>
+              <div class="spot-ctas">
+                <a class="spot-btn" href="https://michigan.stelux.ai" target="_blank" rel="noopener"><span data-i18n="miCta">See today's free Top 3</span> <span aria-hidden="true">↗</span></a>
+                <span class="spot-note" data-i18n="miTrial">14-day free trial</span>
+              </div>
             </div>
-            <h3 class="product-h3">Lux AI Assistant</h3>
-            <p class="product-p">Your personal AI agent for research, analysis, and daily briefings. Proactive, multilingual, and deeply integrated with your workflow — like a brilliant analyst, always on.</p>
-            <span class="product-cta muted">In development</span>
+
+            <a class="spot-preview mi-pv" href="https://michigan.stelux.ai" target="_blank" rel="noopener" aria-label="See today's free Top 3" data-i18n-aria="miCta">
+              <div class="pv-window mi-window">
+                <div class="mi-head">
+                  <span class="mi-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6 8.5-6"/></svg></span>
+                  <div class="min-w-0">
+                    <div class="mi-from">Michigan Property Intel <span class="mi-time">8:00 AM</span></div>
+                    <div class="mi-subj" data-i18n="miPvSubj">Today's top cash-flow deals are in</div>
+                  </div>
+                </div>
+                <div class="mi-best">
+                  <div class="mi-best-top">
+                    <span class="mi-rank" data-i18n="miPvBest">#1 · Best overall</span>
+                    <span class="mi-grade mi-a">A</span>
+                  </div>
+                  <div class="mi-price">$115,000</div>
+                  <div class="mi-addr">Rochester Hills, MI · <span data-i18n="miPvHome">Single family · 2 bd · 1 ba</span></div>
+                  <div class="mi-metrics">
+                    <div><b class="mi-pos">+$697</b><span data-i18n="miPvCf">Net cash flow / mo</span></div>
+                    <div><b>10.9%</b><span data-i18n="miPvCoc">Cash-on-cash</span></div>
+                    <div><b>$77,066</b><span data-i18n="miPvInv">Total invested</span></div>
+                  </div>
+                </div>
+                <ul class="mi-list">
+                  <li><span class="mi-n">#2</span><span class="min-w-0 truncate">Warren, MI · $115,000</span><b class="mi-pos">+$460/mo</b><span class="mi-grade mi-b">B+</span></li>
+                  <li><span class="mi-n">#3</span><span class="min-w-0 truncate">Eastpointe, MI · $105,000</span><b class="mi-pos">+$326/mo</b><span class="mi-grade mi-b">B+</span></li>
+                  <li class="mi-locked" aria-hidden="true"><span class="mi-n">#4</span><span>████████, MI · $███,███</span><b>+$███</b><span class="mi-grade">?</span></li>
+                  <li class="mi-locked" aria-hidden="true"><span class="mi-n">#5</span><span>████ ███████, MI · $██,███</span><b>+$███</b><span class="mi-grade">?</span></li>
+                </ul>
+                <div class="mi-unlock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span data-i18n="miPvUnlock">Deals #4–#10 for subscribers</span></div>
+              </div>
+              <span class="pv-foot" data-i18n="miPvFoot">Sample from a past daily report · listings change every day</span>
+            </a>
+          </article>
+
+          <!-- ── In development ── -->
+          <div class="grid gap-6 sm:gap-8 lg:grid-cols-2">
+            <article id="market-signal" class="spot spot-compact" style="--accent:#f7c56b; --accent-rgb:245,181,68" aria-labelledby="ms-title" data-reveal>
+              <div class="spot-copy">
+                <div class="spot-brand">
+                  <span class="spot-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 4-7 5 5"/><path d="M3 21h18"/></svg></span>
+                  <div class="min-w-0">
+                    <h3 id="ms-title" class="spot-name">Market Signal Pro</h3>
+                    <div class="spot-kind" data-i18n="msKind">Equity intelligence · Daily brief</div>
+                  </div>
+                  <span class="spot-status is-soon" data-i18n="soonShort">Coming soon</span>
+                </div>
+                <p class="spot-h" data-i18n="msH">The market, read for you before the open.</p>
+                <p class="spot-p" data-i18n="msP">AI-powered earnings analysis, sentiment scoring and portfolio risk metrics, all in one clean daily brief.</p>
+              </div>
+              <div class="spot-preview ms-pv" aria-hidden="true">
+                <div class="pv-window ms-window">
+                  <div class="ms-top">
+                    <div>
+                      <div class="pv-label" data-i18n="msPvBrief">Morning brief</div>
+                      <div class="ms-mood" data-i18n="msPvMood">Risk-on, selectively</div>
+                    </div>
+                    <svg class="ms-gauge" viewBox="0 0 120 70">
+                      <path d="M10,62 A50,50 0 0 1 110,62" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" stroke-linecap="round"/>
+                      <path class="ms-gauge-val" d="M10,62 A50,50 0 0 1 110,62" fill="none" stroke="url(#ms-g)" stroke-width="10" stroke-linecap="round" pathLength="100"/>
+                      <defs><linearGradient id="ms-g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f87171"/><stop offset="0.5" stop-color="#f7c56b"/><stop offset="1" stop-color="#4ade80"/></linearGradient></defs>
+                      <text x="60" y="58" text-anchor="middle">68</text>
+                    </svg>
+                  </div>
+                  <ul class="ms-rows">
+                    <li><span data-i18n="msPvR1">Semiconductors</span><i class="ms-bar"><b style="--w:78%; --c:#4ade80"></b></i><em class="ms-up" data-i18n="msBull">Bullish</em></li>
+                    <li><span data-i18n="msPvR2">Banks</span><i class="ms-bar"><b style="--w:52%; --c:#f7c56b"></b></i><em data-i18n="msNeutral">Neutral</em></li>
+                    <li><span data-i18n="msPvR3">Energy</span><i class="ms-bar"><b style="--w:31%; --c:#f87171"></b></i><em class="ms-dn" data-i18n="msBear">Bearish</em></li>
+                  </ul>
+                  <div class="ms-risk"><span data-i18n="msPvRisk">Portfolio risk</span><b data-i18n="msPvRiskVal">Moderate</b></div>
+                </div>
+                <span class="pv-foot" data-i18n="conceptFoot">Concept preview · product in development</span>
+              </div>
+              <a class="spot-link" href="mailto:steluxai@gmail.com?subject=Market%20Signal%20Pro%20early%20access"><span data-i18n="msCta">Get early access</span> <span aria-hidden="true">→</span></a>
+            </article>
+
+            <article id="lux" class="spot spot-compact" style="--accent:#c9b6ff; --accent-rgb:182,156,255" aria-labelledby="lux-title" data-reveal>
+              <div class="spot-copy">
+                <div class="spot-brand">
+                  <span class="spot-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/></svg></span>
+                  <div class="min-w-0">
+                    <h3 id="lux-title" class="spot-name">Lux AI Assistant</h3>
+                    <div class="spot-kind" data-i18n="luxKind">Personal AI agent</div>
+                  </div>
+                  <span class="spot-status is-soon" data-i18n="soonShort">Coming soon</span>
+                </div>
+                <p class="spot-h" data-i18n="luxH">A brilliant analyst, always on.</p>
+                <p class="spot-p" data-i18n="luxP">Your personal AI agent for research, analysis and daily briefings. Proactive, multilingual and woven into your workflow.</p>
+              </div>
+              <div class="spot-preview lux-pv" aria-hidden="true">
+                <div class="pv-window lux-window">
+                  <div class="lux-msg lux-me" data-i18n="luxPvAsk">Brief me before my 9 o'clock.</div>
+                  <div class="lux-msg lux-ai">
+                    <span class="lux-ai-name">Lux</span>
+                    <span data-i18n="luxPvHi">Good morning. Three things matter today:</span>
+                    <ul>
+                      <li data-i18n="luxPvL1">Your 10:00 call moved to 10:30</li>
+                      <li data-i18n="luxPvL2">Two new filings on your watchlist, summarized</li>
+                      <li data-i18n="luxPvL3">A draft reply is ready for your review</li>
+                    </ul>
+                  </div>
+                  <div class="lux-typing"><i></i><i></i><i></i></div>
+                  <div class="lux-langs"><span>EN</span><span>中文</span><span>ES</span><span>日本語</span><span>FR</span><span>+12</span></div>
+                </div>
+                <span class="pv-foot" data-i18n="conceptFoot">Concept preview · product in development</span>
+              </div>
+              <a class="spot-link" href="mailto:steluxai@gmail.com?subject=Lux%20AI%20Assistant%20waitlist"><span data-i18n="luxCta">Join the waitlist</span> <span aria-hidden="true">→</span></a>
+            </article>
           </div>
         </div>
 
-        <div id="about" class="mt-10 grid gap-4 sm:grid-cols-3" data-reveal>
-          <div class="about-stat"><div class="about-num">76+</div><p>Metro cities analyzed daily across Michigan</p></div>
-          <div class="about-stat"><div class="about-num">Daily</div><p>Fresh AI-curated reports every morning</p></div>
-          <div class="about-stat"><div class="about-num">100%</div><p>Automated — zero manual curation required</p></div>
-        </div>
-        <p class="mt-6 font-mono text-[11px] text-white/35">From Stelux AI</p>
+        <p id="about" class="mt-8 font-mono text-[11px] text-white/35" data-i18n="fromStelux">From Stelux AI</p>
       </div>
     </section>
 
@@ -289,11 +490,11 @@
       <div class="pointer-events-none absolute inset-x-0 top-0 h-px divider"></div>
       <div class="mx-auto max-w-7xl px-5 sm:px-8">
         <div class="max-w-2xl" data-reveal>
-          <span class="eyebrow">Platform</span>
-          <h2 class="h2 mt-4">One control plane.<br>Agents, data, compute.</h2>
-          <p class="lead mt-5">Three layers that were never designed to work together — until now. Stelux fuses them into a single runtime you can observe, replay and govern.</p>
-          <ul class="mt-6 flex flex-wrap items-center gap-2" aria-label="Runs on">
-            <li class="mr-1 font-mono text-[11px] uppercase tracking-[0.16em] text-white/35">Runs anywhere</li>
+          <span class="eyebrow" data-i18n="navPlatform">Platform</span>
+          <h2 class="h2 mt-4" data-i18n="platH2">One control plane.<br>Agents, data, compute.</h2>
+          <p class="lead mt-5" data-i18n="platLead">Three layers that were never designed to work together — until now. Stelux fuses them into a single runtime you can observe, replay and govern.</p>
+          <ul class="mt-6 flex flex-wrap items-center gap-2" aria-label="Runs on" data-i18n-aria="runsOn">
+            <li class="mr-1 font-mono text-[11px] uppercase tracking-[0.16em] text-white/35" data-i18n="runsAnywhere">Runs anywhere</li>
             <li class="chip">Kubernetes</li><li class="chip">Slurm</li><li class="chip">Bare metal</li><li class="chip">AWS</li><li class="chip">Azure</li><li class="chip">GCP</li><li class="chip">CUDA</li><li class="chip">ROCm</li>
           </ul>
         </div>
@@ -303,16 +504,16 @@
           <article id="agents" class="stack-card" style="--i:0; --tint: rgba(16,185,129,0.16)">
             <div class="grid items-center gap-10 p-7 sm:p-10 lg:grid-cols-2 lg:gap-14 lg:p-14">
               <div>
-                <span class="card-index">01 — AGENTS</span>
-                <h3 class="card-h3 mt-4">Autonomous Agent Swarms</h3>
-                <p class="mt-4 text-[15.5px] leading-relaxed text-white/60">Spin up hundreds of coordinated agents that plan, delegate and verify each other's work. Role graphs with shared memory, budget guards and human checkpoints keep swarms fast without letting them drift.</p>
+                <span class="card-index" data-i18n="c1Index">01 — AGENTS</span>
+                <h3 class="card-h3 mt-4" data-i18n="c1H">Autonomous Agent Swarms</h3>
+                <p class="mt-4 text-[15.5px] leading-relaxed text-white/60" data-i18n="c1P">Spin up hundreds of coordinated agents that plan, delegate and verify each other's work. Role graphs with shared memory, budget guards and human checkpoints keep swarms fast without letting them drift.</p>
                 <ul class="card-bullets mt-6 space-y-2.5">
-                  <li>Typed role graphs with planner, worker and critic loops</li>
-                  <li>Shared swarm memory with fact-level provenance</li>
-                  <li>Budget, PII and policy guardrails enforced at runtime</li>
-                  <li>Replay any run step by step, then fork it</li>
+                  <li data-i18n="c1B1">Typed role graphs with planner, worker and critic loops</li>
+                  <li data-i18n="c1B2">Shared swarm memory with fact-level provenance</li>
+                  <li data-i18n="c1B3">Budget, PII and policy guardrails enforced at runtime</li>
+                  <li data-i18n="c1B4">Replay any run step by step, then fork it</li>
                 </ul>
-                <a href="#showcase" class="card-link">Deploy a swarm <span aria-hidden="true">→</span></a>
+                <a href="#showcase" class="card-link"><span data-i18n="c1Link">Deploy a swarm</span> <span aria-hidden="true">→</span></a>
               </div>
               <div class="card-visual">
                 <svg viewBox="0 0 480 360" aria-hidden="true">
@@ -357,16 +558,16 @@
           <article id="data" class="stack-card" style="--i:1; --tint: rgba(34,211,238,0.14)">
             <div class="grid items-center gap-10 p-7 sm:p-10 lg:grid-cols-2 lg:gap-14 lg:p-14">
               <div>
-                <span class="card-index">02 — DATA</span>
-                <h3 class="card-h3 mt-4">Lakebase &amp; Enterprise Data Connectors</h3>
-                <p class="mt-4 text-[15.5px] leading-relaxed text-white/60">Lakebase gives every agent a governed, versioned view of your enterprise data. Connect warehouses, lakes, CRMs and event streams once — agents read and write through one schema-aware layer.</p>
+                <span class="card-index" data-i18n="c2Index">02 — DATA</span>
+                <h3 class="card-h3 mt-4" data-i18n="c2H">Lakebase &amp; Enterprise Data Connectors</h3>
+                <p class="mt-4 text-[15.5px] leading-relaxed text-white/60" data-i18n="c2P">Lakebase gives every agent a governed, versioned view of your enterprise data. Connect warehouses, lakes, CRMs and event streams once — agents read and write through one schema-aware layer.</p>
                 <ul class="card-bullets mt-6 space-y-2.5">
-                  <li>Connectors for Postgres, Snowflake, Databricks, S3, Kafka, Salesforce and more</li>
-                  <li>Iceberg- and Delta-native tables with time travel</li>
-                  <li>Row-level permissions inherited from the source system</li>
-                  <li>Vector, SQL and graph queries in one plane</li>
+                  <li data-i18n="c2B1">Connectors for Postgres, Snowflake, Databricks, S3, Kafka, Salesforce and more</li>
+                  <li data-i18n="c2B2">Iceberg- and Delta-native tables with time travel</li>
+                  <li data-i18n="c2B3">Row-level permissions inherited from the source system</li>
+                  <li data-i18n="c2B4">Vector, SQL and graph queries in one plane</li>
                 </ul>
-                <a href="#showcase" class="card-link text-cyan-300 hover:text-cyan-200">Attach a connector <span aria-hidden="true">→</span></a>
+                <a href="#showcase" class="card-link text-cyan-300 hover:text-cyan-200"><span data-i18n="c2Link">Attach a connector</span> <span aria-hidden="true">→</span></a>
               </div>
               <div class="card-visual">
                 <svg viewBox="0 0 480 360" aria-hidden="true">
@@ -407,16 +608,16 @@
           <article id="compute" class="stack-card" style="--i:2; --tint: rgba(16,185,129,0.14)">
             <div class="grid items-center gap-10 p-7 sm:p-10 lg:grid-cols-2 lg:gap-14 lg:p-14">
               <div>
-                <span class="card-index">03 — COMPUTE</span>
-                <h3 class="card-h3 mt-4">Local &amp; Cloud Multi-GPU Compute Management</h3>
-                <p class="mt-4 text-[15.5px] leading-relaxed text-white/60">Schedule agent workloads across on-prem GPU racks and cloud fleets with one scheduler. Bin-pack inference, burst training to the cloud and cap spend per team — without rewriting a single job.</p>
+                <span class="card-index" data-i18n="c3Index">03 — COMPUTE</span>
+                <h3 class="card-h3 mt-4" data-i18n="c3H">Local &amp; Cloud Multi-GPU Compute Management</h3>
+                <p class="mt-4 text-[15.5px] leading-relaxed text-white/60" data-i18n="c3P">Schedule agent workloads across on-prem GPU racks and cloud fleets with one scheduler. Bin-pack inference, burst training to the cloud and cap spend per team — without rewriting a single job.</p>
                 <ul class="card-bullets mt-6 space-y-2.5">
-                  <li>NVIDIA and AMD accelerators via CUDA and ROCm</li>
-                  <li>Kubernetes, Slurm and bare-metal backends</li>
-                  <li>Spot-aware cloud bursting with per-team budgets</li>
-                  <li>Live utilization, thermal and cost telemetry</li>
+                  <li data-i18n="c3B1">NVIDIA and AMD accelerators via CUDA and ROCm</li>
+                  <li data-i18n="c3B2">Kubernetes, Slurm and bare-metal backends</li>
+                  <li data-i18n="c3B3">Spot-aware cloud bursting with per-team budgets</li>
+                  <li data-i18n="c3B4">Live utilization, thermal and cost telemetry</li>
                 </ul>
-                <a href="#telemetry" class="card-link">See live telemetry <span aria-hidden="true">→</span></a>
+                <a href="#telemetry" class="card-link"><span data-i18n="c3Link">See live telemetry</span> <span aria-hidden="true">→</span></a>
               </div>
               <div class="card-visual">
                 <svg viewBox="0 0 480 360" aria-hidden="true">
@@ -459,25 +660,25 @@
     <section id="showcase" class="relative py-24 sm:py-32">
       <div class="mx-auto max-w-7xl px-5 sm:px-8">
         <div class="max-w-2xl" data-reveal>
-          <span class="eyebrow">Developer experience</span>
-          <h2 class="h2 mt-4">Ship a swarm in one command.</h2>
-          <p class="lead mt-5">CLI, SDK or REST — the same manifest drives all three. Press run to watch a research swarm come online against a Lakebase connector and a local GPU pool.</p>
+          <span class="eyebrow" data-i18n="devEyebrow">Developer experience</span>
+          <h2 class="h2 mt-4" data-i18n="devH2">Ship a swarm in one command.</h2>
+          <p class="lead mt-5" data-i18n="devLead">CLI, SDK or REST — the same manifest drives all three. Press run to watch a research swarm come online against a Lakebase connector and a local GPU pool.</p>
         </div>
 
         <div class="glass mt-12 grid grid-cols-1 overflow-hidden rounded-3xl sm:mt-16 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]" data-reveal>
           <div class="min-w-0 border-b border-white/10 lg:border-b-0 lg:border-r">
-            <div class="flex h-14 items-center gap-1 border-b border-white/10 px-3" role="tablist" aria-label="Code samples">
+            <div class="flex h-14 items-center gap-1 border-b border-white/10 px-3" role="tablist" aria-label="Code samples" data-i18n-aria="codeSamples">
               <button type="button" class="code-tab active" role="tab" aria-selected="true" data-tab="cli">CLI</button>
               <button type="button" class="code-tab" role="tab" aria-selected="false" data-tab="py">Python</button>
               <button type="button" class="code-tab" role="tab" aria-selected="false" data-tab="rest">REST</button>
               <div class="ml-auto flex items-center gap-2">
-                <button type="button" id="copy-btn" class="btn-ghost h-10 px-3.5 text-[12px]">Copy</button>
-                <button type="button" id="run-btn" class="btn-glow h-10 px-4 text-[12px]">Run
+                <button type="button" id="copy-btn" class="btn-ghost h-10 px-3.5 text-[12px]" data-i18n="copy">Copy</button>
+                <button type="button" id="run-btn" class="btn-glow h-10 px-4 text-[12px]"><span data-i18n="run">Run</span>
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M2 1.5v7l6-3.5z"/></svg>
                 </button>
               </div>
             </div>
-            <pre class="code active" data-code="cli" data-allow-overflow><code><span class="cmd"><span class="p">$</span> stelux swarm deploy <span class="s">research-desk</span> \
+            <pre class="code active" dir="ltr" data-code="cli" data-allow-overflow><code><span class="cmd"><span class="p">$</span> stelux swarm deploy <span class="s">research-desk</span> \
     --agents <span class="s">planner,analyst:4,critic</span> \
     --data <span class="s">lakebase://finance/filings</span> \
     --compute <span class="s">local:h100x8</span> --burst <span class="s">cloud:a100</span> \
@@ -488,7 +689,7 @@
 <span class="c">→ attaching lakebase         finance/filings</span>
 <span class="c">→ warming gpu pool           local:h100x8</span>
 <span class="k">✓ swarm live</span>  <span class="f">api.stelux.ai/v1/swarms/rd-8f2</span></code></pre>
-            <pre class="code" data-code="py" data-allow-overflow><code><span class="cmd"><span class="k">from</span> stelux <span class="k">import</span> Swarm, Lakebase, Compute
+            <pre class="code" dir="ltr" data-code="py" data-allow-overflow><code><span class="cmd"><span class="k">from</span> stelux <span class="k">import</span> Swarm, Lakebase, Compute
 
 swarm = <span class="f">Swarm</span>(<span class="s">"research-desk"</span>)
 swarm.<span class="f">add</span>(<span class="s">"planner"</span>)
@@ -502,7 +703,7 @@ swarm.<span class="f">guard</span>(pii=<span class="k">True</span>, budget_per_d
 run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk factors across the portfolio"</span>)
 <span class="k">for</span> event <span class="k">in</span> run.<span class="f">stream</span>():
     <span class="f">print</span>(event.agent, event.status, event.confidence)</span></code></pre>
-            <pre class="code" data-code="rest" data-allow-overflow><code><span class="cmd"><span class="p">$</span> curl -X POST <span class="f">https://api.stelux.ai/v1/swarms</span> \
+            <pre class="code" dir="ltr" data-code="rest" data-allow-overflow><code><span class="cmd"><span class="p">$</span> curl -X POST <span class="f">https://api.stelux.ai/v1/swarms</span> \
     -H <span class="s">"Authorization: Bearer $STELUX_KEY"</span> \
     -H <span class="s">"Content-Type: application/json"</span> \
     -d <span class="s">'{
@@ -519,22 +720,22 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
           </div>
           <div class="relative min-w-0 p-5 sm:p-7">
             <div class="flex items-center justify-between font-mono text-[11.5px] text-white/45">
-              <span>preview · live run</span>
+              <span data-i18n="previewRun">preview · live run</span>
               <span id="run-status" class="text-white/60">idle</span>
             </div>
             <ol id="run-steps" class="mt-5 space-y-1.5">
-              <li class="step"><span class="ico"></span><div><span class="lbl">Validate manifest</span><span class="meta">research-desk.yaml · schema v2</span></div></li>
-              <li class="step"><span class="ico"></span><div><span class="lbl">Provision agents</span><span class="meta">planner · analyst ×4 · critic</span></div></li>
-              <li class="step"><span class="ico"></span><div><span class="lbl">Attach Lakebase</span><span class="meta">finance/filings · 1,204 tables · row-level ACL</span></div></li>
-              <li class="step"><span class="ico"></span><div><span class="lbl">Warm GPU pool</span><span class="meta">local:h100×8 · burst cloud:a100 (spot)</span></div></li>
-              <li class="step"><span class="ico"></span><div><span class="lbl">Swarm live</span><span class="meta">api.stelux.ai/v1/swarms/rd-8f2</span></div></li>
+              <li class="step"><span class="ico"></span><div><span class="lbl" data-i18n="st1">Validate manifest</span><span class="meta">research-desk.yaml · schema v2</span></div></li>
+              <li class="step"><span class="ico"></span><div><span class="lbl" data-i18n="st2">Provision agents</span><span class="meta">planner · analyst ×4 · critic</span></div></li>
+              <li class="step"><span class="ico"></span><div><span class="lbl" data-i18n="st3">Attach Lakebase</span><span class="meta">finance/filings · 1,204 tables · row-level ACL</span></div></li>
+              <li class="step"><span class="ico"></span><div><span class="lbl" data-i18n="st4">Warm GPU pool</span><span class="meta">local:h100×8 · burst cloud:a100 (spot)</span></div></li>
+              <li class="step"><span class="ico"></span><div><span class="lbl" data-i18n="st5">Swarm live</span><span class="meta">api.stelux.ai/v1/swarms/rd-8f2</span></div></li>
             </ol>
             <div id="run-result" class="result-card" hidden>
-              <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-200"><span class="live-dot"></span> Swarm online</div>
+              <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-200"><span class="live-dot"></span> <span data-i18n="swarmOnline">Swarm online</span></div>
               <div class="mt-3 grid grid-cols-3 gap-3">
-                <div><div class="font-display text-[22px] font-semibold tracking-tight">6</div><div class="font-mono text-[10.5px] text-white/45">agents</div></div>
+                <div><div class="font-display text-[22px] font-semibold tracking-tight">6</div><div class="font-mono text-[10.5px] text-white/45" data-i18n="resAgents">agents</div></div>
                 <div><div class="font-display text-[22px] font-semibold tracking-tight">8<span class="text-white/40">+4</span></div><div class="font-mono text-[10.5px] text-white/45">GPUs</div></div>
-                <div><div class="font-display text-[22px] font-semibold tracking-tight">41<span class="text-[14px] text-white/40"> ms</span></div><div class="font-mono text-[10.5px] text-white/45">p50 latency</div></div>
+                <div><div class="font-display text-[22px] font-semibold tracking-tight">41<span class="text-[14px] text-white/40"> ms</span></div><div class="font-mono text-[10.5px] text-white/45" data-i18n="resLatency">p50 latency</div></div>
               </div>
             </div>
           </div>
@@ -548,38 +749,38 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
       <div class="mx-auto max-w-7xl px-5 sm:px-8">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between" data-reveal>
           <div class="max-w-2xl">
-            <span class="eyebrow">Telemetry</span>
-            <h2 class="h2 mt-4">Built for always-on operations.</h2>
+            <span class="eyebrow" data-i18n="telEyebrow">Telemetry</span>
+            <h2 class="h2 mt-4" data-i18n="telH2">Built for always-on operations.</h2>
           </div>
-          <p class="lead max-w-md lg:text-right">Every agent, connector and GPU reports into one telemetry plane — so you see drift, cost and latency before your users do.</p>
+          <p class="lead max-w-md lg:text-right" data-i18n="telLead">Every agent, connector and GPU reports into one telemetry plane — so you see drift, cost and latency before your users do.</p>
         </div>
         <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
           <div class="stat">
-            <div class="stat-label">Active tasks</div>
+            <div class="stat-label" data-i18n="tel1">Active tasks</div>
             <div class="stat-num mt-3"><span data-count="1284902">0</span></div>
             <canvas class="spark mt-4" id="spark-tasks"></canvas>
-            <div class="mt-2 font-mono text-[11px] text-white/40">across all swarms · <span class="text-emerald-300/80">live</span></div>
+            <div class="mt-2 font-mono text-[11px] text-white/40"><span data-i18n="tel1s">across all swarms</span> · <span class="text-emerald-300/80" data-i18n="liveLower">live</span></div>
           </div>
           <div class="stat">
-            <div class="stat-label">P50 latency</div>
+            <div class="stat-label" data-i18n="tel2">P50 latency</div>
             <div class="stat-num mt-3"><span data-count="38" data-live="latency">0</span><span class="text-[20px] text-white/40"> ms</span></div>
             <canvas class="spark mt-4" id="spark-latency"></canvas>
-            <div class="mt-2 font-mono text-[11px] text-white/40">agent step, end to end</div>
+            <div class="mt-2 font-mono text-[11px] text-white/40" data-i18n="tel2s">agent step, end to end</div>
           </div>
           <div class="stat">
-            <div class="stat-label">Compute uptime</div>
+            <div class="stat-label" data-i18n="tel3">Compute uptime</div>
             <div class="stat-num mt-3"><span data-count="99.99" data-decimals="2">0</span><span class="text-[20px] text-white/40">%</span></div>
             <canvas class="spark mt-4" id="spark-uptime"></canvas>
-            <div class="mt-2 font-mono text-[11px] text-white/40">trailing 90 days</div>
+            <div class="mt-2 font-mono text-[11px] text-white/40" data-i18n="tel3s">trailing 90 days</div>
           </div>
           <div class="stat">
-            <div class="stat-label">GPUs orchestrated</div>
+            <div class="stat-label" data-i18n="tel4">GPUs orchestrated</div>
             <div class="stat-num mt-3"><span data-count="14208">0</span></div>
             <canvas class="spark mt-4" id="spark-gpus"></canvas>
-            <div class="mt-2 font-mono text-[11px] text-white/40">local + cloud, peak</div>
+            <div class="mt-2 font-mono text-[11px] text-white/40" data-i18n="tel4s">local + cloud, peak</div>
           </div>
         </div>
-        <p class="mt-6 font-mono text-[11px] text-white/30">Demo telemetry — representative values from a reference deployment.</p>
+        <p class="mt-6 font-mono text-[11px] text-white/30" data-i18n="telNote">Demo telemetry — representative values from a reference deployment.</p>
       </div>
     </section>
 
@@ -588,51 +789,51 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
       <div class="pointer-events-none absolute inset-x-0 top-0 h-px divider"></div>
       <div class="mx-auto max-w-7xl px-5 sm:px-8">
         <div class="mx-auto max-w-2xl text-center" data-reveal>
-          <span class="eyebrow justify-center">Access</span>
-          <h2 class="h2 mt-4">Pick your level of control.</h2>
-          <p class="lead mt-5">Start free on shared compute. Bring your own GPUs when you're ready. Go dedicated when compliance demands it.</p>
+          <span class="eyebrow justify-center" data-i18n="priceEyebrow">Access</span>
+          <h2 class="h2 mt-4" data-i18n="priceH2">Pick your level of control.</h2>
+          <p class="lead mt-5" data-i18n="priceLead">Start free on shared compute. Bring your own GPUs when you're ready. Go dedicated when compliance demands it.</p>
         </div>
         <div class="mt-14 grid items-stretch gap-5 md:mx-auto md:max-w-[560px] lg:mx-0 lg:max-w-none lg:grid-cols-3" data-reveal>
           <div class="price">
-            <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">Developer</div>
-            <div class="mt-4 flex items-baseline gap-1"><span class="font-display text-[44px] font-semibold tracking-tight">Free</span></div>
-            <p class="mt-2 text-[14px] text-white/55">For individuals building their first swarm.</p>
+            <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45" data-i18n="tierDev">Developer</div>
+            <div class="mt-4 flex items-baseline gap-1"><span class="font-display text-[44px] font-semibold tracking-tight" data-i18n="tierFree">Free</span></div>
+            <p class="mt-2 text-[14px] text-white/55" data-i18n="tierDevP">For individuals building their first swarm.</p>
             <ul class="price-list mt-7 space-y-2.5">
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>1 swarm · up to 5 agents</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Lakebase sandbox · 1 GB</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Shared community GPU pool</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>CLI, SDK and REST</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Community support</li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pd1">1 swarm · up to 5 agents</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pd2">Lakebase sandbox · 1 GB</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pd3">Shared community GPU pool</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pd4">CLI, SDK and REST</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pd5">Community support</span></li>
             </ul>
-            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20developer%20access" class="btn-ghost mt-8 px-5 py-3 text-[14px]">Start free</a>
+            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20developer%20access" class="btn-ghost mt-8 px-5 py-3 text-[14px]" data-i18n="startFree">Start free</a>
           </div>
           <div class="price featured">
-            <span class="badge">Most deployed</span>
-            <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-emerald-200/80">Scale</div>
-            <div class="mt-4 flex items-baseline gap-1.5"><span class="font-display text-[44px] font-semibold tracking-tight">$499</span><span class="text-[14px] text-white/45">/ month</span></div>
-            <p class="mt-2 text-[14px] text-white/60">For teams running agents in production.</p>
+            <span class="badge" data-i18n="mostDeployed">Most deployed</span>
+            <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-emerald-200/80" data-i18n="tierScale">Scale</div>
+            <div class="mt-4 flex items-baseline gap-1.5"><span class="font-display text-[44px] font-semibold tracking-tight">$499</span><span class="text-[14px] text-white/45" data-i18n="perMonth">/ month</span></div>
+            <p class="mt-2 text-[14px] text-white/60" data-i18n="tierScaleP">For teams running agents in production.</p>
             <ul class="price-list mt-7 space-y-2.5">
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Unlimited swarms and agents</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Bring your own GPUs + cloud burst</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Lakebase with 10 enterprise connectors</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Replay, audit log and guardrails</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>SSO, roles and per-team budgets</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Priority support</li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="ps1">Unlimited swarms and agents</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="ps2">Bring your own GPUs + cloud burst</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="ps3">Lakebase with 10 enterprise connectors</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="ps4">Replay, audit log and guardrails</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="ps5">SSO, roles and per-team budgets</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="ps6">Priority support</span></li>
             </ul>
-            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20Scale%20access" class="btn-glow mt-8 px-5 py-3 text-[14px]">Launch Platform</a>
+            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20Scale%20access" class="btn-glow mt-8 px-5 py-3 text-[14px]" data-i18n="launch">Launch Platform</a>
           </div>
           <div class="price">
-            <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">Enterprise</div>
-            <div class="mt-4 flex items-baseline gap-1"><span class="font-display text-[44px] font-semibold tracking-tight">Custom</span></div>
-            <p class="mt-2 text-[14px] text-white/55">For regulated, air-gapped and multi-region teams.</p>
+            <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45" data-i18n="tierEnt">Enterprise</div>
+            <div class="mt-4 flex items-baseline gap-1"><span class="font-display text-[44px] font-semibold tracking-tight" data-i18n="tierCustom">Custom</span></div>
+            <p class="mt-2 text-[14px] text-white/55" data-i18n="tierEntP">For regulated, air-gapped and multi-region teams.</p>
             <ul class="price-list mt-7 space-y-2.5">
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Dedicated control plane · VPC or on-prem</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Unlimited connectors and regions</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Custom guardrails and policy packs</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>99.99% uptime SLA</li>
-              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Dedicated solutions engineer</li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pe1">Dedicated control plane · VPC or on-prem</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pe2">Unlimited connectors and regions</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pe3">Custom guardrails and policy packs</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pe4">99.99% uptime SLA</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pe5">Dedicated solutions engineer</span></li>
             </ul>
-            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20Enterprise" class="btn-ghost mt-8 px-5 py-3 text-[14px]">Talk to us</a>
+            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20Enterprise" class="btn-ghost mt-8 px-5 py-3 text-[14px]" data-i18n="talkToUs">Talk to us</a>
           </div>
         </div>
       </div>
@@ -643,11 +844,11 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
       <div class="mx-auto max-w-7xl px-5 sm:px-8">
         <div class="glass relative overflow-hidden rounded-3xl px-6 py-14 text-center sm:px-12 sm:py-20" data-reveal>
           <div class="pointer-events-none absolute inset-0" aria-hidden="true" style="background: radial-gradient(60% 80% at 50% 120%, rgba(16,185,129,0.22), rgba(16,185,129,0) 70%), radial-gradient(40% 50% at 80% 0%, rgba(34,211,238,0.12), rgba(34,211,238,0) 70%)"></div>
-          <h2 class="h2 relative">Bring your agents online.</h2>
-          <p class="lead relative mx-auto mt-5 max-w-xl">Book a working session with our engineers. We'll stand up a swarm on your data and your GPUs in under a week.</p>
+          <h2 class="h2 relative" data-i18n="ctaH2">Bring your agents online.</h2>
+          <p class="lead relative mx-auto mt-5 max-w-xl" data-i18n="ctaP">Book a working session with our engineers. We'll stand up a swarm on your data and your GPUs in under a week.</p>
           <div class="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href="#pricing" class="btn-glow px-6 py-3 text-[15px]">Launch Platform</a>
-            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20working%20session" class="btn-ghost px-6 py-3 text-[15px]">Talk to an engineer</a>
+            <a href="#pricing" class="btn-glow px-6 py-3 text-[15px]" data-i18n="launch">Launch Platform</a>
+            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20working%20session" class="btn-ghost px-6 py-3 text-[15px]" data-i18n="talkEngineer">Talk to an engineer</a>
           </div>
         </div>
       </div>
@@ -660,62 +861,57 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
       <div class="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 lg:grid-cols-[1.6fr_repeat(5,minmax(0,1fr))]">
         <div class="col-span-2 md:col-span-5 lg:col-span-1">
           <a href="#top" class="inline-flex items-center gap-2.5" aria-label="Stelux AI home">
-            <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
-              <defs><linearGradient id="lg-foot" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
-              <rect width="64" height="64" rx="16" fill="#0f1514"/>
-              <path d="M42 22.5c-1.8-3.3-5.4-5-9.8-5-5.8 0-9.7 3-9.7 7.4 0 3.8 2.7 5.8 8.2 7.1l3.4.8c4.2 1 5.6 2.1 5.6 4.3 0 2.8-2.7 4.6-6.9 4.6-4.4 0-7.6-1.9-8.8-5.2" fill="none" stroke="url(#lg-foot)" stroke-width="4.2" stroke-linecap="round"/>
-              <circle cx="45" cy="19" r="3.2" fill="#67e8f9"/><circle cx="19" cy="45" r="3.2" fill="#34d399"/>
-            </svg>
+            <img src="/favicon.svg" width="28" height="28" alt="" aria-hidden="true" decoding="async">
             <span class="font-display text-[16px] font-semibold tracking-tight">Stelux AI</span>
           </a>
-          <p class="mt-4 max-w-xs text-[13.5px] leading-relaxed text-white/50">Enterprise AI agents, workflow orchestration and high-performance compute from Stelux AI.</p>
+          <p class="mt-4 max-w-xs text-[13.5px] leading-relaxed text-white/50" data-i18n="footTag">Enterprise AI agents, workflow orchestration and high-performance compute from Stelux AI.</p>
           <div class="mt-5 inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-emerald-400/25 bg-emerald-400/[0.06] px-3 py-1.5 font-mono text-[11px] text-emerald-200">
-            <span class="live-dot"></span> All systems operational
+            <span class="live-dot"></span> <span data-i18n="allSystems">All systems operational</span>
           </div>
         </div>
         <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Products</div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40" data-i18n="navProducts">Products</div>
           <ul class="mt-2">
-            <li><a class="foot-link" href="/arena/?experiment=stock-research-20260928">Arena · Stock Research</a></li>
-            <li><a class="foot-link" href="/cheek-beat/">Cheek Beat · Game site</a></li>
+            <li><a class="foot-link" href="/arena/">Arena · Stock Research</a></li>
+            <li><a class="foot-link" href="/cheek-beat/" data-i18n="footGameSite">Cheek Beat · Game site</a></li>
             <li><a class="foot-link" href="https://michigan.stelux.ai" target="_blank" rel="noopener">Michigan Property Intelligence</a></li>
             <li><a class="foot-link" href="#products">Market Signal Pro</a></li>
             <li><a class="foot-link" href="#products">Lux AI Assistant</a></li>
           </ul>
         </div>
         <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Platform</div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40" data-i18n="navPlatform">Platform</div>
           <ul class="mt-2">
-            <li><a class="foot-link" href="#agents">Agent Swarms</a></li>
+            <li><a class="foot-link" href="#agents" data-i18n="footSwarms">Agent Swarms</a></li>
             <li><a class="foot-link" href="#data">Lakebase</a></li>
-            <li><a class="foot-link" href="#compute">Compute</a></li>
-            <li><a class="foot-link" href="#pricing">Pricing</a></li>
+            <li><a class="foot-link" href="#compute" data-i18n="menuCompute">Compute</a></li>
+            <li><a class="foot-link" href="#pricing" data-i18n="navPricing">Pricing</a></li>
           </ul>
         </div>
         <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Developers</div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40" data-i18n="menuDevelopers">Developers</div>
           <ul class="mt-2">
             <li><a class="foot-link" href="#showcase">CLI &amp; SDK</a></li>
             <li><a class="foot-link" href="#showcase">REST API</a></li>
-            <li><a class="foot-link" href="#telemetry">Telemetry</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20docs">Docs access</a></li>
+            <li><a class="foot-link" href="#telemetry" data-i18n="telEyebrow">Telemetry</a></li>
+            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20docs" data-i18n="footDocs">Docs access</a></li>
           </ul>
         </div>
         <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Company</div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40" data-i18n="footCompany">Company</div>
           <ul class="mt-2">
-            <li><a class="foot-link" href="#about">About</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Careers%20at%20Stelux%20AI">Careers</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Partnership">Partners</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com">Contact</a></li>
+            <li><a class="foot-link" href="#products" data-i18n="footAbout">About</a></li>
+            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Careers%20at%20Stelux%20AI" data-i18n="footCareers">Careers</a></li>
+            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Partnership" data-i18n="footPartners">Partners</a></li>
+            <li><a class="foot-link" href="mailto:steluxai@gmail.com" data-i18n="navContact">Contact</a></li>
           </ul>
         </div>
         <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Legal</div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40" data-i18n="footLegal">Legal</div>
           <ul class="mt-2">
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Privacy%20policy%20request">Privacy</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Terms%20request">Terms</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Security%20report">Report a vulnerability</a></li>
+            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Privacy%20policy%20request" data-i18n="footPrivacy">Privacy</a></li>
+            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Terms%20request" data-i18n="footTerms">Terms</a></li>
+            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Security%20report" data-i18n="footVuln">Report a vulnerability</a></li>
           </ul>
         </div>
       </div>

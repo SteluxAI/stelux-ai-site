@@ -1,13 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#34d399"/>
-      <stop offset="1" stop-color="#22d3ee"/>
-    </linearGradient>
+    <linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17407f"/><stop offset="1" stop-color="#0b234d"/></linearGradient>
+    <linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfdcf6"/><stop offset="1" stop-color="#a8bce8"/></linearGradient>
+    <mask id="m"><g fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round"><path d="M32 9.5 51.5 20.75v22.5L32 54.5 12.5 43.25v-22.5Z"/><path d="M58 10 38.8 16.8 51.1 29.2Z"/></g></mask>
   </defs>
-  <rect width="64" height="64" rx="16" fill="#0b0f0e"/>
-  <rect x="0.5" y="0.5" width="63" height="63" rx="15.5" fill="none" stroke="#ffffff" stroke-opacity="0.12"/>
-  <path d="M42 22.5c-1.8-3.3-5.4-5-9.8-5-5.8 0-9.7 3-9.7 7.4 0 3.8 2.7 5.8 8.2 7.1l3.4.8c4.2 1 5.6 2.1 5.6 4.3 0 2.8-2.7 4.6-6.9 4.6-4.4 0-7.6-1.9-8.8-5.2" fill="none" stroke="url(#g)" stroke-width="4.2" stroke-linecap="round"/>
-  <circle cx="45" cy="19" r="3.2" fill="#67e8f9"/>
-  <circle cx="19" cy="45" r="3.2" fill="#34d399"/>
+  <rect width="64" height="64" rx="14" fill="url(#t)"/>
+  <g fill="url(#h)" stroke="url(#h)" stroke-width="3" stroke-linejoin="round">
+    <path d="M32 9.5 51.5 20.75v22.5L32 54.5 12.5 43.25v-22.5Z"/>
+    <path d="M58 10 38.8 16.8 51.1 29.2Z"/>
+  </g>
+  <g stroke="#0e2a5a" stroke-width="1.6" stroke-linecap="round" fill="none">
+    <path d="M17 21.5 27 20 32 12.5M27 20 20 30M17 21.5 20 30M27 20 36 26M20 30 16.5 38"/>
+    <path d="M47.5 44 38 45 32 52M38 45 43 36 47.5 44M38 45 29 47M43 36 45.5 31"/>
+  </g>
+  <g fill="#0e2a5a">
+    <circle cx="32" cy="12.5" r="2"/><circle cx="17" cy="21.5" r="2"/><circle cx="27" cy="20" r="3.2"/><circle cx="20" cy="30" r="2.8"/><circle cx="36" cy="26" r="2.6"/>
+    <circle cx="43" cy="36" r="2.8"/><circle cx="38" cy="45" r="3.2"/><circle cx="47.5" cy="44" r="2"/><circle cx="32" cy="52" r="2"/><circle cx="29" cy="47" r="2.2"/>
+  </g>
+  <path d="M5 53 26 32 32 38 46.5 21.5" fill="none" stroke="#0e2a5a" stroke-width="5.2" stroke-linejoin="miter" mask="url(#m)"/>
+  <path d="M55 13 42.5 17.5 50.5 25.5Z" fill="#0e2a5a"/>
 </svg>

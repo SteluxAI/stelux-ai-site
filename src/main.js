@@ -2,6 +2,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import heroProfiles from './data/hero-foreground-profiles.json'
+import { initI18n, onLangChange, t } from './i18n.js'
+import { initProducts } from './products.js'
 
 gsap.registerPlugin(ScrollTrigger)
 ScrollTrigger.config({ ignoreMobileResize: true })
@@ -17,6 +19,8 @@ const fmt = (n, d = 0) => n.toLocaleString('en-US', { minimumFractionDigits: d, 
 const cssNum = (name, fallback) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || fallback
 
 if (reduceMotion) $$('svg').forEach((s) => s.pauseAnimations && s.pauseAnimations())
+
+initI18n()
 
 /* ---------------- smooth scroll ---------------- */
 let lenis = null
@@ -71,7 +75,7 @@ syncNav()
 function openMenu() {
   menu.hidden = false
   menuBtn.setAttribute('aria-expanded', 'true')
-  menuBtn.setAttribute('aria-label', 'Close menu')
+  menuBtn.setAttribute('aria-label', t('menuClose'))
   mainEl.inert = true; footEl.inert = true
   lenis?.stop()
   document.documentElement.style.overflow = 'hidden'
@@ -81,7 +85,7 @@ function closeMenu() {
   if (menu.hidden) return
   menu.hidden = true
   menuBtn.setAttribute('aria-expanded', 'false')
-  menuBtn.setAttribute('aria-label', 'Open menu')
+  menuBtn.setAttribute('aria-label', t('menuOpen'))
   mainEl.inert = false; footEl.inert = false
   lenis?.start()
   document.documentElement.style.overflow = ''
@@ -89,6 +93,7 @@ function closeMenu() {
 }
 menuBtn.addEventListener('click', () => (menu.hidden ? openMenu() : closeMenu()))
 addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu() })
+onLangChange(() => menuBtn.setAttribute('aria-label', t(menu.hidden ? 'menuOpen' : 'menuClose')))
 addEventListener('resize', () => { if (!isMobile()) closeMenu() })
 
 /* ---------------- hero v4 scene ----------------
@@ -171,23 +176,27 @@ if (canHover && !reduceMotion) {
 }
 
 const VIEWS = {
-  overview: { title: 'Stelux Orchestrator', sub: 'research-desk' },
-  agents: { title: 'Swarm · research-desk', sub: 'planner · analyst ×4 · critic' },
-  tasks: { title: 'Task queue', sub: '23 queued · 4 checkpoints pending' },
-  data: { title: 'Lakebase · finance/filings', sub: '1,204 tables · 38 streams' },
-  compute: { title: 'Compute pool', sub: '8× H100 local · 4× A100 burst' },
-  logs: { title: 'Event stream', sub: 'tail -f · 9 sources' },
-  products: { title: 'Stelux products', sub: '2 live · 2 in development' },
+  overview: { title: 'viewOverview', sub: 'research-desk' },
+  agents: { title: 'viewAgents', sub: 'planner · analyst ×4 · critic' },
+  tasks: { title: 'viewTasks', sub: '23 queued · 4 checkpoints pending' },
+  data: { title: 'viewData', sub: '1,204 tables · 38 streams' },
+  compute: { title: 'viewCompute', sub: '8× H100 local · 4× A100 burst' },
+  logs: { title: 'viewLogs', sub: 'tail -f · 9 sources' },
+  products: { title: 'viewProducts', sub: () => t('viewProductsSub') },
 }
 const dashMain = $('#dash-main'), dashTitle = $('#dash-title'), dashSubText = $('#dash-sub-text')
+const showView = (v) => {
+  dashTitle.textContent = t(v.title)
+  dashSubText.textContent = typeof v.sub === 'function' ? v.sub() : v.sub
+}
+onLangChange(() => showView(VIEWS[dashMain.dataset.view] || VIEWS.overview))
 $$('.dash-nav').forEach((btn) => {
   btn.addEventListener('click', () => {
     const view = btn.dataset.view
     const v = VIEWS[view] || VIEWS.overview
     $$('.dash-nav').forEach((b) => b.classList.toggle('active', b === btn))
     dashMain.dataset.view = view
-    dashTitle.textContent = v.title
-    dashSubText.textContent = v.sub
+    showView(v)
     if (!reduceMotion) gsap.fromTo([dashTitle, dashSubText], { opacity: 0.2, y: 4 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out', clearProps: 'all' })
     if (!reduceMotion) measureScene()
   })
@@ -335,17 +344,19 @@ copyBtn.addEventListener('click', async () => {
   const text = (cmd ? cmd.innerText : active.innerText).replace(/^\$ /, '')
   try {
     await navigator.clipboard.writeText(text)
-    copyBtn.textContent = 'Copied'
-  } catch { copyBtn.textContent = 'Select to copy' }
-  setTimeout(() => (copyBtn.textContent = 'Copy'), 1600)
+    copyBtn.textContent = t('copied')
+  } catch { copyBtn.textContent = t('selectToCopy') }
+  setTimeout(() => (copyBtn.textContent = t('copy')), 1600)
 })
 const steps = $$('#run-steps .step'), runStatus = $('#run-status'), runResult = $('#run-result'), runBtn = $('#run-btn')
-let runTimers = []
+let runTimers = [], runState = 'runIdle'
+const setRunStatus = (key) => { runState = key; runStatus.textContent = t(key) }
+onLangChange(() => setRunStatus(runState))
 function runDemo() {
   runTimers.forEach(clearTimeout); runTimers = []
   steps.forEach((s) => s.classList.remove('active', 'done'))
   runResult.hidden = true
-  runStatus.textContent = 'running…'
+  setRunStatus('runRunning')
   runStatus.className = 'text-cyan-200'
   const dur = reduceMotion ? 0 : 850
   steps.forEach((s, i) => {
@@ -357,13 +368,16 @@ function runDemo() {
   runTimers.push(setTimeout(() => {
     steps[steps.length - 1].classList.replace('active', 'done')
     runResult.hidden = false
-    runStatus.textContent = 'live · rd-8f2'
+    setRunStatus('runLive')
     runStatus.className = 'text-emerald-300'
     if (!reduceMotion) gsap.from(runResult, { opacity: 0, y: 10, duration: 0.5, ease: 'power3.out' })
   }, 300 + steps.length * dur + 200))
 }
 runBtn.addEventListener('click', runDemo)
 ScrollTrigger.create({ trigger: '#run-steps', start: 'top 80%', once: true, onEnter: runDemo })
+
+/* ---------------- products: live Arena preview, Cheek Beat teaser ---------------- */
+initProducts({ reduceMotion })
 
 /* ---------------- telemetry counters + sparklines ---------------- */
 function sparkline(canvas, seed, { min, max, color }) {

@@ -8,20 +8,75 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <style>
     html,body{margin:0;height:100%;background:#08080a;color:#f4f5f6;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-    main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;background:radial-gradient(200% 83% at 50% 0px,#1b2228 0%,#353f44 42%,#08080a 100%)}
+    main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;box-sizing:border-box;background:radial-gradient(200% 83% at 50% 0px,#1b2228 0%,#353f44 42%,#08080a 100%)}
     .k{font:500 11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.18em;text-transform:uppercase;color:rgba(110,231,183,.8)}
     h1{margin:18px 0 12px;font-size:clamp(32px,6vw,56px);font-weight:500;letter-spacing:-.03em;line-height:1.05}
     p{margin:0 0 28px;max-width:34em;color:rgba(255,255,255,.6);line-height:1.6}
     a{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:#fff;color:#141416;text-decoration:none;font-weight:500}
     a:hover{background:#ececee}
+    label{display:inline-flex;align-items:center;gap:8px;margin-top:36px;font-size:13px;color:rgba(255,255,255,.5)}
+    select{appearance:none;padding:8px 30px 8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5l3 3 3-3' fill='none' stroke='%23aaa' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center;color:#f4f5f6;font:inherit;font-size:13px}
+    [dir=rtl] select{padding:8px 12px 8px 30px;background-position:left 12px center}
+    select option{background:#16171a}
   </style>
 </head>
 <body>
   <main>
     <span class="k">404</span>
-    <h1>That page isn't here.</h1>
-    <p>The address may have changed or the page may have moved. Head back to the Stelux AI home page.</p>
-    <a href="/">Back to stelux.ai</a>
+    <h1 data-t="h">That page isn't here.</h1>
+    <p data-t="p">The address may have changed or the page may have moved. Head back to the Stelux AI home page.</p>
+    <a href="/" data-t="a">Back to stelux.ai</a>
+    <label><span data-t="l">Language</span> <select id="lang" aria-label="Language"></select></label>
   </main>
+  <script>
+  (function () {
+    var L = [
+      ["en", "English", { t: "Page not found", h: "That page isn't here.", p: "The address may have changed or the page may have moved. Head back to the Stelux AI home page.", a: "Back to stelux.ai", l: "Language" }],
+      ["zh-CN", "简体中文", { t: "页面不存在", h: "这个页面不在这里。", p: "网址可能已更改，或页面已被移动。请返回 Stelux AI 首页。", a: "返回 stelux.ai", l: "语言" }],
+      ["zh-TW", "繁體中文", { t: "找不到頁面", h: "這個頁面不在這裡。", p: "網址可能已變更，或頁面已移動。請返回 Stelux AI 首頁。", a: "返回 stelux.ai", l: "語言" }],
+      ["ja", "日本語", { t: "ページが見つかりません", h: "このページは見つかりません。", p: "アドレスが変更されたか、ページが移動した可能性があります。Stelux AI のホームページにお戻りください。", a: "stelux.ai に戻る", l: "言語" }],
+      ["ko", "한국어", { t: "페이지를 찾을 수 없습니다", h: "이 페이지는 여기에 없습니다.", p: "주소가 바뀌었거나 페이지가 이동되었을 수 있습니다. Stelux AI 홈페이지로 돌아가세요.", a: "stelux.ai로 돌아가기", l: "언어" }],
+      ["es", "Español", { t: "Página no encontrada", h: "Esta página no está aquí.", p: "Puede que la dirección haya cambiado o que la página se haya movido. Vuelve a la página de inicio de Stelux AI.", a: "Volver a stelux.ai", l: "Idioma" }],
+      ["pt-BR", "Português (Brasil)", { t: "Página não encontrada", h: "Esta página não está aqui.", p: "O endereço pode ter mudado ou a página pode ter sido movida. Volte para a página inicial da Stelux AI.", a: "Voltar para stelux.ai", l: "Idioma" }],
+      ["fr", "Français", { t: "Page introuvable", h: "Cette page n'est pas ici.", p: "L'adresse a peut-être changé ou la page a été déplacée. Revenez à la page d'accueil de Stelux AI.", a: "Retour à stelux.ai", l: "Langue" }],
+      ["de", "Deutsch", { t: "Seite nicht gefunden", h: "Diese Seite gibt es hier nicht.", p: "Die Adresse hat sich möglicherweise geändert oder die Seite wurde verschoben. Zurück zur Startseite von Stelux AI.", a: "Zurück zu stelux.ai", l: "Sprache" }],
+      ["it", "Italiano", { t: "Pagina non trovata", h: "Questa pagina non è qui.", p: "L'indirizzo potrebbe essere cambiato o la pagina potrebbe essere stata spostata. Torna alla home page di Stelux AI.", a: "Torna a stelux.ai", l: "Lingua" }],
+      ["ru", "Русский", { t: "Страница не найдена", h: "Такой страницы здесь нет.", p: "Возможно, адрес изменился или страница была перемещена. Вернитесь на главную страницу Stelux AI.", a: "Вернуться на stelux.ai", l: "Язык" }],
+      ["tr", "Türkçe", { t: "Sayfa bulunamadı", h: "Bu sayfa burada değil.", p: "Adres değişmiş ya da sayfa taşınmış olabilir. Stelux AI ana sayfasına dönün.", a: "stelux.ai'ye dön", l: "Dil" }],
+      ["id", "Bahasa Indonesia", { t: "Halaman tidak ditemukan", h: "Halaman ini tidak ada di sini.", p: "Alamatnya mungkin sudah berubah atau halamannya sudah dipindahkan. Kembali ke beranda Stelux AI.", a: "Kembali ke stelux.ai", l: "Bahasa" }],
+      ["vi", "Tiếng Việt", { t: "Không tìm thấy trang", h: "Trang này không có ở đây.", p: "Địa chỉ có thể đã thay đổi hoặc trang đã được chuyển đi. Hãy quay lại trang chủ Stelux AI.", a: "Quay lại stelux.ai", l: "Ngôn ngữ" }],
+      ["th", "ไทย", { t: "ไม่พบหน้านี้", h: "ไม่มีหน้านี้อยู่ที่นี่", p: "ที่อยู่อาจเปลี่ยนไป หรือหน้านี้อาจถูกย้ายแล้ว กลับไปที่หน้าแรกของ Stelux AI", a: "กลับไปที่ stelux.ai", l: "ภาษา" }],
+      ["hi", "हिन्दी", { t: "पेज नहीं मिला", h: "यह पेज यहाँ नहीं है।", p: "हो सकता है पता बदल गया हो या पेज कहीं और चला गया हो। Stelux AI के होम पेज पर लौटें।", a: "stelux.ai पर वापस जाएँ", l: "भाषा" }],
+      ["ar", "العربية", { t: "الصفحة غير موجودة", h: "هذه الصفحة غير موجودة هنا.", p: "ربما تغيّر العنوان أو نُقلت الصفحة. عُد إلى الصفحة الرئيسية لـ Stelux AI.", a: "العودة إلى stelux.ai", l: "اللغة" }]
+    ];
+    var codes = L.map(function (x) { return x[0]; });
+    function norm(v) {
+      v = String(v || "").toLowerCase().replace("_", "-");
+      if (v === "zh" || v === "zh-cn" || v === "zh-hans" || v === "zh-sg") return "zh-CN";
+      if (v === "zh-tw" || v === "zh-hk" || v === "zh-mo" || v === "zh-hant") return "zh-TW";
+      if (v === "pt" || v === "pt-br" || v === "pt-pt") return "pt-BR";
+      for (var i = 0; i < codes.length; i++) if (codes[i].toLowerCase() === v) return codes[i];
+      return "";
+    }
+    var sel = document.getElementById("lang");
+    L.forEach(function (x) { var o = document.createElement("option"); o.value = x[0]; o.lang = x[0]; o.textContent = x[1]; sel.appendChild(o); });
+    function apply(code) {
+      var T = L[codes.indexOf(code)][2];
+      document.querySelectorAll("[data-t]").forEach(function (n) { n.textContent = T[n.getAttribute("data-t")]; });
+      document.documentElement.lang = code;
+      document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
+      document.title = T.t + " — Stelux AI";
+      sel.value = code; sel.setAttribute("aria-label", T.l);
+    }
+    var q = "", saved = "";
+    try { q = norm(new URLSearchParams(location.search).get("lang")); } catch (e) {}
+    try { saved = norm(localStorage.getItem("stelux-lang")) || norm(localStorage.getItem("cb-lang-choice")); } catch (e) {}
+    apply(q || saved || "en");
+    sel.addEventListener("change", function () {
+      apply(sel.value);
+      try { localStorage.setItem("stelux-lang", sel.value); localStorage.setItem("cb-lang-choice", sel.value); } catch (e) {}
+    });
+  })();
+  </script>
 </body>
 </html>

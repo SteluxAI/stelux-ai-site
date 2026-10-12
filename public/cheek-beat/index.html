@@ -529,7 +529,7 @@
        was also written on auto-detect, so it is ignored rather than trusted). */
     var lang = "en", q = "";
     try { q = norm(new URLSearchParams(location.search).get("lang")); } catch (e) {}
-    try { lang = q || norm(localStorage.getItem("cb-lang-choice")) || "en"; } catch (e) { lang = q || "en"; }
+    try { lang = q || norm(localStorage.getItem("stelux-lang")) || norm(localStorage.getItem("cb-lang-choice")) || "en"; } catch (e) { lang = q || "en"; }
     function t(k) { var T = I18N[lang] || {}; return T[k] != null ? T[k] : (EN[k] != null ? EN[k] : ""); }
     var soundBtn = document.getElementById("hero-sound");
     var langBtn = document.getElementById("lang"), menu = document.getElementById("lang-menu"), wrapEl = document.getElementById("lang-wrap");
@@ -595,7 +595,7 @@
     }
     function choose(code) {
       apply(code);
-      try { localStorage.setItem("cb-lang-choice", lang); } catch (e) {}
+      try { localStorage.setItem("cb-lang-choice", lang); localStorage.setItem("stelux-lang", lang); } catch (e) {}
       /* a shared ?lang= link keeps saying what is on screen */
       try { var u = new URL(location.href); if (u.searchParams.has("lang")) { u.searchParams.set("lang", lang); history.replaceState(null, "", u); } } catch (e) {}
       closeMenu(true);
