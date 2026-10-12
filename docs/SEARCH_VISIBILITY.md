@@ -64,7 +64,10 @@ but not indexed, and Arena not yet known. These historical records do not change
 immediately on deployment. The new sitemap was submitted; its initial report
 said it could not read the sitemap despite the verified successful public HTTP
 and XML responses. This report needs Google's subsequent processing and must
-not be represented as successful indexing.
+not be represented as successful indexing. After one resubmission, Google's
+live URL test successfully fetched the actual updated XML: its source viewer
+contained the homepage, Cheek Beat and new Arena URLs. The sitemap report's old
+read status still needs a later refresh; this is not proof of completed indexing.
 
 No paid service or DNS change was made. The local preview was stopped after
 verification.
