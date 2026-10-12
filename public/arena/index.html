@@ -107,6 +107,9 @@ header{
 }
 .bar{max-width:1560px;margin:0 auto;padding:11px var(--gut);display:flex;align-items:center;gap:14px}
 .pills{display:flex;align-items:center;gap:10px;min-width:0}
+/* a status chip in a longer language (24 時間 365 日の現物 · …) can outgrow the bar: the chips then wrap to a second
+   line, end-aligned, instead of sliding the experiment picker under the Language button (2026-10-11, 1024px, ja) */
+@media(min-width:861px){.pills{flex-wrap:wrap;justify-content:flex-end;row-gap:6px}}
 /* narrow screens: brand + theme on row 1, a horizontally scrollable pill rail on row 2 (nothing ever overlaps) */
 @media(max-width:860px){
   .bar{flex-wrap:wrap;row-gap:9px;gap:10px}
@@ -1270,7 +1273,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-12T03:22:14Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-12T03:22:14Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-12T03:25:44Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-12T03:25:44Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
