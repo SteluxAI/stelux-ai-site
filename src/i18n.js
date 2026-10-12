@@ -58,6 +58,7 @@ export const JS_EN = {
   arenaPvSlots: '{n} strategy slots',
   arenaPvUpdated: 'Updated {time} ET',
   arenaPvOffline: 'Open the live board',
+  arenaPvPrev: 'prev close',
 }
 
 export function normLang(v) {

@@ -15,13 +15,15 @@ const tone = (bp) => (bp > 0 ? 'is-up' : bp < 0 ? 'is-dn' : 'is-flat')
 const usd = (cents) => '$' + (cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
-function pathFor(values, w, h, pad = 6) {
+function pathFor(values, w, h, pad = 6, extra = []) {
   if (values.length < 2) return null
-  let min = Math.min(...values), max = Math.max(...values)
+  const all = values.concat(extra.filter(Number.isFinite))
+  let min = Math.min(...all), max = Math.max(...all)
   if (max === min) { max += 1; min -= 1 }
-  const pts = values.map((v, i) => [(i / (values.length - 1)) * w, pad + (1 - (v - min) / (max - min)) * (h - pad * 2)])
+  const y = (v) => pad + (1 - (v - min) / (max - min)) * (h - pad * 2)
+  const pts = values.map((v, i) => [(i / (values.length - 1)) * w, y(v)])
   const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
-  return { line, area: `${line} L${w},${h} L0,${h} Z`, last: pts[pts.length - 1] }
+  return { line, area: `${line} L${w},${h} L0,${h} Z`, last: pts[pts.length - 1], pts, y }
 }
 
 /* Marks a preview .is-on while at least a third of it is visible; calls on(true|false) on changes. */
@@ -38,13 +40,19 @@ function initArena(reduceMotion) {
   if (!root) return
   const el = (k) => root.querySelector(`[data-a="${k}"]`)
   let snap = null, exp = null, lastEquity = null, trades = [], tapeAt = 0, tapeTimer = 0, refreshTimer = 0
+  let pts = [], pulseRaf = 0, counted = false
 
   function render() {
     if (!snap) return
     const sys = snap.system || {}
     const equity = sys.live_equity_status === 'known' ? sys.live_equity_cents : sys.ledger_equity_cents
     const eqEl = el('equity')
-    eqEl.textContent = Number.isFinite(equity) ? usd(equity) : '—'
+    if (Number.isFinite(equity) && !counted && !reduceMotion) {
+      counted = true
+      const t0 = performance.now()
+      const roll = (now) => { const k = Math.min(1, (now - t0) / 1600); eqEl.textContent = usd(Math.round(equity * (1 - Math.pow(1 - k, 3)))); if (k < 1 && lastEquity === equity) requestAnimationFrame(roll); else eqEl.textContent = usd(lastEquity) }
+      requestAnimationFrame(roll)
+    } else eqEl.textContent = Number.isFinite(equity) ? usd(equity) : '—'
     if (lastEquity != null && equity !== lastEquity && !reduceMotion) { eqEl.classList.remove('bump'); void eqEl.offsetWidth; eqEl.classList.add('bump') }
     lastEquity = equity
     el('total').innerHTML = `<b class="${tone(sys.live_return_bp)}">${pct(sys.live_return_bp)}</b> ${t('arenaPvAll')}`
@@ -56,8 +64,18 @@ function initArena(reduceMotion) {
     el('slots').textContent = sys.n_slots ? t('arenaPvSlots', { n: sys.n_slots }) : ''
 
     const curve = (sys.curve || []).map((p) => p[1]).filter(Number.isFinite)
-    const p = pathFor(curve, 400, 110)
+    const prev = sys.prev_close_equity_cents
+    const p = pathFor(curve, 400, 110, 8, [prev])
     if (p) {
+      pts = p.pts
+      const ref = el('ref'), refLabel = el('refLabel')
+      if (Number.isFinite(prev)) {
+        const ry = p.y(prev)
+        ref.setAttribute('y1', ry); ref.setAttribute('y2', ry)
+        refLabel.style.top = `${(ry / 110) * 100}%`
+        refLabel.textContent = t('arenaPvPrev')
+        refLabel.hidden = false
+      }
       const line = el('line')
       line.setAttribute('d', p.line)
       el('area').setAttribute('d', p.area)
@@ -66,7 +84,7 @@ function initArena(reduceMotion) {
       const dot = el('dot')
       dot.style.left = `${(p.last[0] / 400) * 100}%`
       dot.style.top = `${(p.last[1] / 110) * 100}%`
-      dot.style.setProperty('--dot', color)
+      root.style.setProperty('--dot', color)
       dot.hidden = false
       if (!reduceMotion && !line.dataset.drawn) {
         line.dataset.drawn = '1'
@@ -81,6 +99,7 @@ function initArena(reduceMotion) {
       .sort((a, b) => b.live_return_bp - a.live_return_bp || String(a.slot_id).localeCompare(String(b.slot_id)))
       .slice(0, 5)
     const rows = el('rows')
+    const top = Math.max(1, ...slots.map((s) => Math.abs(s.live_return_bp)))
     const fresh = !rows.dataset.filled
     rows.dataset.filled = '1'
     rows.textContent = ''
@@ -88,11 +107,13 @@ function initArena(reduceMotion) {
       const li = document.createElement('li')
       const syms = (s.positions || []).map((x) => x.symbol).filter(Boolean)
       const sym = syms.length ? syms[0] + (syms.length > 1 ? ` +${syms.length - 1}` : '') : s.factor_target || '—'
-      const sp = pathFor((s.curve || []).map((x) => x[1]).filter(Number.isFinite).slice(-60), 64, 20, 2)
-      const color = s.live_return_bp >= 0 ? '#30d158' : '#ff453a'
+      const w = Math.max(4, Math.round((Math.abs(s.live_return_bp) / top) * 100))
       li.innerHTML = `<span class="r">${i + 1}</span><span>${esc(s.slot_id)}</span><span class="sym"></span>` +
-        (sp ? `<svg viewBox="0 0 64 20" aria-hidden="true"><path d="${sp.line}" fill="none" stroke="${color}" stroke-width="1.5"/></svg>` : '<span></span>') +
+        `<span class="bar${s.live_return_bp < 0 ? ' is-neg' : ''}" aria-hidden="true"><i></i></span>` +
         `<span class="ret ${tone(s.live_return_bp)}">${pct(s.live_return_bp)}</span>`
+      const bar = li.querySelector('.bar > i')
+      if (reduceMotion) bar.style.width = w + '%'
+      else requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = w + '%' }))
       li.querySelector('.sym').textContent = sym
       if (fresh && !reduceMotion) li.style.setProperty('--i', i); else li.style.animation = 'none'
       rows.appendChild(li)
@@ -117,11 +138,28 @@ function initArena(reduceMotion) {
     let when = ''
     try { when = new Intl.DateTimeFormat(currentLang(), { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(x.confirmed_ny || x.bar_start_ny)) } catch {}
     const price = Number(x.price)
-    tape.innerHTML = `<span class="in" style="display:contents"><b class="side ${buy ? 'buy' : 'sell'}">${buy ? 'BUY' : 'SELL'}</b>` +
-      `<span>${esc(x.slot_id || '')} · ${esc(x.symbol)}${x.qty ? ` ×${esc(x.qty)}` : ''}${Number.isFinite(price) ? ` @ $${price.toFixed(2)}` : ''}</span>` +
-      `<span class="when">${esc(when)} ET</span></span>`
-    if (!reduceMotion) tape.querySelectorAll('.in > *').forEach((n) => n.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' }))
+    const html = `<span>▸ ${esc(x.slot_id || '')} <b class="${buy ? 'buy' : 'sell'}">${buy ? 'BUY' : 'SELL'}</b> <span class="sym">${esc(x.symbol)}</span>${x.qty ? ` ×${esc(x.qty)}` : ''}${Number.isFinite(price) ? ` @ $${price.toFixed(2)}` : ''}</span>` +
+      `<span class="when">${esc(when)} ET</span>`
+    const first = tape.hidden
     tape.hidden = false
+    if (reduceMotion || first) { tape.innerHTML = html; return }
+    tape.classList.add('fade')
+    setTimeout(() => { tape.innerHTML = html; tape.classList.remove('fade') }, 300)
+  }
+
+  const pulses = [...root.querySelectorAll('.arena-pulse')]
+  function pulse(now) {
+    if (pts.length > 1) {
+      pulses.forEach((p, n) => {
+        const k = ((now / 3600) + n * 0.5) % 1
+        const fi = k * (pts.length - 1), i = Math.floor(fi), r = fi - i
+        const a = pts[i], b = pts[Math.min(pts.length - 1, i + 1)]
+        p.style.left = `${((a[0] + (b[0] - a[0]) * r) / 400) * 100}%`
+        p.style.top = `${((a[1] + (b[1] - a[1]) * r) / 110) * 100}%`
+        p.style.opacity = String(Math.min(1, k / 0.08, (1 - k) / 0.12) * 0.9)
+      })
+    }
+    pulseRaf = requestAnimationFrame(pulse)
   }
 
   function fail() {
@@ -150,8 +188,10 @@ function initArena(reduceMotion) {
   io.observe(root)
   // while on screen: the tape ticks and the snapshot refreshes
   whileVisible(root, (on) => {
-    clearInterval(tapeTimer); clearInterval(refreshTimer)
+    clearInterval(tapeTimer); clearInterval(refreshTimer); cancelAnimationFrame(pulseRaf)
+    if (!on) pulses.forEach((p) => { p.style.opacity = '0' })
     if (!on || reduceMotion) return
+    pulseRaf = requestAnimationFrame(pulse)
     tapeTimer = setInterval(() => { if (trades.length > 1) { tapeAt++; showTrade() } }, TAPE_MS)
     refreshTimer = setInterval(async () => { if (!exp) return; try { await fetchSnap(); render() } catch {} }, REFRESH_MS)
   })

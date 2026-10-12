@@ -314,13 +314,12 @@ body {
   .arena-pv.is-offline .arena-equity { font-size: 22px; color: var(--accent); }
   .arena-board { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.07); }
   .arena-rows { margin-top: 8px; display: grid; gap: 2px; }
-  .arena-rows li { display: grid; grid-template-columns: 22px 44px minmax(0, 1fr) 64px 62px; align-items: center; gap: 10px; min-height: 30px; font: 500 12px/1 var(--font-mono); color: rgba(255,255,255,0.75); font-variant-numeric: tabular-nums; }
+  .arena-rows li { display: grid; grid-template-columns: 22px 44px 52px minmax(0, 1fr) 62px; align-items: center; gap: 10px; min-height: 30px; font: 500 12px/1 var(--font-mono); color: rgba(255,255,255,0.75); font-variant-numeric: tabular-nums; }
   .arena-rows li:has(> .sk) { display: block; padding: 7px 0; }
   .arena-rows .r { color: rgba(255,255,255,0.35); }
   .arena-rows .sym { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
   .arena-rows .ret { text-align: end; font-weight: 600; }
-  .arena-rows svg { width: 64px; height: 20px; }
-  @media (max-width: 400px) { .arena-rows li { grid-template-columns: 18px 38px minmax(0, 1fr) 56px; } .arena-rows svg { display: none; } }
+  @media (max-width: 400px) { .arena-rows li { grid-template-columns: 16px 36px 46px minmax(0, 1fr) 56px; gap: 8px; } }
 
   /* Cheek Beat */
   .cb-pv { display: flex; justify-content: center; align-items: center; min-height: 460px; padding: 28px 0; }
@@ -411,41 +410,47 @@ body {
   .game-icon { width: 64px; height: 64px; border-radius: 16px; }
   .game-downloads { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
   /* ---------- preview motion: each card plays while it is on screen (.is-on, set in products.js) ---------- */
-  /* Arena: live dot on the last point, a scan line, trades ticking in, rows rising in */
+  /* Arena, in the homepage's motion language: a counter that rolls up, pulses flowing along the curve
+     into a haloed end node (the swarm diagram), a dashed reference line that flows (the data cards),
+     a mono ticker that cross-fades (the hero dashboard) and thin bars that fill (the agent rows). */
   .arena-chart { position: relative; margin-top: 14px; }
   .arena-chart .arena-curve { margin-top: 0; }
-  .arena-dot { position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 99px; background: var(--dot, #7cc0ff); box-shadow: 0 0 0 0 var(--dot, #7cc0ff); }
-  .is-on .arena-dot { animation: dotPing 1.8s ease-out infinite; }
-  .arena-scan { position: absolute; top: 0; bottom: 0; left: 0; width: 22%; pointer-events: none; opacity: 0; background: linear-gradient(90deg, rgba(124,192,255,0), rgba(124,192,255,0.12) 70%, rgba(124,192,255,0.4) 99%, rgba(124,192,255,0)); }
-  .is-on .arena-scan { animation: scanX 4.5s cubic-bezier(.45,0,.55,1) infinite; }
-  .arena-tape { display: flex; align-items: center; gap: 8px; height: 30px; margin-top: 10px; padding: 0 10px; overflow: hidden; border-radius: 9px; background: rgba(255,255,255,0.035); font: 500 11.5px/1 var(--font-mono); color: rgba(255,255,255,0.7); white-space: nowrap; }
+  .arena-ref { stroke: rgba(255,255,255,0.22); stroke-width: 1; stroke-dasharray: 4 7; }
+  .is-on .arena-ref { animation: flow 1.6s linear infinite; }
+  .arena-ref-label { position: absolute; inset-inline-start: 0; transform: translateY(-120%); font: 500 10px/1 var(--font-mono); letter-spacing: .08em; color: rgba(255,255,255,0.35); }
+  .arena-dot { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 99px; background: var(--dot, #7cc0ff); box-shadow: 0 0 12px 2px color-mix(in srgb, var(--dot, #7cc0ff) 60%, transparent); }
+  .arena-dot::before { content: ""; position: absolute; inset: -9px; border-radius: inherit; background: radial-gradient(circle, color-mix(in srgb, var(--dot, #7cc0ff) 70%, transparent), transparent 70%); opacity: .12; }
+  .is-on .arena-dot::before { animation: halo 3s ease-in-out infinite; }
+  .arena-pulse { position: absolute; left: 0; top: 0; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 99px; opacity: 0; background: #fff; box-shadow: 0 0 10px 3px var(--dot, #7cc0ff); pointer-events: none; }
+  .arena-tape { display: flex; align-items: center; gap: 8px; height: 22px; margin-top: 12px; overflow: hidden; font: 400 11.5px/1 var(--font-mono); color: rgba(255,255,255,0.55); white-space: nowrap; transition: opacity .3s ease; }
+  .arena-tape.fade { opacity: 0; }
   .arena-tape[hidden] { display: none; }
-  .arena-tape .side { flex: none; padding: 3px 6px; border-radius: 5px; font-weight: 700; font-size: 10px; letter-spacing: .06em; }
-  .arena-tape .side.buy { color: #30d158; background: rgba(48,209,88,0.14); }
-  .arena-tape .side.sell { color: #ff6961; background: rgba(255,69,58,0.14); }
-  .arena-tape .when { margin-inline-start: auto; color: rgba(255,255,255,0.35); }
-  .arena-tape > span.in { animation: tapeIn .45s cubic-bezier(.2,.8,.2,1) both; }
-  .arena-rows li { animation: rowIn .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+  .arena-tape .buy { color: #30d158; } .arena-tape .sell { color: #ff6961; }
+  .arena-tape .sym { color: rgba(255,255,255,0.9); }
+  .arena-tape .when { margin-inline-start: auto; color: rgba(255,255,255,0.3); }
+  .arena-rows li { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) both; animation-delay: calc(var(--i, 0) * 80ms); }
+  .arena-rows .bar { height: 4px; background: rgba(255,255,255,0.07); }
+  .arena-rows .bar > i { width: 0; transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
+  .arena-rows .bar.is-neg > i { background: linear-gradient(90deg, #f87171, #fb923c); }
   .arena-equity.bump { animation: bump .6s ease; }
 
   /* Michigan: the 8 AM report arrives, numbers count up, locked deals shimmer */
   .mi-head { position: relative; }
   .mi-ping { position: absolute; top: -2px; inset-inline-start: 30px; width: 10px; height: 10px; border-radius: 99px; background: #818cf8; border: 2px solid #11142a; opacity: 0; transform: scale(0); }
-  .mi-pv.is-play .mi-ping { animation: pingIn 3.6s ease both .2s; }
-  .mi-pv.is-play .mi-head { animation: dropIn .6s cubic-bezier(.2,.8,.2,1) both; }
-  .mi-pv.is-play .mi-best { animation: riseIn .7s cubic-bezier(.2,.8,.2,1) both .35s; }
-  .mi-pv.is-play .mi-grade.mi-a { animation: popIn .5s cubic-bezier(.3,1.6,.5,1) both 1s; }
-  .mi-pv.is-play .mi-list li { animation: rowIn .5s cubic-bezier(.2,.8,.2,1) both; }
+  .mi-ping { opacity: 1; transform: none; animation: livePulseAccent 2.2s ease-out infinite; --accent-rgb: 129,140,248; }
+  .mi-pv.is-play .mi-head { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) both; }
+  .mi-pv.is-play .mi-best { animation: fadeUp .9s cubic-bezier(.16,1,.3,1) both .25s; }
+  .mi-pv.is-play .mi-grade.mi-a { animation: fadeUp .6s cubic-bezier(.16,1,.3,1) both 1s; }
+  .mi-pv.is-play .mi-list li { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) both; }
   .mi-pv.is-play .mi-list li:nth-child(1) { animation-delay: 1.15s; }
   .mi-pv.is-play .mi-list li:nth-child(2) { animation-delay: 1.3s; }
   .mi-pv.is-play .mi-list li:nth-child(3) { animation-delay: 1.45s; }
   .mi-pv.is-play .mi-list li:nth-child(4) { animation-delay: 1.6s; }
-  .mi-pv.is-play .mi-unlock { animation: riseIn .6s cubic-bezier(.2,.8,.2,1) both 1.8s; }
+  .mi-pv.is-play .mi-unlock { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) both 1.75s; }
   .mi-locked { position: relative; overflow: hidden; }
   .mi-list { position: relative; }
   .mi-unlock { position: relative; overflow: hidden; }
-  .mi-unlock::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.18), rgba(255,255,255,0)); }
-  .is-on .mi-unlock::after { animation: sheen 3.2s ease-in-out infinite 2.4s; }
+
 
   /* Market Signal Pro: the gauge sweeps, bars fill, then both breathe */
   .ms-gauge-val { transition: stroke-dasharray 1.4s cubic-bezier(.2,.8,.2,1); }
@@ -636,6 +641,7 @@ body {
 @keyframes pingIn { 0% { opacity: 0; transform: scale(0); } 12% { opacity: 1; transform: scale(1.25); } 20%, 80% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
 @keyframes sheen { 0% { transform: translateX(-100%); } 45%, 100% { transform: translateX(100%); } }
 @keyframes softBlink { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes skShimmer { to { background-position: -200% 0; } }
 @keyframes cbBob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
 @keyframes cbPop { 0%, 70%, 100% { scale: 1; } 80% { scale: 1.14; } 90% { scale: 0.96; } }
