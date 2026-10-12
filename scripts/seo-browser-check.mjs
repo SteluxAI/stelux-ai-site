@@ -101,6 +101,7 @@ async function checkExistingFeatures(page, definition) {
     const other = options.find(value => value !== initial)
     await page.locator('#expsel').selectOption(other)
     await page.waitForFunction(value => document.querySelector('#expsel').value === value && new URL(location.href).searchParams.get('experiment') === value, other)
+    await page.waitForFunction(value => document.querySelector('#expName').textContent.trim() === value, other, { timeout: 25000 })
     await page.waitForFunction(() => document.querySelector('#sysEq').textContent.trim() !== '—', null, { timeout: 25000 })
     await page.locator('#cmpwhy').click()
     assert.equal(await page.locator('#cmpwhy').getAttribute('aria-expanded'), 'true')
@@ -121,6 +122,7 @@ async function checkExistingFeatures(page, definition) {
     await page.locator('#themebtn').click()
     assert.notEqual(await page.locator('#themebtn').getAttribute('data-mode'), mode)
     await page.locator('#expsel').selectOption(initial)
+    await page.waitForFunction(value => document.querySelector('#expName').textContent.trim() === value, initial, { timeout: 25000 })
     await page.evaluate(() => scrollTo(0, 0))
     assert.equal(await page.locator('#renderfail').isVisible(), false)
   }

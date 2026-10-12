@@ -43,3 +43,28 @@ Google must recrawl pages before changing search presentation. Submission and
 successful live tests do not establish that every URL is indexed or guarantee
 ranking. Sources: [favicon guidance](https://developers.google.com/search/docs/appearance/favicon-in-search),
 [SEO starter guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide).
+
+## Production verification
+
+Code `5375bf0` deployed successfully through GitHub Pages run `38307855851` on
+October 12, 2026. All three production landing pages return 200 with the new
+titles, canonicals and indexable metadata. The three PNG icons return 200 with
+image/png and the declared square dimensions. The live sitemap contains all
+three URLs, and robots permits crawling with no HTTP noindex header.
+
+The production browser suite passed 102/102 scenarios in fresh contexts,
+including waiting for Arena's selected experiment data before checking it. Local
+validation also passed 102 browser cases, 9 SEO checks and 8 privacy checks.
+Screenshots and detailed results are saved locally under `output/seo-live/` and
+are intentionally excluded from the public build and repository.
+
+Search Console accepted recrawl/index requests for the homepage, Cheek Beat and
+Arena. Its existing index record showed Cheek Beat indexed, the homepage crawled
+but not indexed, and Arena not yet known. These historical records do not change
+immediately on deployment. The new sitemap was submitted; its initial report
+said it could not read the sitemap despite the verified successful public HTTP
+and XML responses. This report needs Google's subsequent processing and must
+not be represented as successful indexing.
+
+No paid service or DNS change was made. The local preview was stopped after
+verification.
