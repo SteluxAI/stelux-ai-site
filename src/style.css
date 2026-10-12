@@ -280,6 +280,26 @@ body {
   .spot-link:hover { text-decoration: underline; text-underline-offset: 4px; }
   .spot-compact > .spot-link { margin-top: -8px; }
 
+  /* Stelux Equipment spotlight: a light storefront window on the dark page */
+  .pv-window.eq-window { background: #f6f8fa; padding: 16px 18px 0; }
+  .eq-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .eq-url { font: 500 11px/1.4 var(--font-mono); letter-spacing: 0.06em; color: #56616c; }
+  .eq-chip { font-size: 11px; font-weight: 600; color: #fff; background: #163d58; border-radius: 999px; padding: 4px 11px; }
+  .eq-stage { position: relative; display: flex; align-items: flex-end; justify-content: space-around; gap: 6px; height: 300px; margin-top: 10px; padding: 0 6px; }
+  .eq-stage::before { content: ""; position: absolute; left: 50%; top: 4%; width: 78%; aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; background: #e8eef3; }
+  .eq-stage figure { position: relative; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .eq-stage img { width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 14px 14px rgba(20,45,64,0.18)); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+  .eq-1 img { height: 228px; } .eq-2 img { height: 178px; } .eq-3 img { height: 132px; } .eq-4 img { height: 108px; }
+  .eq-stage figcaption { margin: 10px 0 14px; padding: 2px 9px; border-radius: 999px; background: #fff; color: #142d40; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+  a.eq-pv:hover .eq-stage img { transform: translateY(-5px); }
+  a.eq-pv:hover .eq-2 img { transition-delay: .05s; } a.eq-pv:hover .eq-3 img { transition-delay: .1s; } a.eq-pv:hover .eq-4 img { transition-delay: .15s; }
+  @media (max-width: 640px) {
+    .eq-stage { height: 220px; }
+    .eq-1 img { height: 160px; } .eq-2 img { height: 126px; } .eq-3 img { height: 94px; } .eq-4 img { height: 78px; }
+    .eq-stage figcaption { font-size: 10px; padding: 2px 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) { a.eq-pv:hover .eq-stage img { transform: none; } }
+
   /* shared preview frame */
   .spot-preview { position: relative; display: block; min-width: 0; }
   a.spot-preview .pv-window { transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s; }
