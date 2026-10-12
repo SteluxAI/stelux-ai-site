@@ -28,6 +28,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - run: pnpm run seo:test
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -3,20 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cheek Beat — Every cheek has a beat.</title>
-  <meta name="description" content="Cheek Beat is an original comedy rhythm game with four expressive performers. Tap to the music, hold the notes, build your combo. Free to play, no ads, no gacha, no login required, plays offline." />
+  <title>Cheek Beat — Free Offline Rhythm Game for Android</title>
+  <meta name="description" content="Play Cheek Beat, a free comedy rhythm game for Android. Tap and hold to the music, build combos and play offline, with no ads or login required." />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
   <meta name="theme-color" content="#1a0716" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Cheek Beat — Every cheek has a beat." />
-  <meta property="og:description" content="An original comedy rhythm game with four expressive performers. Free to play, no ads, no gacha, no login required, plays offline." />
+  <meta property="og:title" content="Cheek Beat — Free Offline Rhythm Game for Android" />
+  <meta property="og:description" content="Play Cheek Beat, a free comedy rhythm game for Android. Tap and hold to the music, build combos and play offline, with no ads or login required." />
   <link rel="canonical" href="https://stelux.ai/cheek-beat/" />
   <meta property="og:url" content="https://stelux.ai/cheek-beat/" />
   <meta property="og:site_name" content="Stelux AI" />
   <meta property="og:image" content="https://stelux.ai/cheek-beat/assets/img/og-feature-graphic.png" />
   <meta name="twitter:image" content="https://stelux.ai/cheek-beat/assets/img/og-feature-graphic.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="icon" href="assets/img/icon-192.png" />
+  <meta name="twitter:title" content="Cheek Beat — Free Offline Rhythm Game for Android" />
+  <meta name="twitter:description" content="Play Cheek Beat, a free comedy rhythm game for Android. Tap and hold to the music, build combos and play offline, with no ads or login required." />
+  <link rel="icon" type="image/png" sizes="192x192" href="/cheek-beat/assets/img/icon-192.png" />
   <link rel="apple-touch-icon" href="assets/img/icon-192.png" />
+  <script type="application/ld+json" id="cheek-seo-schema">
+  {"@context":"https://schema.org","@graph":[
+    {"@type":"WebPage","@id":"https://stelux.ai/cheek-beat/#webpage","url":"https://stelux.ai/cheek-beat/","name":"Cheek Beat — Free Offline Rhythm Game for Android","description":"Play Cheek Beat, a free comedy rhythm game for Android. Tap and hold to the music, build combos and play offline, with no ads or login required.","inLanguage":"en","isPartOf":{"@id":"https://stelux.ai/#website"},"about":{"@type":"Thing","name":"Cheek Beat","url":"https://play.google.com/store/apps/details?id=ai.stelux.bumphony"}},
+    {"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Stelux AI","item":"https://stelux.ai/"},{"@type":"ListItem","position":2,"name":"Cheek Beat","item":"https://stelux.ai/cheek-beat/"}]}
+  ]}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
@@ -286,7 +295,7 @@
       <img class="star" src="assets/img/star.webp" alt="" aria-hidden="true" style="right:5%;top:70%;animation-delay:-1.3s" />
       <div class="wrap hero-grid">
         <div>
-          <h1 id="hero-title" class="sr-only">Cheek Beat</h1>
+          <h1 id="hero-title" class="eyebrow">Cheek Beat — Comedy Rhythm Game</h1>
           <img class="wordmark" src="assets/img/wordmark.webp" alt="Cheek Beat" width="1100" height="246" />
           <p class="tagline gold" data-i18n="tagline">Every cheek has a beat.</p>
           <p class="lede" data-i18n="heroLede">An original comedy rhythm game with four expressive performers. Tap to the music, hold the notes, build your combo — and light the stage with Cheek Beat FEVER.</p>
@@ -497,6 +506,7 @@
   </footer>
 
   <script src="assets/i18n.js"></script>
+  <script src="assets/seo-i18n.js"></script>
   <script>
   (function () {
     /* ---------- languages: English is the markup; the rest live in assets/i18n.js ---------- */
@@ -578,7 +588,24 @@
       plays.forEach(function (n) { n.setAttribute("aria-label", t("playFmt").replace("{s}", n.getAttribute("data-i18n-play"))); });
       notes.forEach(function (n) { n.hidden = !!GAME_LANGS[lang]; });
       root.lang = lang; root.dir = lang === "ar" ? "rtl" : "ltr";
-      document.title = "Cheek Beat — " + t("tagline");
+      var seo = (window.CB_SEO || {})[lang] || (window.CB_SEO || {}).en;
+      if (seo) {
+        document.title = seo.title;
+        document.getElementById("hero-title").textContent = seo.heading;
+        ['meta[property="og:title"]', 'meta[name="twitter:title"]'].forEach(function (s) { document.querySelector(s).setAttribute("content", seo.title); });
+        ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]'].forEach(function (s) { document.querySelector(s).setAttribute("content", seo.description); });
+        var schemaElement = document.getElementById("cheek-seo-schema");
+        if (schemaElement) {
+          var schema = JSON.parse(schemaElement.textContent);
+          var webpage = schema["@graph"].find(function (entity) { return entity["@type"] === "WebPage"; });
+          if (webpage) {
+            webpage.name = seo.title;
+            webpage.description = seo.description;
+            webpage.inLanguage = lang;
+            schemaElement.textContent = JSON.stringify(schema);
+          }
+        }
+      }
       var name = "English";
       items.forEach(function (b, i) { var on = LANGS[i][0] === lang; b.setAttribute("aria-checked", String(on)); b.tabIndex = on ? 0 : -1; if (on) name = LANGS[i][1]; });
       langBtn.setAttribute("aria-label", "Language: " + name);

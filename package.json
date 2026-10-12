@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173 --strictPort",
-    "build": "vite build && node scripts/release-privacy.mjs dist",
+    "build": "vite build && node scripts/arena-seo.mjs dist/arena/index.html && node scripts/release-privacy.mjs dist",
+    "seo:arena:test": "node --test scripts/arena-seo.test.mjs",
+    "seo:test": "node --test scripts/arena-seo.test.mjs scripts/seo.test.mjs",
     "privacy:test": "node --test scripts/release-privacy.test.mjs",
     "privacy:check": "node scripts/release-privacy.mjs dist",
     "preview": "vite preview --port 4173 --strictPort",

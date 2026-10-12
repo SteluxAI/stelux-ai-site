@@ -46,8 +46,8 @@ function writeCookie(code) {
 }
 
 export const JS_EN = {
-  metaTitle: 'Stelux AI — Enterprise AI Agents, Orchestration & GPU Compute',
-  metaDesc: 'Explore Stelux AI: Arena stock research, the Cheek Beat rhythm game, and Michigan Property Intelligence. AI tools and original games from Stelux AI.',
+  metaTitle: 'Stelux AI — Equipment, Games & Research Tools',
+  metaDesc: 'Explore commercial equipment quotes, the Cheek Beat rhythm game, Arena paper trading research, and Michigan rental property analysis from Stelux AI.',
   langLabel: 'Language',
   menuOpen: 'Open menu',
   menuClose: 'Close menu',
@@ -152,6 +152,8 @@ function apply() {
   root.dir = isRTL() ? 'rtl' : 'ltr'
   document.title = t('metaTitle')
   document.querySelector('meta[name="description"]')?.setAttribute('content', t('metaDesc'))
+  for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) document.querySelector(selector)?.setAttribute('content', t('metaTitle'))
+  for (const selector of ['meta[property="og:description"]', 'meta[name="twitter:description"]']) document.querySelector(selector)?.setAttribute('content', t('metaDesc'))
   document.querySelectorAll('a[data-lang-link]').forEach((a) => {
     try {
       const u = new URL(a.href)

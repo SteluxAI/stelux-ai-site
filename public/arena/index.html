@@ -2,25 +2,19 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-title" content="Arena">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23F5F5F7'/%3E%3Cpath d='M13 52L32 12L51 52' fill='none' stroke='%231D1D1F' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M21 38L43 30' fill='none' stroke='%230A84FF' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
 <link rel="apple-touch-icon" href="https://stelux.ai/arena/apple-touch-icon.png">
 <meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-<meta name="description" content="实时竞技场：用真实行情做模拟交易的 Agent 竞技场。Paper only · real quotes · simulated fills.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Arena · 实时竞技场">
-<meta property="og:description" content="Live trading arena · paper only · real quotes · simulated fills">
 <meta property="og:image" content="https://stelux.ai/arena/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://stelux.ai/arena/og.png">
-<title>Arena · 实时竞技场</title>
+<title>Arena — AI 股票与加密资产模拟交易 | Stelux AI</title>
 <style>
 /* Inter 4 (latin subset, variable 400-700) - Copyright 2016 The Inter Project Authors, SIL Open Font License 1.1
    (https://openfontlicense.org). Embedded so the page makes no third-party font request (2026-10-04). Apple devices
@@ -1045,6 +1039,25 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   .sbody{padding-bottom:calc(var(--padb) + env(safe-area-inset-bottom))}
 }
 </style>
+<!-- STELUX_ARENA_SEO_HEAD_START -->
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="description" content="使用真实市场行情和虚拟资金，查看策略排行榜、净值曲线、持仓与模拟成交记录。本看板仅供只读研究，不发出真实交易委托，也不构成投资建议。">
+<link rel="canonical" href="https://stelux.ai/arena/">
+<link rel="icon" type="image/png" sizes="180x180" href="https://stelux.ai/arena/apple-touch-icon.png">
+<meta property="og:site_name" content="Stelux AI">
+<meta property="og:url" content="https://stelux.ai/arena/">
+<meta property="og:title" content="Arena — AI 股票与加密资产模拟交易 | Stelux AI">
+<meta property="og:description" content="使用真实市场行情和虚拟资金，查看策略排行榜、净值曲线、持仓与模拟成交记录。本看板仅供只读研究，不发出真实交易委托，也不构成投资建议。">
+<meta name="twitter:title" content="Arena — AI 股票与加密资产模拟交易 | Stelux AI">
+<meta name="twitter:description" content="使用真实市场行情和虚拟资金，查看策略排行榜、净值曲线、持仓与模拟成交记录。本看板仅供只读研究，不发出真实交易委托，也不构成投资建议。">
+<script type="application/ld+json" id="arena-seo-schema">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://stelux.ai/arena/#webpage","url":"https://stelux.ai/arena/","name":"Arena — AI 股票与加密资产模拟交易 | Stelux AI","description":"使用真实市场行情和虚拟资金，查看策略排行榜、净值曲线、持仓与模拟成交记录。本看板仅供只读研究，不发出真实交易委托，也不构成投资建议。","inLanguage":"zh-CN","isPartOf":{"@id":"https://stelux.ai/#website"},"about":{"@id":"https://stelux.ai/arena/#application"},"publisher":{"@type":"Organization","name":"Stelux AI","url":"https://stelux.ai/"}},{"@type":"Thing","@id":"https://stelux.ai/arena/#application","name":"Stelux Arena","url":"https://stelux.ai/arena/","description":"使用真实市场行情和虚拟资金，查看策略排行榜、净值曲线、持仓与模拟成交记录。本看板仅供只读研究，不发出真实交易委托，也不构成投资建议。"}]}</script>
+<style id="arena-seo-style">
+.arena-intro{margin:0 0 18px;max-width:88ch;overflow-wrap:anywhere}
+.arena-intro h2{margin:0 0 7px;font-size:clamp(18px,2.2vw,23px);line-height:1.3;letter-spacing:-.02em}
+.arena-intro p{margin:0;color:var(--ink2);font-size:14px;line-height:1.6}
+.arena-intro a{display:inline-flex;align-items:center;min-height:44px;color:var(--blue-ink);text-decoration:underline;text-underline-offset:3px}
+</style>
+<!-- STELUX_ARENA_SEO_HEAD_END -->
 </head>
 <body>
 <header>
@@ -1085,6 +1098,13 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
 </header>
 
 <div class="wrap">
+<!-- STELUX_ARENA_SEO_INTRO_START -->
+<section class="arena-intro" aria-labelledby="arena-intro-heading" data-noi18n>
+  <h2 id="arena-intro-heading">用虚拟资金比较股票和加密资产策略</h2>
+  <p id="arena-intro-description">使用真实市场行情和虚拟资金，查看策略排行榜、净值曲线、持仓与模拟成交记录。本看板仅供只读研究，不发出真实交易委托，也不构成投资建议。</p>
+  <a id="arena-intro-link" href="https://stelux.ai/">探索更多 Stelux AI 产品</a>
+</section>
+<!-- STELUX_ARENA_SEO_INTRO_END -->
   <div id="renderfail" class="banner err" style="display:none"></div>
   <!-- transport, not data: #banners is rebuilt from the snapshot, and a page with no snapshot would never show it -->
   <div class="banner err offbanner" id="offbanner" style="display:none">
@@ -9221,5 +9241,33 @@ if (STATIC) {
   <button class="fab" id="fabtoc" type="button" aria-expanded="false" aria-controls="fabmenu" title="跳到某一部分">目录</button>
   <button class="fab" id="fabtop" type="button" title="回到顶部" aria-label="回到顶部">↑</button>
 </nav>
+<!-- STELUX_ARENA_SEO_RUNTIME_START -->
+<script id="arena-seo-runtime">
+(function () {
+  var copyByLanguage = {"en":["AI Stock & Crypto Paper Trading","Compare stock and crypto strategies with simulated money","Explore strategy leaderboards, equity curves, positions and trade logs using real market quotes and simulated money. This read-only paper trading dashboard sends no real orders and is not investment advice.","More from Stelux AI"],"zh-CN":["AI 股票与加密资产模拟交易","用虚拟资金比较股票和加密资产策略","使用真实市场行情和虚拟资金，查看策略排行榜、净值曲线、持仓与模拟成交记录。本看板仅供只读研究，不发出真实交易委托，也不构成投资建议。","探索更多 Stelux AI 产品"],"zh-TW":["AI 股票與加密資產模擬交易","用虛擬資金比較股票和加密資產策略","使用真實市場行情和虛擬資金，查看策略排行榜、淨值曲線、持倉與模擬成交紀錄。本看板僅供唯讀研究，不發出真實交易委託，也不構成投資建議。","探索更多 Stelux AI 產品"],"ja":["AI 株式・暗号資産のペーパートレード","仮想資金で株式と暗号資産の戦略を比較","実際の市場価格と仮想資金を使い、戦略ランキング、資産推移、保有ポジション、模擬取引履歴を確認できます。閲覧専用のペーパートレード画面で、実際の注文は送信せず、投資助言も行いません。","Stelux AI のその他の製品"],"ko":["AI 주식·암호화폐 모의투자","가상 자금으로 주식과 암호화폐 전략 비교","실제 시장 시세와 가상 자금을 사용한 전략 순위, 자산 곡선, 보유 포지션과 모의 거래 기록을 확인하세요. 이 대시보드는 조회 전용이며 실제 주문을 전송하지 않고 투자 조언을 제공하지 않습니다.","Stelux AI의 다른 제품"],"es":["Simulación de trading de acciones y criptomonedas con IA","Compara estrategias de acciones y criptomonedas con dinero simulado","Explora clasificaciones de estrategias, curvas de capital, posiciones e historiales de operaciones con cotizaciones reales y dinero simulado. Este panel es de solo lectura: no envía órdenes reales ni ofrece asesoramiento de inversión.","Más productos de Stelux AI"],"pt-BR":["Simulação de negociação de ações e criptomoedas com IA","Compare estratégias de ações e criptomoedas com dinheiro simulado","Explore rankings de estratégias, curvas de patrimônio, posições e registros de operações com cotações reais e dinheiro simulado. Este painel é somente leitura: não envia ordens reais nem oferece aconselhamento de investimento.","Mais produtos da Stelux AI"],"fr":["Trading simulé d’actions et de cryptomonnaies avec l’IA","Comparez des stratégies sur actions et cryptomonnaies avec de l’argent virtuel","Consultez les classements des stratégies, les courbes de capital, les positions et les journaux de transactions avec des cours réels et de l’argent virtuel. Ce tableau de bord est en lecture seule : aucun ordre réel ni conseil en investissement.","Les autres produits Stelux AI"],"de":["KI-Paper-Trading für Aktien und Kryptowährungen","Aktien- und Kryptostrategien mit virtuellem Geld vergleichen","Vergleichen Sie Strategieranglisten, Kapitalkurven, Positionen und Handelsprotokolle mit echten Marktkursen und virtuellem Geld. Dieses Dashboard ist schreibgeschützt, sendet keine echten Aufträge und bietet keine Anlageberatung.","Weitere Produkte von Stelux AI"],"it":["Trading simulato di azioni e criptovalute con IA","Confronta strategie su azioni e criptovalute con denaro virtuale","Esplora classifiche delle strategie, curve del capitale, posizioni e registri delle operazioni con quotazioni reali e denaro virtuale. Questo pannello è di sola lettura: non invia ordini reali e non offre consulenza sugli investimenti.","Altri prodotti Stelux AI"],"ru":["Бумажная торговля акциями и криптовалютами с ИИ","Сравнивайте стратегии для акций и криптовалют на виртуальные средства","Изучайте рейтинги стратегий, графики капитала, позиции и историю сделок с реальными рыночными котировками и виртуальными средствами. Панель доступна только для просмотра, не отправляет реальные заявки и не предоставляет инвестиционных рекомендаций.","Другие продукты Stelux AI"],"tr":["Yapay zekâ ile hisse ve kripto işlem simülasyonu","Sanal parayla hisse ve kripto stratejilerini karşılaştırın","Gerçek piyasa fiyatları ve sanal parayla strateji sıralamalarını, sermaye eğrilerini, pozisyonları ve işlem kayıtlarını inceleyin. Bu pano salt okunurdur; gerçek emir göndermez ve yatırım tavsiyesi sunmaz.","Diğer Stelux AI ürünleri"],"id":["Simulasi perdagangan saham dan kripto dengan AI","Bandingkan strategi saham dan kripto dengan uang virtual","Lihat peringkat strategi, kurva ekuitas, posisi, dan catatan transaksi dengan harga pasar nyata dan uang virtual. Dasbor ini hanya dapat dibaca, tidak mengirim pesanan nyata, dan bukan saran investasi.","Produk Stelux AI lainnya"],"vi":["Giao dịch mô phỏng cổ phiếu và tiền mã hóa với AI","So sánh chiến lược cổ phiếu và tiền mã hóa bằng tiền ảo","Xem bảng xếp hạng chiến lược, đường vốn, vị thế và lịch sử giao dịch với giá thị trường thực và tiền mô phỏng. Bảng điều khiển này chỉ cho phép xem, không gửi lệnh thật và không cung cấp tư vấn đầu tư.","Các sản phẩm khác của Stelux AI"],"th":["จำลองการซื้อขายหุ้นและคริปโตด้วย AI","เปรียบเทียบกลยุทธ์หุ้นและคริปโตด้วยเงินเสมือน","ดูอันดับกลยุทธ์ กราฟมูลค่าพอร์ต สถานะการถือครอง และบันทึกการซื้อขาย โดยใช้ราคาตลาดจริงและเงินเสมือน แดชบอร์ดนี้ใช้ดูข้อมูลเท่านั้น ไม่ส่งคำสั่งซื้อขายจริง และไม่ใช่คำแนะนำการลงทุน","ผลิตภัณฑ์อื่น ๆ ของ Stelux AI"],"hi":["AI के साथ शेयर और क्रिप्टो की सिम्युलेटेड ट्रेडिंग","वर्चुअल पैसे से शेयर और क्रिप्टो रणनीतियों की तुलना करें","असली बाज़ार भाव और वर्चुअल पैसे के साथ रणनीति रैंकिंग, पूँजी के ग्राफ़, होल्डिंग और सौदों के रिकॉर्ड देखें। यह डैशबोर्ड केवल देखने के लिए है; यह असली ऑर्डर नहीं भेजता और निवेश सलाह नहीं देता।","Stelux AI के अन्य उत्पाद"],"ar":["محاكاة تداول الأسهم والعملات المشفرة بالذكاء الاصطناعي","قارن استراتيجيات الأسهم والعملات المشفرة بأموال افتراضية","استعرض ترتيب الاستراتيجيات ومنحنيات رأس المال والمراكز وسجلات التداول باستخدام أسعار السوق الحقيقية وأموال افتراضية. هذه اللوحة للعرض فقط؛ لا ترسل أوامر حقيقية ولا تقدم نصائح استثمارية.","المزيد من منتجات Stelux AI"]};
+  var lang = document.documentElement.lang;
+  var copy = copyByLanguage[lang] || copyByLanguage.en;
+  var title = 'Arena — ' + copy[0] + ' | Stelux AI';
+  document.title = title;
+  [['name', 'description', copy[2]], ['property', 'og:title', title], ['property', 'og:description', copy[2]], ['name', 'twitter:title', title], ['name', 'twitter:description', copy[2]]].forEach(function (item) {
+    var meta = document.querySelector('meta[' + item[0] + '="' + item[1] + '"]');
+    if (meta) meta.setAttribute('content', item[2]);
+  });
+  ['heading', 'description', 'link'].forEach(function (id, i) {
+    var element = document.getElementById('arena-intro-' + id);
+    if (element) element.textContent = copy[i + 1];
+  });
+  var schemaElement = document.getElementById('arena-seo-schema');
+  if (schemaElement) {
+    var schema = JSON.parse(schemaElement.textContent);
+    schema['@graph'][0].name = title;
+    schema['@graph'][0].description = copy[2];
+    schema['@graph'][0].inLanguage = lang;
+    schema['@graph'][1].description = copy[2];
+    schemaElement.textContent = JSON.stringify(schema);
+  }
+})();
+</script>
+<!-- STELUX_ARENA_SEO_RUNTIME_END -->
 </body>
 </html>
