@@ -20,6 +20,10 @@ const fmt = (n, d = 0) => n.toLocaleString('en-US', { minimumFractionDigits: d, 
 const cssNum = (name, fallback) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || fallback
 
 if (reduceMotion) $$('svg').forEach((s) => s.pauseAnimations && s.pauseAnimations())
+else {
+  const smil = new IntersectionObserver((entries) => entries.forEach((e) => (e.isIntersecting ? e.target.unpauseAnimations() : e.target.pauseAnimations())))
+  $$('svg').forEach((s) => { if (s.pauseAnimations && s.querySelector('animate, animateMotion, animateTransform')) { s.pauseAnimations(); smil.observe(s) } })
+}
 
 initI18n()
 
@@ -291,7 +295,12 @@ function simTick() {
 function startSim() { if (!simTimer && !reduceMotion) simTimer = setInterval(simTick, 1600) }
 function stopSim() { clearInterval(simTimer); simTimer = 0 }
 let termVisible = false
-new IntersectionObserver(([e]) => { termVisible = e.isIntersecting; termVisible && !document.hidden ? startSim() : stopSim() }).observe($('#terminal'))
+const dashEl = $('.dash')
+new IntersectionObserver(([e]) => {
+  termVisible = e.isIntersecting
+  dashEl.classList.toggle('is-paused', !termVisible)
+  termVisible && !document.hidden ? startSim() : stopSim()
+}).observe($('#terminal'))
 document.addEventListener('visibilitychange', () => (document.hidden ? stopSim() : termVisible && startSim()))
 addEventListener('pagehide', stopSim)
 
@@ -299,12 +308,14 @@ addEventListener('pagehide', stopSim)
 const mm = gsap.matchMedia()
 mm.add('(min-width: 1024px) and (prefers-reduced-motion: no-preference)', () => {
   const prog = new Array(cards.length).fill(0)
+  const dims = cards.map((card) => card.querySelector(':scope > .stack-dim') || card.appendChild(Object.assign(document.createElement('div'), { className: 'stack-dim', ariaHidden: 'true' })))
   const STEP = 0.05
   const apply = () => {
     cards.forEach((card, i) => {
       let s = 0
       for (let j = i + 1; j < cards.length; j++) s += prog[j]
-      gsap.set(card, { scale: 1 - s * STEP, filter: `brightness(${(1 - s * 0.28).toFixed(3)})` })
+      gsap.set(card, { scale: 1 - s * STEP })
+      gsap.set(dims[i], { opacity: Math.min(0.6, s * 0.28) })
     })
   }
   const triggers = cards.map((card, j) => {
@@ -321,7 +332,7 @@ mm.add('(min-width: 1024px) and (prefers-reduced-motion: no-preference)', () => 
   apply()
   return () => {
     triggers.forEach((t) => t && t.kill())
-    cards.forEach((c) => gsap.set(c, { clearProps: 'transform,filter' }))
+    cards.forEach((c, i) => { gsap.set(c, { clearProps: 'transform' }); gsap.set(dims[i], { opacity: 0 }) })
   }
 })
 

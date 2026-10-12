@@ -64,7 +64,7 @@ export const JS_EN = {
   viewCompute: 'Compute pool',
   viewLogs: 'Event stream',
   viewProducts: 'Stelux products',
-  viewProductsSub: '3 live · 2 in development',
+  viewProductsSub: '4 live · 2 in development',
   arenaPvAll: 'all-time',
   arenaPvToday: 'today',
   arenaPvDay: 'experiment day',

@@ -238,6 +238,42 @@ function initLux(reduceMotion) {
   whileVisible(pv, (on) => { if (on) run(); else { clear(); STEPS.forEach(([c]) => pv.classList.add(c)) } })
 }
 
+/* Stelux Equipment: the products rise in, then a quote list fills one item at a time —
+   each machine lifts, its caption ticks, and the "Request a Quote" count grows — then it starts over. */
+function initEquipment(reduceMotion) {
+  const pv = document.querySelector('.eq-pv')
+  if (!pv) return
+  const items = [...pv.querySelectorAll('.eq-stage figure')]
+  const count = pv.querySelector('.eq-count')
+  if (reduceMotion || !items.length || !count) return
+  let timers = []
+  const clear = () => { timers.forEach(clearTimeout); timers = [] }
+  const reset = () => { items.forEach((it) => it.classList.remove('is-pick', 'is-added')); count.textContent = '0'; pv.classList.remove('has-items') }
+  const bump = (n) => {
+    count.textContent = String(n)
+    pv.classList.add('has-items')
+    count.animate([{ transform: 'scale(.6)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' })
+  }
+  const run = () => {
+    clear(); reset()
+    items.forEach((it, i) => {
+      const at = 900 + i * 1500
+      timers.push(setTimeout(() => it.classList.add('is-pick'), at))
+      timers.push(setTimeout(() => { it.classList.add('is-added'); bump(i + 1) }, at + 650))
+      timers.push(setTimeout(() => it.classList.remove('is-pick'), at + 1250))
+    })
+    const end = 900 + items.length * 1500
+    timers.push(setTimeout(() => pv.classList.add('is-full'), end))
+    timers.push(setTimeout(() => { pv.classList.remove('is-full'); reset() }, end + 2600))
+    timers.push(setTimeout(run, end + 3200))
+  }
+  let entered = false
+  whileVisible(pv, (on) => {
+    if (on && !entered) { entered = true; pv.classList.add('is-play') }
+    if (on) run(); else { clear(); reset(); pv.classList.remove('is-full') }
+  })
+}
+
 /* Cheek Beat preview: the 15-second teaser loads only when its card is on screen. It plays on its
    own on wide screens; phones and Save-Data visitors start it with the play button. */
 function initCheekBeat(reduceMotion) {
@@ -246,6 +282,13 @@ function initCheekBeat(reduceMotion) {
   const video = pv.querySelector('video'), btn = pv.querySelector('.cb-play')
   const auto = !reduceMotion && !navigator.connection?.saveData && matchMedia('(min-width: 768px)').matches
   let wanted = false, visible = false
+  const near = new IntersectionObserver(([e]) => {
+    if (!e.isIntersecting) return
+    near.disconnect()
+    if (video.dataset.poster) video.poster = video.dataset.poster
+  }, { rootMargin: '600px 0px' })
+  near.observe(pv)
+  whileVisible(pv)
   const play = () => {
     if (!video.getAttribute('src')) video.src = video.dataset.src
     wanted = true
@@ -268,6 +311,7 @@ export function initProducts({ reduceMotion }) {
   initArena(reduceMotion)
   initCheekBeat(reduceMotion)
   initMichigan(reduceMotion)
+  initEquipment(reduceMotion)
   initMarketSignal(reduceMotion)
   initLux(reduceMotion)
 }
