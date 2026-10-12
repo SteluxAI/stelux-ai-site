@@ -226,5 +226,15 @@
   "cbVideoAria": "Cheek Beat गेमप्ले टीज़र",
   "cbPlay": "गेमप्ले टीज़र चलाएं",
   "runsOn": "इन पर चलता है",
-  "codeSamples": "कोड सैंपल"
+  "codeSamples": "कोड सैंपल",
+  "contactTitle": "संपर्क करें",
+  "contactLead": "सही इनबॉक्स चुनें, हम आपको जवाब देंगे।",
+  "contactSales": "सेल्स",
+  "contactSalesD": "कीमतें, डेमो और प्लेटफ़ॉर्म एक्सेस",
+  "contactSupport": "सपोर्ट",
+  "contactSupportD": "प्रोडक्ट सहायता, प्राइवेसी और सुरक्षा रिपोर्ट",
+  "contactFounder": "संस्थापक",
+  "contactFounderD": "साझेदारी, प्रेस और करियर",
+  "writeEmail": "ईमेल भेजें",
+  "closeLabel": "बंद करें"
 }

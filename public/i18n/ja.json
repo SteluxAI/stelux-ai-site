@@ -226,5 +226,15 @@
   "cbVideoAria": "Cheek Beat ゲームプレイティーザー",
   "cbPlay": "ゲームプレイのティーザーを再生",
   "runsOn": "対応環境",
-  "codeSamples": "コードサンプル"
+  "codeSamples": "コードサンプル",
+  "contactTitle": "お問い合わせ",
+  "contactLead": "用途に合った窓口をお選びください。担当者よりご連絡します。",
+  "contactSales": "営業",
+  "contactSalesD": "料金・デモ・プラットフォームのご利用",
+  "contactSupport": "サポート",
+  "contactSupportD": "製品のご相談・プライバシー・セキュリティ報告",
+  "contactFounder": "創業者",
+  "contactFounderD": "提携・取材・採用",
+  "writeEmail": "メールする",
+  "closeLabel": "閉じる"
 }

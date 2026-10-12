@@ -4,6 +4,7 @@ import Lenis from 'lenis'
 import heroProfiles from './data/hero-foreground-profiles.json'
 import { initI18n, onLangChange, t } from './i18n.js'
 import { initProducts } from './products.js'
+import { initContact } from './contact.js'
 
 gsap.registerPlugin(ScrollTrigger)
 ScrollTrigger.config({ ignoreMobileResize: true })
@@ -95,6 +96,7 @@ menuBtn.addEventListener('click', () => (menu.hidden ? openMenu() : closeMenu())
 addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu() })
 onLangChange(() => menuBtn.setAttribute('aria-label', t(menu.hidden ? 'menuOpen' : 'menuClose')))
 addEventListener('resize', () => { if (!isMobile()) closeMenu() })
+initContact({ beforeOpen: () => closeMenu(), lenis })
 
 /* ---------------- hero v4 scene ----------------
    Measured on fora.so (1440x900, scrollY 0 -> 720): extra downward shift per scrolled px is

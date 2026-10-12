@@ -226,5 +226,15 @@
   "cbVideoAria": "Video teaser lối chơi Cheek Beat",
   "cbPlay": "Phát video teaser lối chơi",
   "runsOn": "Chạy trên",
-  "codeSamples": "Mã mẫu"
+  "codeSamples": "Mã mẫu",
+  "contactTitle": "Liên hệ",
+  "contactLead": "Chọn hộp thư phù hợp, chúng tôi sẽ phản hồi bạn.",
+  "contactSales": "Kinh doanh",
+  "contactSalesD": "Bảng giá, demo và quyền truy cập nền tảng",
+  "contactSupport": "Hỗ trợ",
+  "contactSupportD": "Trợ giúp sản phẩm, quyền riêng tư và báo cáo bảo mật",
+  "contactFounder": "Nhà sáng lập",
+  "contactFounderD": "Hợp tác, báo chí và tuyển dụng",
+  "writeEmail": "Gửi email",
+  "closeLabel": "Đóng"
 }

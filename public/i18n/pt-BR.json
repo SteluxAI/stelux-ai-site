@@ -226,5 +226,15 @@
   "cbVideoAria": "Teaser de gameplay de Cheek Beat",
   "cbPlay": "Assistir ao teaser de gameplay",
   "runsOn": "Roda em",
-  "codeSamples": "Exemplos de código"
+  "codeSamples": "Exemplos de código",
+  "contactTitle": "Fale conosco",
+  "contactLead": "Escolha o e-mail certo e retornaremos o contato.",
+  "contactSales": "Vendas",
+  "contactSalesD": "Preços, demonstrações e acesso à plataforma",
+  "contactSupport": "Suporte",
+  "contactSupportD": "Ajuda com o produto, privacidade e relatos de segurança",
+  "contactFounder": "Fundador",
+  "contactFounderD": "Parcerias, imprensa e carreiras",
+  "writeEmail": "Enviar e-mail",
+  "closeLabel": "Fechar"
 }

@@ -226,5 +226,15 @@
   "cbVideoAria": "Teaser gameplay Cheek Beat",
   "cbPlay": "Putar teaser gameplay",
   "runsOn": "Berjalan di",
-  "codeSamples": "Contoh kode"
+  "codeSamples": "Contoh kode",
+  "contactTitle": "Hubungi kami",
+  "contactLead": "Pilih kotak masuk yang sesuai dan kami akan membalas.",
+  "contactSales": "Penjualan",
+  "contactSalesD": "Harga, demo, dan akses platform",
+  "contactSupport": "Dukungan",
+  "contactSupportD": "Bantuan produk, privasi, dan laporan keamanan",
+  "contactFounder": "Pendiri",
+  "contactFounderD": "Kemitraan, media, dan karier",
+  "writeEmail": "Kirim email",
+  "closeLabel": "Tutup"
 }

@@ -226,5 +226,15 @@
   "cbVideoAria": "Cheek Beat gameplay teaser",
   "cbPlay": "Play the gameplay teaser",
   "runsOn": "Runs on",
-  "codeSamples": "Code samples"
+  "codeSamples": "Code samples",
+  "contactTitle": "Get in touch",
+  "contactLead": "Choose the inbox that fits and we'll get back to you.",
+  "contactSales": "Sales",
+  "contactSalesD": "Pricing, demos and platform access",
+  "contactSupport": "Support",
+  "contactSupportD": "Product help, privacy and security reports",
+  "contactFounder": "Founder",
+  "contactFounderD": "Partnerships, press and careers",
+  "writeEmail": "Email",
+  "closeLabel": "Close"
 }

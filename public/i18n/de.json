@@ -226,5 +226,15 @@
   "cbVideoAria": "Gameplay-Teaser zu Cheek Beat",
   "cbPlay": "Gameplay-Teaser abspielen",
   "runsOn": "Läuft auf",
-  "codeSamples": "Codebeispiele"
+  "codeSamples": "Codebeispiele",
+  "contactTitle": "Kontakt",
+  "contactLead": "Wählen Sie das passende Postfach – wir melden uns.",
+  "contactSales": "Vertrieb",
+  "contactSalesD": "Preise, Demos und Plattformzugang",
+  "contactSupport": "Support",
+  "contactSupportD": "Produkthilfe, Datenschutz und Sicherheitsmeldungen",
+  "contactFounder": "Gründer",
+  "contactFounderD": "Partnerschaften, Presse und Karriere",
+  "writeEmail": "E-Mail schreiben",
+  "closeLabel": "Schließen"
 }

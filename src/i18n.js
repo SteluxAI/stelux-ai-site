@@ -10,23 +10,23 @@
    localStorage under "stelux-lang", which the Cheek Beat page reads as well. */
 
 export const LANGS = [
-  ['en', 'English', 'English'],
-  ['zh-CN', '简体中文', 'Chinese (Simplified)'],
-  ['zh-TW', '繁體中文', 'Chinese (Traditional)'],
-  ['ja', '日本語', 'Japanese'],
-  ['ko', '한국어', 'Korean'],
-  ['es', 'Español', 'Spanish'],
-  ['pt-BR', 'Português (Brasil)', 'Portuguese'],
-  ['fr', 'Français', 'French'],
-  ['de', 'Deutsch', 'German'],
-  ['it', 'Italiano', 'Italian'],
-  ['ru', 'Русский', 'Russian'],
-  ['tr', 'Türkçe', 'Turkish'],
-  ['id', 'Bahasa Indonesia', 'Indonesian'],
-  ['vi', 'Tiếng Việt', 'Vietnamese'],
-  ['th', 'ไทย', 'Thai'],
-  ['hi', 'हिन्दी', 'Hindi'],
-  ['ar', 'العربية', 'Arabic'],
+  ['en', 'English', 'English', 'EN'],
+  ['zh-CN', '简体中文', 'Chinese (Simplified)', '简中'],
+  ['zh-TW', '繁體中文', 'Chinese (Traditional)', '繁中'],
+  ['ja', '日本語', 'Japanese', '日本語'],
+  ['ko', '한국어', 'Korean', '한국어'],
+  ['es', 'Español', 'Spanish', 'ES'],
+  ['pt-BR', 'Português (Brasil)', 'Portuguese', 'PT'],
+  ['fr', 'Français', 'French', 'FR'],
+  ['de', 'Deutsch', 'German', 'DE'],
+  ['it', 'Italiano', 'Italian', 'IT'],
+  ['ru', 'Русский', 'Russian', 'RU'],
+  ['tr', 'Türkçe', 'Turkish', 'TR'],
+  ['id', 'Bahasa Indonesia', 'Indonesian', 'ID'],
+  ['vi', 'Tiếng Việt', 'Vietnamese', 'VI'],
+  ['th', 'ไทย', 'Thai', 'ไทย'],
+  ['hi', 'हिन्दी', 'Hindi', 'हिन्दी'],
+  ['ar', 'العربية', 'Arabic', 'عربي'],
 ]
 const CODES = LANGS.map((l) => l[0])
 const STORE_KEY = 'stelux-lang'
@@ -157,12 +157,13 @@ export async function setLang(code, { remember = false } = {}) {
 /* ---------- the Language menu ---------- */
 function buildMenu(wrap) {
   const btn = wrap.querySelector('.lang-btn'), menu = wrap.querySelector('.lang-menu'), short = wrap.querySelector('.lang-short')
-  const items = LANGS.map(([code, name, english]) => {
+  const items = LANGS.map(([code, name, english, abbr]) => {
     const b = document.createElement('button')
     b.type = 'button'
     b.setAttribute('role', 'menuitemradio')
     b.setAttribute('lang', code)
     b.dataset.code = code
+    b.dataset.abbr = abbr
     b.append(name)
     const sm = document.createElement('small')
     sm.setAttribute('lang', 'en'); sm.dir = 'ltr'; sm.textContent = english
@@ -172,14 +173,14 @@ function buildMenu(wrap) {
     return b
   })
   const sync = () => {
-    let name = 'English'
+    let name = 'English', abbr = 'EN'
     items.forEach((b) => {
       const on = b.dataset.code === lang
       b.setAttribute('aria-checked', String(on))
       b.tabIndex = on ? 0 : -1
-      if (on) name = b.firstChild.nodeValue
+      if (on) { name = b.firstChild.nodeValue; abbr = b.dataset.abbr }
     })
-    if (short) short.textContent = name
+    if (short) short.textContent = abbr
     btn.setAttribute('aria-label', `${t('langLabel')}: ${name}`)
   }
   onLangChange(sync)

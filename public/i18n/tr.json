@@ -226,5 +226,15 @@
   "cbVideoAria": "Cheek Beat oynanış tanıtımı",
   "cbPlay": "Oynanış tanıtımını oynat",
   "runsOn": "Çalıştığı yerler",
-  "codeSamples": "Kod örnekleri"
+  "codeSamples": "Kod örnekleri",
+  "contactTitle": "İletişim",
+  "contactLead": "Size uygun adresi seçin, size dönüş yapalım.",
+  "contactSales": "Satış",
+  "contactSalesD": "Fiyatlar, demolar ve platform erişimi",
+  "contactSupport": "Destek",
+  "contactSupportD": "Ürün yardımı, gizlilik ve güvenlik bildirimleri",
+  "contactFounder": "Kurucu",
+  "contactFounderD": "İş ortaklıkları, basın ve kariyer",
+  "writeEmail": "E-posta gönder",
+  "closeLabel": "Kapat"
 }

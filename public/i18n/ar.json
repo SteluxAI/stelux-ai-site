@@ -226,5 +226,15 @@
   "cbVideoAria": "مقطع تشويقي لأسلوب لعب Cheek Beat",
   "cbPlay": "شغّل المقطع التشويقي",
   "runsOn": "يعمل على",
-  "codeSamples": "نماذج التعليمات البرمجية"
+  "codeSamples": "نماذج التعليمات البرمجية",
+  "contactTitle": "تواصل معنا",
+  "contactLead": "اختر البريد المناسب وسنعود إليك.",
+  "contactSales": "المبيعات",
+  "contactSalesD": "الأسعار والعروض التوضيحية والوصول إلى المنصة",
+  "contactSupport": "الدعم",
+  "contactSupportD": "المساعدة في المنتج والخصوصية والإبلاغ عن الثغرات الأمنية",
+  "contactFounder": "المؤسس",
+  "contactFounderD": "الشراكات والصحافة والوظائف",
+  "writeEmail": "راسلنا",
+  "closeLabel": "إغلاق"
 }

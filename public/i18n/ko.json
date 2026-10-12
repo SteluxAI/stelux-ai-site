@@ -226,5 +226,15 @@
   "cbVideoAria": "Cheek Beat 게임플레이 티저",
   "cbPlay": "게임플레이 티저 재생",
   "runsOn": "지원 환경",
-  "codeSamples": "코드 예제"
+  "codeSamples": "코드 예제",
+  "contactTitle": "문의하기",
+  "contactLead": "알맞은 메일함을 선택하시면 답변드리겠습니다.",
+  "contactSales": "영업",
+  "contactSalesD": "요금, 데모, 플랫폼 이용",
+  "contactSupport": "지원",
+  "contactSupportD": "제품 도움, 개인정보, 보안 신고",
+  "contactFounder": "창업자",
+  "contactFounderD": "제휴, 언론, 채용",
+  "writeEmail": "메일 보내기",
+  "closeLabel": "닫기"
 }

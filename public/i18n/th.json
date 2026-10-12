@@ -226,5 +226,15 @@
   "cbVideoAria": "ตัวอย่างเกมเพลย์ Cheek Beat",
   "cbPlay": "เล่นตัวอย่างเกมเพลย์",
   "runsOn": "รันบน",
-  "codeSamples": "ตัวอย่างโค้ด"
+  "codeSamples": "ตัวอย่างโค้ด",
+  "contactTitle": "ติดต่อเรา",
+  "contactLead": "เลือกอีเมลที่ตรงกับเรื่องของคุณ แล้วเราจะติดต่อกลับ",
+  "contactSales": "ฝ่ายขาย",
+  "contactSalesD": "ราคา เดโม และการเข้าใช้แพลตฟอร์ม",
+  "contactSupport": "ฝ่ายสนับสนุน",
+  "contactSupportD": "ช่วยเหลือเรื่องผลิตภัณฑ์ ความเป็นส่วนตัว และแจ้งปัญหาความปลอดภัย",
+  "contactFounder": "ผู้ก่อตั้ง",
+  "contactFounderD": "พันธมิตร สื่อมวลชน และร่วมงานกับเรา",
+  "writeEmail": "ส่งอีเมล",
+  "closeLabel": "ปิด"
 }

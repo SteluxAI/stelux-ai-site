@@ -226,5 +226,15 @@
   "cbVideoAria": "Тизер геймплея Cheek Beat",
   "cbPlay": "Смотреть тизер геймплея",
   "runsOn": "Работает на",
-  "codeSamples": "Примеры кода"
+  "codeSamples": "Примеры кода",
+  "contactTitle": "Связаться с нами",
+  "contactLead": "Выберите подходящий адрес — и мы ответим.",
+  "contactSales": "Продажи",
+  "contactSalesD": "Цены, демо и доступ к платформе",
+  "contactSupport": "Поддержка",
+  "contactSupportD": "Помощь с продуктом, конфиденциальность и сообщения об уязвимостях",
+  "contactFounder": "Основатель",
+  "contactFounderD": "Партнёрство, пресса и вакансии",
+  "writeEmail": "Написать",
+  "closeLabel": "Закрыть"
 }

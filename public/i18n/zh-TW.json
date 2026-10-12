@@ -226,5 +226,15 @@
   "cbVideoAria": "Cheek Beat 遊戲玩法預告",
   "cbPlay": "播放遊戲玩法預告",
   "runsOn": "支援平台",
-  "codeSamples": "程式碼範例"
+  "codeSamples": "程式碼範例",
+  "contactTitle": "聯絡我們",
+  "contactLead": "選擇合適的信箱，我們會盡快回覆您。",
+  "contactSales": "業務",
+  "contactSalesD": "價格、示範與平台開通",
+  "contactSupport": "支援",
+  "contactSupportD": "產品協助、隱私與安全問題回報",
+  "contactFounder": "創辦人",
+  "contactFounderD": "合作、媒體與徵才",
+  "writeEmail": "寫信",
+  "closeLabel": "關閉"
 }
