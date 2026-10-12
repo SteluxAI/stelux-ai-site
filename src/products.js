@@ -238,40 +238,49 @@ function initLux(reduceMotion) {
   whileVisible(pv, (on) => { if (on) run(); else { clear(); STEPS.forEach(([c]) => pv.classList.add(c)) } })
 }
 
-/* Stelux Equipment: the products rise in, then a quote list fills one item at a time —
-   each machine lifts, its caption ticks, and the "Request a Quote" count grows — then it starts over. */
+/* Stelux Equipment: an auto-playing showcase. One machine at a time slides in with its number,
+   category and description; the thumbnail rail's progress bar shows when the next one comes.
+   Plays only while visible and pauses on hover; reduced motion keeps the first machine still. */
 function initEquipment(reduceMotion) {
   const pv = document.querySelector('.eq-pv')
   if (!pv) return
-  const items = [...pv.querySelectorAll('.eq-stage figure')]
-  const count = pv.querySelector('.eq-count')
-  if (reduceMotion || !items.length || !count) return
-  let timers = []
-  const clear = () => { timers.forEach(clearTimeout); timers = [] }
-  const reset = () => { items.forEach((it) => it.classList.remove('is-pick', 'is-added')); count.textContent = '0'; pv.classList.remove('has-items') }
-  const bump = (n) => {
-    count.textContent = String(n)
-    pv.classList.add('has-items')
-    count.animate([{ transform: 'scale(.6)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' })
-  }
-  const run = () => {
-    clear(); reset()
-    items.forEach((it, i) => {
-      const at = 900 + i * 1500
-      timers.push(setTimeout(() => it.classList.add('is-pick'), at))
-      timers.push(setTimeout(() => { it.classList.add('is-added'); bump(i + 1) }, at + 650))
-      timers.push(setTimeout(() => it.classList.remove('is-pick'), at + 1250))
+  const slides = [...pv.querySelectorAll('.eq-slide')], thumbs = [...pv.querySelectorAll('.eq-thumb')]
+  if (reduceMotion || slides.length < 2) return
+  // the slide time lives here and is handed to CSS (the progress bar), not read back: minifiers rewrite 3600ms as 3.6s
+  const ms = 3600
+  pv.querySelector('.eq-show').style.setProperty('--eq-ms', ms + 'ms')
+  let at = 0, timer = 0, left = ms, started = 0, on = false, hover = false
+
+  const show = (i) => {
+    const prev = at
+    at = (i + slides.length) % slides.length
+    slides.forEach((el, n) => {
+      el.classList.toggle('is-active', n === at)
+      el.classList.toggle('is-leaving', n === prev && n !== at)
     })
-    const end = 900 + items.length * 1500
-    timers.push(setTimeout(() => pv.classList.add('is-full'), end))
-    timers.push(setTimeout(() => { pv.classList.remove('is-full'); reset() }, end + 2600))
-    timers.push(setTimeout(run, end + 3200))
+    thumbs.forEach((el, n) => {
+      el.classList.toggle('is-active', n === at)
+      el.classList.toggle('is-done', n < at)
+      // restart the progress bar animation on the new active thumb
+      const bar = el.querySelector('i'); bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''
+    })
   }
-  let entered = false
-  whileVisible(pv, (on) => {
-    if (on && !entered) { entered = true; pv.classList.add('is-play') }
-    if (on) run(); else { clear(); reset(); pv.classList.remove('is-full') }
+  const schedule = (wait) => {
+    clearTimeout(timer)
+    started = performance.now(); left = wait
+    timer = setTimeout(() => { show(at + 1); schedule(ms) }, wait)
+  }
+  // a brief flicker out of view (or a quick hover) must never skip a slide: resume waits at least 900 ms
+  const pause = () => { if (started) left = Math.max(0, left - (performance.now() - started)); clearTimeout(timer); started = 0; pv.classList.add('is-paused') }
+  const resume = () => { pv.classList.remove('is-paused'); schedule(Math.max(900, left)) }
+
+  whileVisible(pv, (v) => {
+    on = v
+    if (v && !hover) resume()
+    else pause()
   })
+  pv.addEventListener('pointerenter', () => { hover = true; if (on) pause() })
+  pv.addEventListener('pointerleave', () => { hover = false; if (on) resume() })
 }
 
 /* Cheek Beat preview: the 15-second teaser loads only when its card is on screen. It plays on its
