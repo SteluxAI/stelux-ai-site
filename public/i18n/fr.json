@@ -64,7 +64,6 @@
   "arenaCta": "Ouvrir Arena en direct",
   "arenaPvEquity": "Capital fictif total",
   "arenaPvLeaders": "En tête en ce moment",
-  "arenaPvFoot": "Données en direct d'Arena · argent fictif, pas un conseil en investissement",
   "cbKind": "Jeu de rythme humoristique · Android et iPhone",
   "cbStatus": "Disponible",
   "cbH": "Chaque rythme a son propre « paf ! ».",
@@ -237,5 +236,10 @@
   "contactFounderD": "Partenariats, presse et recrutement",
   "writeEmail": "Écrire",
   "closeLabel": "Fermer",
-  "arenaPvPrev": "clôture préc."
+  "arenaPvPaper": "Trading fictif",
+  "arenaPvNote": "Argent simulé · pas un conseil en investissement",
+  "arenaPvDayOf": "Jour {d} sur {n}",
+  "arenaPvGroup": "{n} stratégies",
+  "arenaPvGroup1": "1 stratégie",
+  "arenaPvLatest": "Dernière transaction"
 }

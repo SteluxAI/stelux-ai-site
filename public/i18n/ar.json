@@ -64,7 +64,6 @@
   "arenaCta": "افتح Arena المباشرة",
   "arenaPvEquity": "إجمالي رأس المال الافتراضي",
   "arenaPvLeaders": "المتصدّرون الآن",
-  "arenaPvFoot": "بيانات مباشرة من Arena · أموال افتراضية، وليست نصيحة استثمارية",
   "cbKind": "لعبة إيقاع كوميدية · Android وiPhone",
   "cbStatus": "متوفرة الآن",
   "cbH": "لكل إيقاعٍ «طاخ!» خاصٌّ به.",
@@ -237,5 +236,10 @@
   "contactFounderD": "الشراكات والصحافة والوظائف",
   "writeEmail": "راسلنا",
   "closeLabel": "إغلاق",
-  "arenaPvPrev": "الإغلاق السابق"
+  "arenaPvPaper": "تداول تجريبي",
+  "arenaPvNote": "أموال افتراضية · ليست نصيحة استثمارية",
+  "arenaPvDayOf": "اليوم {d} من {n}",
+  "arenaPvGroup": "الاستراتيجيات: {n}",
+  "arenaPvGroup1": "استراتيجية واحدة",
+  "arenaPvLatest": "آخر صفقة"
 }

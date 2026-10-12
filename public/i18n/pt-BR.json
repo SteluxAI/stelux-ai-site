@@ -64,7 +64,6 @@
   "arenaCta": "Abrir a Arena ao vivo",
   "arenaPvEquity": "Patrimônio simulado total",
   "arenaPvLeaders": "Líderes agora",
-  "arenaPvFoot": "Dados ao vivo da Arena · dinheiro simulado, não é recomendação de investimento",
   "cbKind": "Jogo de ritmo cômico · Android e iPhone",
   "cbStatus": "Já disponível",
   "cbH": "Cada batida tem seu próprio “plaft!”.",
@@ -237,5 +236,10 @@
   "contactFounderD": "Parcerias, imprensa e carreiras",
   "writeEmail": "Enviar e-mail",
   "closeLabel": "Fechar",
-  "arenaPvPrev": "fech. anterior"
+  "arenaPvPaper": "Operação simulada",
+  "arenaPvNote": "Dinheiro simulado · não é recomendação de investimento",
+  "arenaPvDayOf": "Dia {d} de {n}",
+  "arenaPvGroup": "{n} estratégias",
+  "arenaPvGroup1": "1 estratégia",
+  "arenaPvLatest": "Última operação"
 }

@@ -64,7 +64,6 @@
   "arenaCta": "Live-Arena öffnen",
   "arenaPvEquity": "Simuliertes Gesamtkapital",
   "arenaPvLeaders": "Aktuell vorne",
-  "arenaPvFoot": "Live-Daten aus der Arena · simuliertes Geld, keine Anlageberatung",
   "cbKind": "Comedy-Rhythmusspiel · Android & iPhone",
   "cbStatus": "Jetzt erhältlich",
   "cbH": "Jeder Beat hat sein eigenes „Klatsch!“.",
@@ -237,5 +236,10 @@
   "contactFounderD": "Partnerschaften, Presse und Karriere",
   "writeEmail": "E-Mail schreiben",
   "closeLabel": "Schließen",
-  "arenaPvPrev": "Vortagesschluss"
+  "arenaPvPaper": "Papierhandel",
+  "arenaPvNote": "Simuliertes Geld · keine Anlageberatung",
+  "arenaPvDayOf": "Tag {d} von {n}",
+  "arenaPvGroup": "{n} Strategien",
+  "arenaPvGroup1": "1 Strategie",
+  "arenaPvLatest": "Letzter Trade"
 }

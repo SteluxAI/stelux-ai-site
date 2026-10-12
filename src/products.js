@@ -5,14 +5,12 @@ import { t, currentLang, onLangChange } from './i18n.js'
    failure the card keeps its decorative curve and simply links to the live board. */
 const FEED = 'https://steluxai.github.io/arena-live/data/'
 const REFRESH_MS = 90_000
-const TAPE_MS = 2600
 
 const pct = (bp) => {
   const v = (bp || 0) / 100
   return `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(2)}%`
 }
 const tone = (bp) => (bp > 0 ? 'is-up' : bp < 0 ? 'is-dn' : 'is-flat')
-const usd = (cents) => '$' + (cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
 function pathFor(values, w, h, pad = 6, extra = []) {
@@ -39,127 +37,98 @@ function initArena(reduceMotion) {
   const root = document.querySelector('[data-arena-preview]')
   if (!root) return
   const el = (k) => root.querySelector(`[data-a="${k}"]`)
-  let snap = null, exp = null, lastEquity = null, trades = [], tapeAt = 0, tapeTimer = 0, refreshTimer = 0
-  let pts = [], pulseRaf = 0, counted = false
+  let snap = null, exp = null, shown = null, refreshTimer = 0
+
+  const money = (cents) => '$' + Math.round(cents / 100).toLocaleString('en-US')
+  const hue = (sym) => [...String(sym)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7)
+  const fmtTime = (iso, opts) => { try { return new Intl.DateTimeFormat(currentLang(), { timeZone: 'America/New_York', ...opts }).format(new Date(iso)) } catch { return '' } }
+
+  function setEquity(cents) {
+    const node = el('equity')
+    if (!Number.isFinite(cents)) { node.textContent = '—'; return }
+    if (shown == null && !reduceMotion) {
+      const t0 = performance.now()
+      const roll = (now) => {
+        const k = Math.min(1, (now - t0) / 1400)
+        node.textContent = money(cents * (1 - Math.pow(1 - k, 3)))
+        if (k < 1) requestAnimationFrame(roll)
+      }
+      requestAnimationFrame(roll)
+    } else node.textContent = money(cents)
+    shown = cents
+  }
 
   function render() {
     if (!snap) return
     const sys = snap.system || {}
-    const equity = sys.live_equity_status === 'known' ? sys.live_equity_cents : sys.ledger_equity_cents
-    const eqEl = el('equity')
-    if (Number.isFinite(equity) && !counted && !reduceMotion) {
-      counted = true
-      const t0 = performance.now()
-      const roll = (now) => { const k = Math.min(1, (now - t0) / 1600); eqEl.textContent = usd(Math.round(equity * (1 - Math.pow(1 - k, 3)))); if (k < 1 && lastEquity === equity) requestAnimationFrame(roll); else eqEl.textContent = usd(lastEquity) }
-      requestAnimationFrame(roll)
-    } else eqEl.textContent = Number.isFinite(equity) ? usd(equity) : '—'
-    if (lastEquity != null && equity !== lastEquity && !reduceMotion) { eqEl.classList.remove('bump'); void eqEl.offsetWidth; eqEl.classList.add('bump') }
-    lastEquity = equity
-    el('total').innerHTML = `<b class="${tone(sys.live_return_bp)}">${pct(sys.live_return_bp)}</b> ${t('arenaPvAll')}`
-    el('day').innerHTML = `<b class="${tone(sys.live_day_return_bp)}">${pct(sys.live_day_return_bp)}</b> ${t('arenaPvToday')}`
-
     const ex = snap.experiment || {}
     const day = ex.day_index ?? exp?.day_index, total = ex.n_days ?? exp?.n_days
-    el('meta').innerHTML = day ? `<b>${day}${total ? `<span class="text-white/35">/${total}</span>` : ''}</b>${t('arenaPvDay')}` : ''
+    el('day').textContent = day ? (total ? t('arenaPvDayOf', { d: day, n: total }) : `${t('arenaPvDay')} ${day}`) : ''
     el('slots').textContent = sys.n_slots ? t('arenaPvSlots', { n: sys.n_slots }) : ''
 
+    setEquity(sys.live_equity_status === 'known' ? sys.live_equity_cents : sys.ledger_equity_cents)
+    el('change').innerHTML = `<b class="${tone(sys.live_day_return_bp)}">${pct(sys.live_day_return_bp)}</b>${esc(t('arenaPvToday'))}` +
+      `<span class="a3-sep">·</span><span>${pct(sys.live_return_bp)} ${esc(t('arenaPvAll'))}</span>`
+
+    // chart: the day's equity on the same scale as the previous close (a faint dashed line)
     const curve = (sys.curve || []).map((p) => p[1]).filter(Number.isFinite)
     const prev = sys.prev_close_equity_cents
-    const p = pathFor(curve, 400, 110, 8, [prev])
+    const p = pathFor(curve, 400, 120, 10, [prev])
     if (p) {
-      pts = p.pts
-      const ref = el('ref'), refLabel = el('refLabel')
-      if (Number.isFinite(prev)) {
-        const ry = p.y(prev)
-        ref.setAttribute('y1', ry); ref.setAttribute('y2', ry)
-        refLabel.style.top = `${(ry / 110) * 100}%`
-        refLabel.textContent = t('arenaPvPrev')
-        refLabel.hidden = false
-      }
+      const color = curve[curve.length - 1] >= (Number.isFinite(prev) ? prev : curve[0]) ? '#4ade80' : '#7cc0ff'
+      root.style.setProperty('--a3', color)
       const line = el('line')
       line.setAttribute('d', p.line)
       el('area').setAttribute('d', p.area)
-      const color = curve[curve.length - 1] >= curve[0] ? '#30d158' : '#7cc0ff'
-      line.setAttribute('stroke', color)
+      if (Number.isFinite(prev)) { const ry = p.y(prev); el('ref').setAttribute('y1', ry); el('ref').setAttribute('y2', ry) }
       const dot = el('dot')
       dot.style.left = `${(p.last[0] / 400) * 100}%`
-      dot.style.top = `${(p.last[1] / 110) * 100}%`
-      root.style.setProperty('--dot', color)
+      dot.style.top = `${(p.last[1] / 120) * 100}%`
       dot.hidden = false
       if (!reduceMotion && !line.dataset.drawn) {
+        // reveal the chart left to right (dash tricks break with non-scaling strokes in Chromium)
         line.dataset.drawn = '1'
-        line.setAttribute('pathLength', '1')
-        line.style.strokeDasharray = '1'
-        line.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: 1400, easing: 'cubic-bezier(.2,.8,.2,1)' })
-        dot.animate([{ opacity: 0 }, { opacity: 0, offset: 0.85 }, { opacity: 1 }], { duration: 1500 })
+        line.closest('svg').animate([{ clipPath: 'inset(-10% 100% -10% 0)' }, { clipPath: 'inset(-10% 0% -10% 0)' }], { duration: 1600, easing: 'cubic-bezier(.16,1,.3,1)' })
+        dot.animate([{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'none' }], { duration: 400, delay: 1200, fill: 'backwards' })
       }
     }
 
-    const slots = (snap.slots || []).filter((s) => Number.isFinite(s.live_return_bp))
-      .sort((a, b) => b.live_return_bp - a.live_return_bp || String(a.slot_id).localeCompare(String(b.slot_id)))
-      .slice(0, 5)
+    // leaders: the best strategy per stock held, so ties on one stock read as one line
+    const groups = new Map()
+    for (const s of snap.slots || []) {
+      if (!Number.isFinite(s.live_return_bp)) continue
+      const sym = (s.positions || []).map((x) => x.symbol).find(Boolean) || s.factor_target || '—'
+      const g = groups.get(sym)
+      if (!g) groups.set(sym, { sym, best: s.live_return_bp, n: 1 })
+      else { g.n++; g.best = Math.max(g.best, s.live_return_bp) }
+    }
+    const leaders = [...groups.values()].sort((a, b) => b.best - a.best).slice(0, 3)
     const rows = el('rows')
-    const top = Math.max(1, ...slots.map((s) => Math.abs(s.live_return_bp)))
-    const fresh = !rows.dataset.filled
-    rows.dataset.filled = '1'
     rows.textContent = ''
-    slots.forEach((s, i) => {
+    leaders.forEach((g, i) => {
       const li = document.createElement('li')
-      const syms = (s.positions || []).map((x) => x.symbol).filter(Boolean)
-      const sym = syms.length ? syms[0] + (syms.length > 1 ? ` +${syms.length - 1}` : '') : s.factor_target || '—'
-      const w = Math.max(4, Math.round((Math.abs(s.live_return_bp) / top) * 100))
-      li.innerHTML = `<span class="r">${i + 1}</span><span>${esc(s.slot_id)}</span><span class="sym"></span>` +
-        `<span class="bar${s.live_return_bp < 0 ? ' is-neg' : ''}" aria-hidden="true"><i></i></span>` +
-        `<span class="ret ${tone(s.live_return_bp)}">${pct(s.live_return_bp)}</span>`
-      const bar = li.querySelector('.bar > i')
-      if (reduceMotion) bar.style.width = w + '%'
-      else requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = w + '%' }))
-      li.querySelector('.sym').textContent = sym
-      if (fresh && !reduceMotion) li.style.setProperty('--i', i); else li.style.animation = 'none'
+      li.className = 'row'
+      li.style.setProperty('--i', i)
+      li.innerHTML = `<span class="a3-rank">${i + 1}</span>` +
+        `<span class="a3-av" style="--h:${hue(g.sym)}">${esc(String(g.sym).slice(0, 4))}</span>` +
+        `<span class="a3-name"><b>${esc(g.sym)}</b><span>${esc(g.n === 1 ? t('arenaPvGroup1') : t('arenaPvGroup', { n: g.n }))}</span></span>` +
+        `<span class="a3-ret ${tone(g.best)}">${pct(g.best)}</span>`
       rows.appendChild(li)
     })
 
-    trades = ((snap.trades || {}).recent || []).filter((x) => x && x.symbol && x.side).slice(0, 12)
-    showTrade()
+    // the latest simulated fill
+    const x = ((snap.trades || {}).recent || []).find((r) => r && r.symbol && r.side)
+    const trade = el('trade')
+    if (x) {
+      const buy = String(x.side).toUpperCase() === 'BUY', price = Number(x.price)
+      trade.innerHTML = `<span>${esc(t('arenaPvLatest'))}</span><b class="${buy ? 'buy' : 'sell'}">${buy ? 'BUY' : 'SELL'}</b>` +
+        `<b>${esc(x.symbol)}</b><span>${x.qty ? `×${esc(x.qty)} ` : ''}${Number.isFinite(price) ? `@ $${price.toFixed(2)}` : ''}</span>` +
+        `<span class="when">${esc(fmtTime(x.confirmed_ny || x.bar_start_ny, { month: 'short', day: 'numeric' }))}</span>`
+      trade.hidden = false
+    } else trade.hidden = true
 
-    let when = ''
-    try {
-      when = new Intl.DateTimeFormat(currentLang(), { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(snap.published_utc || snap.ts_utc))
-    } catch {}
-    el('foot').textContent = t('arenaPvFoot') + (when ? ' · ' + t('arenaPvUpdated', { time: when }) : '')
-  }
-
-  /* the trade tape: the latest simulated fills, one at a time */
-  function showTrade() {
-    const tape = el('tape')
-    if (!trades.length) { tape.hidden = true; return }
-    const x = trades[tapeAt % trades.length]
-    const buy = String(x.side).toUpperCase() === 'BUY'
-    let when = ''
-    try { when = new Intl.DateTimeFormat(currentLang(), { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(x.confirmed_ny || x.bar_start_ny)) } catch {}
-    const price = Number(x.price)
-    const html = `<span>▸ ${esc(x.slot_id || '')} <b class="${buy ? 'buy' : 'sell'}">${buy ? 'BUY' : 'SELL'}</b> <span class="sym">${esc(x.symbol)}</span>${x.qty ? ` ×${esc(x.qty)}` : ''}${Number.isFinite(price) ? ` @ $${price.toFixed(2)}` : ''}</span>` +
-      `<span class="when">${esc(when)} ET</span>`
-    const first = tape.hidden
-    tape.hidden = false
-    if (reduceMotion || first) { tape.innerHTML = html; return }
-    tape.classList.add('fade')
-    setTimeout(() => { tape.innerHTML = html; tape.classList.remove('fade') }, 300)
-  }
-
-  const pulses = [...root.querySelectorAll('.arena-pulse')]
-  function pulse(now) {
-    if (pts.length > 1) {
-      pulses.forEach((p, n) => {
-        const k = ((now / 3600) + n * 0.5) % 1
-        const fi = k * (pts.length - 1), i = Math.floor(fi), r = fi - i
-        const a = pts[i], b = pts[Math.min(pts.length - 1, i + 1)]
-        p.style.left = `${((a[0] + (b[0] - a[0]) * r) / 400) * 100}%`
-        p.style.top = `${((a[1] + (b[1] - a[1]) * r) / 110) * 100}%`
-        p.style.opacity = String(Math.min(1, k / 0.08, (1 - k) / 0.12) * 0.9)
-      })
-    }
-    pulseRaf = requestAnimationFrame(pulse)
+    const when = fmtTime(snap.published_utc || snap.ts_utc, { hour: 'numeric', minute: '2-digit' })
+    el('foot').textContent = t('arenaPvNote') + (when ? ' · ' + t('arenaPvUpdated', { time: when }) : '')
   }
 
   function fail() {
@@ -186,14 +155,9 @@ function initArena(reduceMotion) {
   onLangChange(() => { if (snap) render(); else if (root.classList.contains('is-offline')) fail() })
   const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { io.disconnect(); load() } }, { rootMargin: '600px 0px' })
   io.observe(root)
-  // while on screen: the tape ticks and the snapshot refreshes
   whileVisible(root, (on) => {
-    clearInterval(tapeTimer); clearInterval(refreshTimer); cancelAnimationFrame(pulseRaf)
-    if (!on) pulses.forEach((p) => { p.style.opacity = '0' })
-    if (!on || reduceMotion) return
-    pulseRaf = requestAnimationFrame(pulse)
-    tapeTimer = setInterval(() => { if (trades.length > 1) { tapeAt++; showTrade() } }, TAPE_MS)
-    refreshTimer = setInterval(async () => { if (!exp) return; try { await fetchSnap(); render() } catch {} }, REFRESH_MS)
+    clearInterval(refreshTimer)
+    if (on) refreshTimer = setInterval(async () => { if (!exp) return; try { await fetchSnap(); render() } catch {} }, REFRESH_MS)
   })
 }
 

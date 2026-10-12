@@ -64,7 +64,6 @@
   "arenaCta": "Buka Arena live",
   "arenaPvEquity": "Total ekuitas simulasi",
   "arenaPvLeaders": "Pemimpin saat ini",
-  "arenaPvFoot": "Data live dari Arena · uang simulasi, bukan saran investasi",
   "cbKind": "Game ritme komedi · Android & iPhone",
   "cbStatus": "Sudah rilis",
   "cbH": "Setiap ketukan punya “plak!”-nya sendiri.",
@@ -237,5 +236,10 @@
   "contactFounderD": "Kemitraan, media, dan karier",
   "writeEmail": "Kirim email",
   "closeLabel": "Tutup",
-  "arenaPvPrev": "penutupan sebelumnya"
+  "arenaPvPaper": "Perdagangan simulasi",
+  "arenaPvNote": "Uang simulasi · bukan saran investasi",
+  "arenaPvDayOf": "Hari ke-{d} dari {n}",
+  "arenaPvGroup": "{n} strategi",
+  "arenaPvGroup1": "1 strategi",
+  "arenaPvLatest": "Transaksi terakhir"
 }

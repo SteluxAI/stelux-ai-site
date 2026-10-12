@@ -64,7 +64,6 @@
   "arenaCta": "ライブの Arena を開く",
   "arenaPvEquity": "仮想資産の合計",
   "arenaPvLeaders": "現在の上位",
-  "arenaPvFoot": "Arena のライブデータ · 仮想資金による実験であり、投資助言ではありません",
   "cbKind": "コメディ・リズムゲーム · Android & iPhone",
   "cbStatus": "配信中",
   "cbH": "どのビートにも、それぞれの「パチン」がある。",
@@ -237,5 +236,10 @@
   "contactFounderD": "提携・取材・採用",
   "writeEmail": "メールする",
   "closeLabel": "閉じる",
-  "arenaPvPrev": "前日終値"
+  "arenaPvPaper": "ペーパートレード",
+  "arenaPvNote": "仮想資金 · 投資助言ではありません",
+  "arenaPvDayOf": "{d} / {n} 日目",
+  "arenaPvGroup": "{n} 戦略",
+  "arenaPvGroup1": "1 戦略",
+  "arenaPvLatest": "最新の取引"
 }

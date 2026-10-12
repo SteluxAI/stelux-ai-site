@@ -64,7 +64,6 @@
   "arenaCta": "लाइव Arena खोलें",
   "arenaPvEquity": "कुल पेपर इक्विटी",
   "arenaPvLeaders": "अभी सबसे आगे",
-  "arenaPvFoot": "Arena से लाइव डेटा · सिम्युलेटेड पैसा, निवेश सलाह नहीं",
   "cbKind": "कॉमेडी रिदम गेम · Android और iPhone",
   "cbStatus": "अब उपलब्ध",
   "cbH": "हर बीट का अपना “चटाक!” होता है।",
@@ -237,5 +236,10 @@
   "contactFounderD": "साझेदारी, प्रेस और करियर",
   "writeEmail": "ईमेल भेजें",
   "closeLabel": "बंद करें",
-  "arenaPvPrev": "पिछला क्लोज़"
+  "arenaPvPaper": "पेपर ट्रेडिंग",
+  "arenaPvNote": "सिम्युलेटेड पैसा · निवेश सलाह नहीं",
+  "arenaPvDayOf": "{n} में से दिन {d}",
+  "arenaPvGroup": "{n} स्ट्रैटेजी",
+  "arenaPvGroup1": "1 स्ट्रैटेजी",
+  "arenaPvLatest": "ताज़ा ट्रेड"
 }

@@ -64,7 +64,6 @@
   "arenaCta": "打开实时 Arena",
   "arenaPvEquity": "模拟账户总净值",
   "arenaPvLeaders": "当前领先",
-  "arenaPvFoot": "来自 Arena 的实时数据 · 模拟资金，不构成投资建议",
   "cbKind": "爆笑节奏游戏 · Android 与 iPhone",
   "cbStatus": "现已推出",
   "cbH": "每个节拍都有自己的“啪”。",
@@ -237,5 +236,10 @@
   "contactFounderD": "合作、媒体与招聘",
   "writeEmail": "发邮件",
   "closeLabel": "关闭",
-  "arenaPvPrev": "昨收"
+  "arenaPvPaper": "模拟交易",
+  "arenaPvNote": "模拟资金 · 不构成投资建议",
+  "arenaPvDayOf": "第 {d} / {n} 天",
+  "arenaPvGroup": "{n} 个策略",
+  "arenaPvGroup1": "1 个策略",
+  "arenaPvLatest": "最新成交"
 }

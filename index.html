@@ -274,41 +274,33 @@
             </div>
 
             <a class="spot-preview arena-pv" href="/arena/" aria-label="Open the live Arena" data-i18n-aria="arenaCta" data-arena-preview>
-              <div class="pv-window">
-                <div class="pv-chrome" aria-hidden="true"><i></i><i></i><i></i><span>stelux.ai/arena</span><b class="pv-chip">PAPER ONLY</b></div>
-                <div class="arena-body">
-                  <div class="arena-top">
-                    <div class="min-w-0">
-                      <div class="pv-label" data-i18n="arenaPvEquity">Total paper equity</div>
-                      <div class="arena-equity" data-a="equity"><span class="sk w-40"></span></div>
-                      <div class="arena-deltas">
-                        <span class="arena-delta" data-a="total"><span class="sk w-16"></span></span>
-                        <span class="arena-delta" data-a="day"><span class="sk w-16"></span></span>
-                      </div>
-                    </div>
-                    <div class="arena-meta" data-a="meta" aria-hidden="true"></div>
-                  </div>
-                  <div class="arena-chart">
-                    <svg class="arena-curve" viewBox="0 0 400 110" preserveAspectRatio="none" aria-hidden="true">
-                      <defs><linearGradient id="arena-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc0ff" stop-opacity="0.35"/><stop offset="1" stop-color="#7cc0ff" stop-opacity="0"/></linearGradient></defs>
-                      <path class="arena-area" data-a="area" d="M0,78 C40,70 60,84 100,72 S160,40 200,52 S270,30 300,38 S360,20 400,26 L400,110 L0,110Z" fill="url(#arena-fill)"/>
-                      <line class="arena-ref" data-a="ref" x1="0" x2="400" y1="-10" y2="-10" vector-effect="non-scaling-stroke"/>
-                      <path class="arena-line" data-a="line" d="M0,78 C40,70 60,84 100,72 S160,40 200,52 S270,30 300,38 S360,20 400,26" fill="none" stroke="#7cc0ff" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                    </svg>
-                    <span class="arena-ref-label" data-a="refLabel" aria-hidden="true" hidden></span>
-                    <span class="arena-pulse" aria-hidden="true"></span><span class="arena-pulse" aria-hidden="true"></span>
-                    <span class="arena-dot" data-a="dot" aria-hidden="true" hidden></span>
-                  </div>
-                  <div class="arena-tape" data-a="tape" aria-hidden="true" hidden></div>
-                  <div class="arena-board">
-                    <div class="pv-label flex items-center justify-between"><span data-i18n="arenaPvLeaders">Leaders right now</span><span class="font-mono normal-case tracking-normal text-white/35" data-a="slots"></span></div>
-                    <ol class="arena-rows" data-a="rows">
-                      <li><span class="sk w-full"></span></li><li><span class="sk w-full"></span></li><li><span class="sk w-full"></span></li><li><span class="sk w-full"></span></li>
-                    </ol>
-                  </div>
+              <div class="pv-window a3">
+                <div class="a3-head">
+                  <span class="a3-live"><span class="live-dot"></span><span data-i18n="liveLabel">Live</span></span>
+                  <span class="a3-day" data-a="day"></span>
+                  <span class="a3-paper" data-i18n="arenaPvPaper">Paper trading</span>
                 </div>
+                <div class="a3-hero">
+                  <div class="a3-label"><span data-i18n="arenaPvEquity">Total paper equity</span><span class="a3-dim" data-a="slots"></span></div>
+                  <div class="a3-value" data-a="equity"><span class="sk" style="width:62%"></span></div>
+                  <div class="a3-change" data-a="change"><span class="sk" style="width:44%"></span></div>
+                </div>
+                <div class="a3-chart">
+                  <svg viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+                    <defs><linearGradient id="a3-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--a3, #7cc0ff)" stop-opacity="0.28"/><stop offset="1" stop-color="var(--a3, #7cc0ff)" stop-opacity="0"/></linearGradient></defs>
+                    <line class="a3-ref" data-a="ref" x1="0" x2="400" y1="-10" y2="-10" vector-effect="non-scaling-stroke"/>
+                    <path data-a="area" d="M0,86 C40,78 60,92 100,80 S160,48 200,60 S270,38 300,46 S360,28 400,34 L400,120 L0,120Z" fill="url(#a3-fill)"/>
+                    <path class="a3-line" data-a="line" d="M0,86 C40,78 60,92 100,80 S160,48 200,60 S270,38 300,46 S360,28 400,34" fill="none" vector-effect="non-scaling-stroke"/>
+                  </svg>
+                  <span class="a3-dot" data-a="dot" hidden></span>
+                </div>
+                <div class="a3-title" data-i18n="arenaPvLeaders">Leaders right now</div>
+                <ol class="a3-list" data-a="rows">
+                  <li><span class="sk" style="width:100%"></span></li><li><span class="sk" style="width:100%"></span></li><li><span class="sk" style="width:100%"></span></li>
+                </ol>
+                <div class="a3-trade" data-a="trade" hidden></div>
               </div>
-              <span class="pv-foot" data-a="foot" data-i18n="arenaPvFoot">Live data from the Arena · simulated money, not investment advice</span>
+              <span class="pv-foot" data-a="foot" data-i18n="arenaPvNote">Simulated money · not investment advice</span>
             </a>
           </article>
 

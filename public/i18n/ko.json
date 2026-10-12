@@ -64,7 +64,6 @@
   "arenaCta": "라이브 Arena 열기",
   "arenaPvEquity": "모의 자산 총액",
   "arenaPvLeaders": "현재 선두",
-  "arenaPvFoot": "Arena 실시간 데이터 · 모의 자금이며 투자 조언이 아닙니다",
   "cbKind": "코미디 리듬 게임 · Android & iPhone",
   "cbStatus": "지금 출시",
   "cbH": "모든 비트엔 저마다의 ‘짝!’이 있다.",
@@ -237,5 +236,10 @@
   "contactFounderD": "제휴, 언론, 채용",
   "writeEmail": "메일 보내기",
   "closeLabel": "닫기",
-  "arenaPvPrev": "전일 종가"
+  "arenaPvPaper": "모의 거래",
+  "arenaPvNote": "모의 자금 · 투자 조언 아님",
+  "arenaPvDayOf": "{n}일 중 {d}일째",
+  "arenaPvGroup": "전략 {n}개",
+  "arenaPvGroup1": "전략 1개",
+  "arenaPvLatest": "최근 거래"
 }

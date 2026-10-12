@@ -64,7 +64,6 @@
   "arenaCta": "Canlı Arena'yı aç",
   "arenaPvEquity": "Toplam sanal sermaye",
   "arenaPvLeaders": "Şu anki liderler",
-  "arenaPvFoot": "Arena'dan canlı veri · sanal para, yatırım tavsiyesi değildir",
   "cbKind": "Komedi ritim oyunu · Android ve iPhone",
   "cbStatus": "Şimdi çıktı",
   "cbH": "Her ritmin kendi “şap!” sesi var.",
@@ -237,5 +236,10 @@
   "contactFounderD": "İş ortaklıkları, basın ve kariyer",
   "writeEmail": "E-posta gönder",
   "closeLabel": "Kapat",
-  "arenaPvPrev": "önceki kapanış"
+  "arenaPvPaper": "Sanal işlem",
+  "arenaPvNote": "Sanal para · yatırım tavsiyesi değildir",
+  "arenaPvDayOf": "{n} günün {d}. günü",
+  "arenaPvGroup": "{n} strateji",
+  "arenaPvGroup1": "1 strateji",
+  "arenaPvLatest": "Son işlem"
 }

@@ -64,7 +64,6 @@
   "arenaCta": "เปิด Arena แบบสด",
   "arenaPvEquity": "มูลค่าพอร์ตจำลองรวม",
   "arenaPvLeaders": "ผู้นำตอนนี้",
-  "arenaPvFoot": "ข้อมูลสดจาก Arena · เงินจำลอง ไม่ใช่คำแนะนำการลงทุน",
   "cbKind": "เกมจังหวะแนวตลก · Android และ iPhone",
   "cbStatus": "พร้อมให้เล่นแล้ว",
   "cbH": "ทุกจังหวะมีเสียง “เพียะ!” เป็นของตัวเอง",
@@ -237,5 +236,10 @@
   "contactFounderD": "พันธมิตร สื่อมวลชน และร่วมงานกับเรา",
   "writeEmail": "ส่งอีเมล",
   "closeLabel": "ปิด",
-  "arenaPvPrev": "ปิดวันก่อน"
+  "arenaPvPaper": "เทรดจำลอง",
+  "arenaPvNote": "เงินจำลอง · ไม่ใช่คำแนะนำการลงทุน",
+  "arenaPvDayOf": "วันที่ {d} จาก {n}",
+  "arenaPvGroup": "{n} กลยุทธ์",
+  "arenaPvGroup1": "1 กลยุทธ์",
+  "arenaPvLatest": "รายการล่าสุด"
 }

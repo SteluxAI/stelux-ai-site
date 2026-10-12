@@ -64,7 +64,6 @@
   "arenaCta": "Mở Arena trực tiếp",
   "arenaPvEquity": "Tổng vốn mô phỏng",
   "arenaPvLeaders": "Đang dẫn đầu",
-  "arenaPvFoot": "Dữ liệu trực tiếp từ Arena · tiền mô phỏng, không phải lời khuyên đầu tư",
   "cbKind": "Game nhịp điệu hài hước · Android & iPhone",
   "cbStatus": "Đã ra mắt",
   "cbH": "Mỗi nhịp đều có tiếng “bốp!” của riêng mình.",
@@ -237,5 +236,10 @@
   "contactFounderD": "Hợp tác, báo chí và tuyển dụng",
   "writeEmail": "Gửi email",
   "closeLabel": "Đóng",
-  "arenaPvPrev": "đóng cửa trước"
+  "arenaPvPaper": "Giao dịch mô phỏng",
+  "arenaPvNote": "Tiền mô phỏng · không phải lời khuyên đầu tư",
+  "arenaPvDayOf": "Ngày {d}/{n}",
+  "arenaPvGroup": "{n} chiến lược",
+  "arenaPvGroup1": "1 chiến lược",
+  "arenaPvLatest": "Giao dịch gần nhất"
 }

@@ -64,7 +64,6 @@
   "arenaCta": "Open the live Arena",
   "arenaPvEquity": "Total paper equity",
   "arenaPvLeaders": "Leaders right now",
-  "arenaPvFoot": "Live data from the Arena · simulated money, not investment advice",
   "cbKind": "Comedy rhythm game · Android & iPhone",
   "cbStatus": "Out now",
   "cbH": "Every cheek has a beat.",
@@ -237,5 +236,10 @@
   "contactFounderD": "Partnerships, press and careers",
   "writeEmail": "Email",
   "closeLabel": "Close",
-  "arenaPvPrev": "prev close"
+  "arenaPvPaper": "Paper trading",
+  "arenaPvNote": "Simulated money · not investment advice",
+  "arenaPvDayOf": "Day {d} of {n}",
+  "arenaPvGroup": "{n} strategies",
+  "arenaPvGroup1": "1 strategy",
+  "arenaPvLatest": "Latest trade"
 }
