@@ -41,7 +41,11 @@
     "name": "Stelux AI",
     "url": "https://stelux.ai/",
     "logo": "https://stelux.ai/favicon.svg",
-    "email": "steluxai@gmail.com"
+    "email": "sales@stelux.ai",
+    "contactPoint": [
+      { "@type": "ContactPoint", "contactType": "sales", "email": "sales@stelux.ai" },
+      { "@type": "ContactPoint", "contactType": "customer support", "email": "support@stelux.ai" }
+    ]
   }
   </script>
 </head>
@@ -52,7 +56,7 @@
     <div class="nav-veil" aria-hidden="true"></div>
     <nav id="nav" aria-label="Primary" class="pointer-events-auto relative mx-auto flex h-[68px] max-w-7xl items-center px-5 sm:h-[76px] sm:px-8">
       <a href="#top" class="flex items-center gap-2.5 py-2" aria-label="Stelux AI home">
-        <img src="/favicon.svg" width="28" height="28" alt="" aria-hidden="true" decoding="async">
+        <span class="brand-mark" aria-hidden="true"></span>
         <span class="font-display text-[17px] font-semibold tracking-tight">Stelux AI</span>
       </a>
       <ul class="mx-auto hidden min-w-0 items-center gap-0.5 whitespace-nowrap px-3 text-[14px] md:flex lg:gap-1">
@@ -71,7 +75,7 @@
           </button>
           <div id="lang-menu" class="lang-menu" role="menu" aria-label="Language" data-i18n-aria="langLabel" data-lenis-prevent hidden></div>
         </div>
-        <a href="mailto:steluxai@gmail.com" class="hidden rounded-full px-3.5 py-2.5 text-[14px] text-white/75 transition-colors hover:text-white xl:inline-flex" data-i18n="navContact">Contact</a>
+        <a href="mailto:sales@stelux.ai" class="hidden rounded-full px-3.5 py-2.5 text-[14px] text-white/75 transition-colors hover:text-white xl:inline-flex" data-i18n="navContact">Contact</a>
         <a href="#pricing" class="nav-cta" data-i18n="launch">Launch Platform</a>
         <button id="menu-btn" type="button" aria-label="Open menu" data-i18n-aria="menuOpen" aria-expanded="false" aria-controls="mobile-menu"
                 class="ml-1 flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] text-white/85 md:hidden">
@@ -97,7 +101,7 @@
       </nav>
       <div class="mt-auto flex flex-col gap-3 pt-8">
         <a href="#pricing" class="btn-glow px-5 py-3.5 text-[15px]" data-i18n="launch">Launch Platform</a>
-        <a href="mailto:steluxai@gmail.com" class="btn-ghost px-5 py-3.5 text-[15px]" data-i18n="talkToUs">Talk to us</a>
+        <a href="mailto:sales@stelux.ai" class="btn-ghost px-5 py-3.5 text-[15px]" data-i18n="talkToUs">Talk to us</a>
       </div>
     </div>
   </div>
@@ -443,7 +447,7 @@
                 </div>
                 <span class="pv-foot" data-i18n="conceptFoot">Concept preview · product in development</span>
               </div>
-              <a class="spot-link" href="mailto:steluxai@gmail.com?subject=Market%20Signal%20Pro%20early%20access"><span data-i18n="msCta">Get early access</span> <span aria-hidden="true">→</span></a>
+              <a class="spot-link" href="mailto:sales@stelux.ai?subject=Market%20Signal%20Pro%20early%20access"><span data-i18n="msCta">Get early access</span> <span aria-hidden="true">→</span></a>
             </article>
 
             <article id="lux" class="spot spot-compact" style="--accent:#c9b6ff; --accent-rgb:182,156,255" aria-labelledby="lux-title" data-reveal>
@@ -476,7 +480,7 @@
                 </div>
                 <span class="pv-foot" data-i18n="conceptFoot">Concept preview · product in development</span>
               </div>
-              <a class="spot-link" href="mailto:steluxai@gmail.com?subject=Lux%20AI%20Assistant%20waitlist"><span data-i18n="luxCta">Join the waitlist</span> <span aria-hidden="true">→</span></a>
+              <a class="spot-link" href="mailto:sales@stelux.ai?subject=Lux%20AI%20Assistant%20waitlist"><span data-i18n="luxCta">Join the waitlist</span> <span aria-hidden="true">→</span></a>
             </article>
           </div>
         </div>
@@ -805,7 +809,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
               <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pd4">CLI, SDK and REST</span></li>
               <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pd5">Community support</span></li>
             </ul>
-            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20developer%20access" class="btn-ghost mt-8 px-5 py-3 text-[14px]" data-i18n="startFree">Start free</a>
+            <a href="mailto:sales@stelux.ai?subject=Stelux%20AI%20developer%20access" class="btn-ghost mt-8 px-5 py-3 text-[14px]" data-i18n="startFree">Start free</a>
           </div>
           <div class="price featured">
             <span class="badge" data-i18n="mostDeployed">Most deployed</span>
@@ -820,7 +824,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
               <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="ps5">SSO, roles and per-team budgets</span></li>
               <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="ps6">Priority support</span></li>
             </ul>
-            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20Scale%20access" class="btn-glow mt-8 px-5 py-3 text-[14px]" data-i18n="launch">Launch Platform</a>
+            <a href="mailto:sales@stelux.ai?subject=Stelux%20AI%20Scale%20access" class="btn-glow mt-8 px-5 py-3 text-[14px]" data-i18n="launch">Launch Platform</a>
           </div>
           <div class="price">
             <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45" data-i18n="tierEnt">Enterprise</div>
@@ -833,7 +837,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
               <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pe4">99.99% uptime SLA</span></li>
               <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg><span data-i18n="pe5">Dedicated solutions engineer</span></li>
             </ul>
-            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20Enterprise" class="btn-ghost mt-8 px-5 py-3 text-[14px]" data-i18n="talkToUs">Talk to us</a>
+            <a href="mailto:sales@stelux.ai?subject=Stelux%20AI%20Enterprise" class="btn-ghost mt-8 px-5 py-3 text-[14px]" data-i18n="talkToUs">Talk to us</a>
           </div>
         </div>
       </div>
@@ -848,7 +852,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
           <p class="lead relative mx-auto mt-5 max-w-xl" data-i18n="ctaP">Book a working session with our engineers. We'll stand up a swarm on your data and your GPUs in under a week.</p>
           <div class="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a href="#pricing" class="btn-glow px-6 py-3 text-[15px]" data-i18n="launch">Launch Platform</a>
-            <a href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20working%20session" class="btn-ghost px-6 py-3 text-[15px]" data-i18n="talkEngineer">Talk to an engineer</a>
+            <a href="mailto:sales@stelux.ai?subject=Stelux%20AI%20working%20session" class="btn-ghost px-6 py-3 text-[15px]" data-i18n="talkEngineer">Talk to an engineer</a>
           </div>
         </div>
       </div>
@@ -861,7 +865,7 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
       <div class="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5 lg:grid-cols-[1.6fr_repeat(5,minmax(0,1fr))]">
         <div class="col-span-2 md:col-span-5 lg:col-span-1">
           <a href="#top" class="inline-flex items-center gap-2.5" aria-label="Stelux AI home">
-            <img src="/favicon.svg" width="28" height="28" alt="" aria-hidden="true" decoding="async">
+            <span class="brand-mark" aria-hidden="true"></span>
             <span class="font-display text-[16px] font-semibold tracking-tight">Stelux AI</span>
           </a>
           <p class="mt-4 max-w-xs text-[13.5px] leading-relaxed text-white/50" data-i18n="footTag">Enterprise AI agents, workflow orchestration and high-performance compute from Stelux AI.</p>
@@ -894,33 +898,33 @@ run = swarm.<span class="f">start</span>(goal=<span class="s">"Summarize Q3 risk
             <li><a class="foot-link" href="#showcase">CLI &amp; SDK</a></li>
             <li><a class="foot-link" href="#showcase">REST API</a></li>
             <li><a class="foot-link" href="#telemetry" data-i18n="telEyebrow">Telemetry</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Stelux%20AI%20docs" data-i18n="footDocs">Docs access</a></li>
+            <li><a class="foot-link" href="mailto:support@stelux.ai?subject=Stelux%20AI%20docs" data-i18n="footDocs">Docs access</a></li>
           </ul>
         </div>
         <div>
           <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40" data-i18n="footCompany">Company</div>
           <ul class="mt-2">
             <li><a class="foot-link" href="#products" data-i18n="footAbout">About</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Careers%20at%20Stelux%20AI" data-i18n="footCareers">Careers</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Partnership" data-i18n="footPartners">Partners</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com" data-i18n="navContact">Contact</a></li>
+            <li><a class="foot-link" href="mailto:founder@stelux.ai?subject=Careers%20at%20Stelux%20AI" data-i18n="footCareers">Careers</a></li>
+            <li><a class="foot-link" href="mailto:founder@stelux.ai?subject=Partnership" data-i18n="footPartners">Partners</a></li>
+            <li><a class="foot-link" href="mailto:sales@stelux.ai" data-i18n="navContact">Contact</a></li>
           </ul>
         </div>
         <div>
           <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40" data-i18n="footLegal">Legal</div>
           <ul class="mt-2">
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Privacy%20policy%20request" data-i18n="footPrivacy">Privacy</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Terms%20request" data-i18n="footTerms">Terms</a></li>
-            <li><a class="foot-link" href="mailto:steluxai@gmail.com?subject=Security%20report" data-i18n="footVuln">Report a vulnerability</a></li>
+            <li><a class="foot-link" href="mailto:support@stelux.ai?subject=Privacy%20policy%20request" data-i18n="footPrivacy">Privacy</a></li>
+            <li><a class="foot-link" href="mailto:support@stelux.ai?subject=Terms%20request" data-i18n="footTerms">Terms</a></li>
+            <li><a class="foot-link" href="mailto:support@stelux.ai?subject=Security%20report" data-i18n="footVuln">Report a vulnerability</a></li>
           </ul>
         </div>
       </div>
       <div class="mt-12 flex flex-col gap-3 border-t border-white/8 pt-6 font-mono text-[11.5px] text-white/40 sm:flex-row sm:items-center sm:justify-between">
         <div>© 2026 Stelux AI</div>
-        <div class="flex items-center gap-4">
-          <a class="hover:text-white/80" href="mailto:steluxai@gmail.com">steluxai@gmail.com</a>
-          <span class="text-white/25">·</span>
-          <span>stelux.ai</span>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <a class="hover:text-white/80" href="mailto:founder@stelux.ai">founder@stelux.ai</a>
+          <a class="hover:text-white/80" href="mailto:sales@stelux.ai">sales@stelux.ai</a>
+          <a class="hover:text-white/80" href="mailto:support@stelux.ai">support@stelux.ai</a>
         </div>
       </div>
     </div>

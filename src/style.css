@@ -69,6 +69,8 @@ body {
     background: #34d399; box-shadow: 0 0 0 0 rgba(52,211,153,0.7); animation: livePulse 2.2s ease-out infinite;
   }
   .divider { height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.14) 30%, rgba(255,255,255,0.14) 70%, rgba(255,255,255,0)); }
+  /* the logo mark: cut-out artwork tinted by colour, so it follows any background (scripts/icons.mjs) */
+  .brand-mark { display: inline-block; flex: none; width: 30px; height: 30px; color: var(--brand-mark, #b4c6ea); background: currentColor; -webkit-mask: url(/logo-mark.svg) center / contain no-repeat; mask: url(/logo-mark.svg) center / contain no-repeat; }
   .chip { @apply inline-flex items-center gap-1.5 rounded-md border border-white/8 bg-white/[0.025] px-2.5 py-1 font-mono text-[11px] text-white/45; }
 
   /* ---------- top bar ---------- */

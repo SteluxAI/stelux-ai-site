@@ -1,22 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17407f"/><stop offset="1" stop-color="#0b234d"/></linearGradient>
-    <linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfdcf6"/><stop offset="1" stop-color="#a8bce8"/></linearGradient>
-    <mask id="m"><g fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round"><path d="M32 9.5 51.5 20.75v22.5L32 54.5 12.5 43.25v-22.5Z"/><path d="M58 10 38.8 16.8 51.1 29.2Z"/></g></mask>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="url(#t)"/>
-  <g fill="url(#h)" stroke="url(#h)" stroke-width="3" stroke-linejoin="round">
-    <path d="M32 9.5 51.5 20.75v22.5L32 54.5 12.5 43.25v-22.5Z"/>
-    <path d="M58 10 38.8 16.8 51.1 29.2Z"/>
-  </g>
-  <g stroke="#0e2a5a" stroke-width="1.6" stroke-linecap="round" fill="none">
-    <path d="M17 21.5 27 20 32 12.5M27 20 20 30M17 21.5 20 30M27 20 36 26M20 30 16.5 38"/>
-    <path d="M47.5 44 38 45 32 52M38 45 43 36 47.5 44M38 45 29 47M43 36 45.5 31"/>
-  </g>
-  <g fill="#0e2a5a">
-    <circle cx="32" cy="12.5" r="2"/><circle cx="17" cy="21.5" r="2"/><circle cx="27" cy="20" r="3.2"/><circle cx="20" cy="30" r="2.8"/><circle cx="36" cy="26" r="2.6"/>
-    <circle cx="43" cy="36" r="2.8"/><circle cx="38" cy="45" r="3.2"/><circle cx="47.5" cy="44" r="2"/><circle cx="32" cy="52" r="2"/><circle cx="29" cy="47" r="2.2"/>
-  </g>
-  <path d="M5 53 26 32 32 38 46.5 21.5" fill="none" stroke="#0e2a5a" stroke-width="5.2" stroke-linejoin="miter" mask="url(#m)"/>
-  <path d="M55 13 42.5 17.5 50.5 25.5Z" fill="#0e2a5a"/>
+  <rect width="64" height="64" rx="14" fill="#0f2d5e"/>
+  <svg x="7" y="7" width="50" height="50" viewBox="220 205 1160 1160">
+    <mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="1600">
+    <path d="M800 235 1120 415 1298 358 1276 525 1284 1080 800 1366 316 1080 316 525Z" fill="#fff" stroke="#fff" stroke-width="36" stroke-linejoin="round"/>
+    <path d="M250 1277 657 792 825 922 1100 605" fill="none" stroke="#000" stroke-width="112" stroke-miterlimit="8"/>
+    <path d="M975 512 1258 404 1214 702Z" fill="#000" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+    <g fill="none" stroke="#000" stroke-width="11" stroke-linecap="round"><path d="M800 280 680 510 890 615 800 280"/><path d="M680 510 365 540 470 765 680 510"/><path d="M470 765 382 995"/><path d="M470 765 555 780"/><path d="M470 765 515 835"/><path d="M890 615 1000 582"/><path d="M890 615 745 750"/><path d="M890 615 825 800"/><path d="M1105 825 965 1055 1240 1060 1105 825"/><path d="M1105 825 1045 780"/><path d="M1105 825 1145 690"/><path d="M965 1055 685 1070 800 1320 965 1055"/><path d="M685 1070 665 905"/><path d="M685 1070 750 970"/><path d="M685 1070 480 1135"/></g>
+    <g fill="#000"><circle cx="800" cy="280" r="19"/><circle cx="680" cy="510" r="42"/><circle cx="890" cy="615" r="42"/><circle cx="365" cy="540" r="19"/><circle cx="470" cy="765" r="42"/><circle cx="1105" cy="825" r="42"/><circle cx="1240" cy="1060" r="19"/><circle cx="965" cy="1055" r="42"/><circle cx="685" cy="1070" r="42"/><circle cx="800" cy="1320" r="19"/></g>
+  </mask>
+  <rect x="0" y="0" width="1600" height="1600" fill="#b4c6ea" mask="url(#m)"/>
+  </svg>
 </svg>
