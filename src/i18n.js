@@ -7,7 +7,9 @@
      data-i18n-alt="key"    alt
    Strings that only exist in JavaScript are registered with their English text in JS_EN below.
    ?lang=xx picks the language for one visit; the menu remembers an explicit choice in
-   localStorage under "stelux-lang", which the Cheek Beat page reads as well. */
+   localStorage under "stelux-lang", which the Cheek Beat page reads as well, and in the cookie
+   "stelux_lang" on .stelux.ai so the other stelux.ai sites (e.g. michigan.stelux.ai) share it.
+   Links marked data-lang-link carry ?lang= when the page is not in English. */
 
 export const LANGS = [
   ['en', 'English', 'English', 'EN'],
@@ -31,6 +33,17 @@ export const LANGS = [
 const CODES = LANGS.map((l) => l[0])
 const STORE_KEY = 'stelux-lang'
 const LEGACY_KEY = 'cb-lang-choice' // the Cheek Beat page's own key, shared both ways
+const COOKIE = 'stelux_lang'
+
+function readCookie() {
+  try { return decodeURIComponent((document.cookie.match(/(?:^|;\s*)stelux_lang=([^;]*)/) || [])[1] || '') } catch { return '' }
+}
+function writeCookie(code) {
+  const host = location.hostname
+  const domain = host === 'stelux.ai' || host.endsWith('.stelux.ai') ? '; Domain=stelux.ai' : ''
+  const secure = location.protocol === 'https:' ? '; Secure' : ''
+  try { document.cookie = `${COOKIE}=${encodeURIComponent(code)}${domain}; Path=/; Max-Age=31536000; SameSite=Lax${secure}` } catch {}
+}
 
 export const JS_EN = {
   metaTitle: 'Stelux AI — Enterprise AI Agents, Orchestration & GPU Compute',
@@ -139,6 +152,13 @@ function apply() {
   root.dir = isRTL() ? 'rtl' : 'ltr'
   document.title = t('metaTitle')
   document.querySelector('meta[name="description"]')?.setAttribute('content', t('metaDesc'))
+  document.querySelectorAll('a[data-lang-link]').forEach((a) => {
+    try {
+      const u = new URL(a.href)
+      if (lang === 'en') u.searchParams.delete('lang'); else u.searchParams.set('lang', lang)
+      a.href = u.toString()
+    } catch {}
+  })
   listeners.forEach((fn) => fn(lang))
 }
 
@@ -153,6 +173,7 @@ export async function setLang(code, { remember = false } = {}) {
   code = normLang(code) || 'en'
   if (remember) {
     try { localStorage.setItem(STORE_KEY, code); localStorage.setItem(LEGACY_KEY, code) } catch {}
+    writeCookie(code)
   }
   try { dict = await load(code); lang = code } catch { dict = {}; lang = 'en' }
   apply()
@@ -230,7 +251,7 @@ export function initI18n() {
   let q = ''
   try { q = normLang(new URLSearchParams(location.search).get('lang')) } catch {}
   let saved = ''
-  try { saved = normLang(localStorage.getItem(STORE_KEY)) || normLang(localStorage.getItem(LEGACY_KEY)) } catch {}
+  try { saved = normLang(readCookie()) || normLang(localStorage.getItem(STORE_KEY)) || normLang(localStorage.getItem(LEGACY_KEY)) } catch {}
   const start = q || saved || 'en'
   if (start !== 'en') setLang(start)
   else apply()
