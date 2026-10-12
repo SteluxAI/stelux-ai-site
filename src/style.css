@@ -563,23 +563,34 @@ body {
   .foot-link { @apply inline-flex min-h-10 items-center text-[13.5px] text-white/50 transition-colors hover:text-white; }
 
   /* footer contact strip */
-  .foot-contact { display: grid; gap: 20px; align-items: center; margin-top: 48px; padding: 22px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.08); background: radial-gradient(60% 120% at 0% 0%, rgba(52,211,153,0.08), rgba(52,211,153,0) 60%), rgba(255,255,255,0.02); }
-  @media (min-width: 1024px) { .foot-contact { grid-template-columns: minmax(0, 1fr) auto; gap: 32px; padding: 26px 28px; } }
+  /* one continuous surface: the heading and three mailbox columns divided by hairlines, no nested cards */
+  .foot-contact { display: grid; gap: 18px; align-items: center; margin-top: 52px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); }
+  @media (min-width: 1024px) { .foot-contact { grid-template-columns: minmax(240px, 0.8fr) minmax(0, 2fr); gap: 24px; } }
   .foot-contact-h { @apply font-display text-[20px] font-semibold tracking-tight text-white; }
-  .foot-mails { display: grid; gap: 10px; }
+  .foot-mails { display: grid; }
   @media (min-width: 640px) { .foot-mails { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  .foot-mail { position: relative; display: flex; align-items: center; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.025); transition: border-color .2s, background .2s, transform .2s; }
-  .foot-mail:hover { border-color: rgba(var(--accent-rgb),0.45); background: rgba(var(--accent-rgb),0.06); transform: translateY(-1px); }
-  .foot-mail > a { display: flex; flex: 1; min-width: 0; align-items: center; gap: 12px; padding: 12px 6px 12px 12px; }
-  .foot-mail small { display: block; font: 500 10.5px/1.4 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--accent-rgb)); }
-  .foot-mail b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.88); }
-  .foot-mail-ico { display: flex; width: 36px; height: 36px; flex: none; align-items: center; justify-content: center; border-radius: 11px; color: rgb(var(--accent-rgb)); background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.22); }
-  .foot-mail-ico svg { width: 18px; height: 18px; }
-  .foot-mail-copy { display: flex; width: 40px; height: 40px; flex: none; margin-inline-end: 6px; align-items: center; justify-content: center; border-radius: 10px; color: rgba(255,255,255,0.4); transition: color .2s, background .2s; }
+  .foot-mail { position: relative; display: flex; align-items: center; isolation: isolate; border-top: 1px solid rgba(255,255,255,0.07); }
+  .foot-mail:first-child { border-top: 0; }
+  @media (min-width: 640px) {
+    .foot-mail { border-top: 0; border-inline-start: 1px solid rgba(255,255,255,0.07); }
+    .foot-mail:first-child { border-inline-start: 0; }
+  }
+  .foot-mail::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .3s ease; background: radial-gradient(70% 120% at 30% 50%, rgba(var(--accent-rgb),0.1), rgba(var(--accent-rgb),0) 70%); }
+  .foot-mail:hover::before { opacity: 1; }
+  .foot-mail > a { display: flex; flex: 1; min-width: 0; align-items: center; gap: 14px; padding: 14px 8px 14px 0; }
+  @media (min-width: 640px) { .foot-mail > a { padding-inline-start: 22px; } .foot-mail:first-child > a { padding-inline-start: 0; } }
+  @media (min-width: 1024px) { .foot-mail:first-child > a { padding-inline-start: 22px; } .foot-mail:first-child { border-inline-start: 1px solid rgba(255,255,255,0.07); } }
+  .foot-mail small { display: block; font: 500 10.5px/1.4 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--accent-rgb)); opacity: .85; }
+  .foot-mail b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; font-weight: 500; color: rgba(255,255,255,0.85); transition: color .2s; }
+  .foot-mail:hover b { color: #fff; }
+  .foot-mail-ico { display: flex; width: 20px; height: 20px; flex: none; align-items: center; justify-content: center; color: rgb(var(--accent-rgb)); }
+  .foot-mail-ico svg { width: 20px; height: 20px; }
+  .foot-mail-copy { display: flex; width: 36px; height: 36px; flex: none; margin-inline-end: 4px; align-items: center; justify-content: center; border-radius: 99px; color: rgba(255,255,255,0.35); opacity: 0; transition: opacity .2s, color .2s, background .2s; }
+  .foot-mail:hover .foot-mail-copy, .foot-mail-copy:focus-visible, .foot-mail-copy.is-done { opacity: 1; }
+  @media (hover: none) { .foot-mail-copy { opacity: 1; } }
   .foot-mail-copy:hover { color: #fff; background: rgba(255,255,255,0.07); }
-  .foot-mail-copy svg { width: 16px; height: 16px; }
+  .foot-mail-copy svg { width: 15px; height: 15px; }
   .foot-mail-copy.is-done { color: rgb(var(--accent-rgb)); }
-  @media (min-width: 640px) and (max-width: 1279px) { .foot-mail-ico { display: none; } }
 
   /* contact window */
   .cdlg { width: min(560px, calc(100vw - 24px)); max-width: none; max-height: calc(100dvh - 24px); margin: auto; padding: 0; border: 0; background: transparent; color: var(--color-ink); overflow: visible; }
