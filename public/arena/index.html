@@ -1273,7 +1273,7 @@ footer{margin-top:38px;padding-top:20px;border-top:1px solid var(--hair);font-si
   <div class="sbody" id="shBody"></div>
 </aside>
 
-<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-12T03:25:44Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-12T03:25:44Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
+<script>window.ARENA_STATIC={"base":"https://steluxai.github.io/arena-live/data","built_utc":"2026-10-12T03:47:01Z","channel":{"feed_interval_s":63,"floor_s":135,"how_measured":"publish_interval from watch_interval_s(); visibility lag and feed interval measured on 2026-09-20 against the running crypto experiment and steluxai.github.io","measured_utc":"2026-10-12T03:47:01Z","note_en":"floor on a published snapshot's age = feed interval + publish interval + time to become visible. A freshness threshold below this floor can never be met, and a stale badge then describes the publishing cadence rather than a fault.","note_zh":"发布快照的年龄下限 = 行情抓取间隔 + 发布间隔 + 页面可见延迟。低于这个下限的新鲜度阈值永远无法满足，此时「陈旧」说明的是管道节奏，不是故障。","publish_interval_s":45,"visibility_lag_s":27},"closed_fresh_s":21600.0,"default":"stock-factor-20261005c","experiments":["stock-factor-20261005c","crypto-robinhood-20261004"],"fresh_default_s":120.0,"fresh_s":{"overnight":600.0,"post":180.0,"pre":180.0,"regular":30.0},"mode":"static","poll_s":15,"unknown_s":86400.0};</script>
 <script>
 "use strict";
 /* ============================================================ helpers */
@@ -2289,8 +2289,9 @@ const S2TW = {"chars": "㐷傌㐹㑶㐽偑㑇㑳㑈倲㑔㑯㑩儸㓆𠗣㓥劏�
 /* ---- the site's seventeen languages (2026-10-11). The page is authored in Chinese and English, and every other
    language renders on the English page with what its table translates swapped in, so anything a table leaves out
    falls back to English (Traditional Chinese renders on the Chinese page, converted character by character).
-   The choice is the site's: localStorage "stelux-lang" is shared with the homepage and Cheek Beat, ?lang=xx picks a
-   language for one visit, and the page's own older "lang" key (zh | en) is read only when the site has no choice. */
+   The choice is the site's: ?lang=xx picks a language for one visit, then the cookie stelux_lang (Domain=stelux.ai,
+   shared with the homepage and michigan.stelux.ai), then localStorage "stelux-lang" (shared with the homepage and
+   Cheek Beat); the page's own older "lang" key (zh | en) is read only when the site has no choice. */
 const SITE_LANGS = [
   ["en", "English", "English", "EN"], ["zh-CN", "简体中文", "Chinese (Simplified)", "简"],
   ["zh-TW", "繁體中文", "Chinese (Traditional)", "繁"], ["ja", "日本語", "Japanese", "JA"], ["ko", "한국어", "Korean", "KO"],
@@ -2311,6 +2312,8 @@ function normLang(v) {
 }
 function detectSiteLang() {
   try { const q = normLang(new URLSearchParams(location.search).get("lang")); if (q) return q; } catch (e) { }
+  // the cookie is the choice shared by every *.stelux.ai site (homepage, michigan.stelux.ai), so it comes first
+  try { const m = (document.cookie || "").match(/(?:^|;\s*)stelux_lang=([^;]+)/); const v = m && normLang(decodeURIComponent(m[1])); if (v) return v; } catch (e) { }
   try { const v = normLang(localStorage.getItem("stelux-lang")) || normLang(localStorage.getItem("cb-lang-choice")); if (v) return v; } catch (e) { }
   try { const v = localStorage.getItem("lang"); if (v === "zh") return "zh-CN"; if (v === "en") return "en"; } catch (e) { }
   try {
@@ -2417,6 +2420,9 @@ function setLang(next) {
   next = normLang(next) || "en";
   try {
     localStorage.setItem("stelux-lang", next); localStorage.setItem("cb-lang-choice", next);
+    const host = location.hostname, dom = /(^|\.)stelux\.ai$/.test(host) ? "; Domain=stelux.ai" : "";
+    document.cookie = "stelux_lang=" + encodeURIComponent(next) + dom + "; Path=/; Max-Age=31536000; SameSite=Lax"
+      + (location.protocol === "https:" ? "; Secure" : "");
     localStorage.setItem("lang", /^zh/.test(next) ? "zh" : "en");      // what an older copy of this page reads
   } catch (e) { }
   // a shared ?lang= link keeps saying what is on screen (and would otherwise override the choice on the reload)
