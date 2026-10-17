@@ -24,7 +24,7 @@ test('rejects credential-shaped content and inline source map references', () =>
   assert.ok(inspectFile('bundle.js', Buffer.from('//# sourceMappingURL=data:application/json;base64,e30=')).length);
 });
 test('keeps intended support contact, business disclosure and dependency copyright', () => {
-  assert.deepEqual(inspectFile('index.html', Buffer.from('support@example.com BYTECH, LLC Copyright author@example.com')), []);
+  assert.deepEqual(inspectFile('index.html', Buffer.from('support@example.com STELUX AI, LLC Copyright author@example.com')), []);
 });
 test('scans actual output and fails empty or missing output', () => {
   const dir = mkdtempSync(join(tmpdir(), 'privacy-test-'));
