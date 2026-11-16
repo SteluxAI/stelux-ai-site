@@ -69,6 +69,7 @@ test('all 17 game metadata translations exist with approved store links and no i
     for (const key of ['title', 'description', 'heading']) assert.ok(value[key]?.trim(), `${lang}:${key}`);
     assert.match(value.title, /Cheek Beat/);
     assert.match(value.description, /Android|安卓|안드로이드/);
+    for (const key of ['title', 'description']) assert.match(value[key], /iPhone/, `${lang}:${key} names both stores' platforms`);
     assert.ok(existsSync(`dist/i18n/${lang}.json`) || lang === 'en');
   }
   const html = read('cheek-beat/index.html');
@@ -78,6 +79,8 @@ test('all 17 game metadata translations exist with approved store links and no i
   assert.equal([...html.matchAll(appStoreLink)].length, 2);
   assert.equal([...read('index.html').matchAll(appStoreLink)].length, 1);
   assert.doesNotMatch(html, /Update in review|aria-disabled="true"/);
+  assert.match(html, /<title>[^<]*Android and iPhone<\/title>/);
+  assert.equal(meta(html, 'description'), dictionaries.en.description);
   assert.doesNotMatch(html, /aggregateRating|ratingValue|reviewCount/);
   const schemaSource = html.match(/<script type="application\/ld\+json" id="cheek-seo-schema">([\s\S]*?)<\/script>/)[1];
   const schemaUpdate = html.match(/(var schemaElement = document.getElementById\("cheek-seo-schema"\);[\s\S]*?)\r?\n      }\r?\n      var name/)[1];
