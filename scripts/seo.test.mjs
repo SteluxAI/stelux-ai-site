@@ -60,7 +60,7 @@ test('the hostname favicon is a reachable, square PNG larger than 48 pixels', ()
   assert.match(html, /"logo": "https:\/\/stelux.ai\/apple-touch-icon.png"/);
   assert.match(html, /"@type": "WebSite"/);
 });
-test('all 17 game metadata translations exist without inventing an iPhone release or ratings', () => {
+test('all 17 game metadata translations exist with approved store links and no invented ratings', () => {
   const context = { window: {} };
   runInNewContext(read('cheek-beat/assets/seo-i18n.js'), context);
   const dictionaries = context.window.CB_SEO;
@@ -74,7 +74,10 @@ test('all 17 game metadata translations exist without inventing an iPhone releas
   const html = read('cheek-beat/index.html');
   assert.match(html, /id="hero-title" class="eyebrow">Cheek Beat — Comedy Rhythm Game/);
   assert.match(html, /ai.stelux.bumphony/);
-  assert.match(html, /Update in review/);
+  const appStoreLink = /<a\b[^>]*href="https:\/\/apps\.apple\.com\/app\/cheek-beat\/id6814051177"[^>]*>/g;
+  assert.equal([...html.matchAll(appStoreLink)].length, 2);
+  assert.equal([...read('index.html').matchAll(appStoreLink)].length, 1);
+  assert.doesNotMatch(html, /Update in review|aria-disabled="true"/);
   assert.doesNotMatch(html, /aggregateRating|ratingValue|reviewCount/);
   const schemaSource = html.match(/<script type="application\/ld\+json" id="cheek-seo-schema">([\s\S]*?)<\/script>/)[1];
   const schemaUpdate = html.match(/(var schemaElement = document.getElementById\("cheek-seo-schema"\);[\s\S]*?)\r?\n      }\r?\n      var name/)[1];

@@ -92,7 +92,7 @@
     .btn-play:hover { filter: brightness(1.06); transform: translateY(-2px); box-shadow: 0 16px 40px rgba(247, 147, 30, .5), inset 0 -3px 0 rgba(58, 11, 46, .35), 0 0 0 3px var(--ink); }
     .btn-play small { display: block; font-weight: 600; font-size: 12px; opacity: .75; line-height: 1.1; }
     .btn-play b { display: block; font-family: var(--display); font-size: 21px; line-height: 1.05; }
-    .btn-ios { background: rgba(255, 244, 214, .06); border: 1px solid rgba(255, 244, 214, .18); color: var(--cream-2); cursor: default; }
+    .btn-ios { background: rgba(255, 244, 214, .06); border: 1px solid rgba(255, 244, 214, .18); color: var(--cream-2); cursor: pointer; }
     .btn-ios small { display: block; font-weight: 500; font-size: 12px; opacity: .75; line-height: 1.1; }
     .btn-ios b { display: block; font-size: 17px; line-height: 1.2; }
     .nav .btn-play { padding: 9px 16px; border-radius: 14px; font-size: 15px; box-shadow: 0 0 0 2px var(--ink); }
@@ -281,7 +281,7 @@
         </button>
         <div class="lang-menu" id="lang-menu" role="menu" aria-label="Language" hidden></div>
       </div>
-      <a class="btn btn-play" href="https://play.google.com/store/apps/details?id=ai.stelux.bumphony" target="_blank" rel="noopener" data-i18n="navGet">Get the game</a>
+      <a class="btn btn-play" href="#download" data-i18n="navGet">Get the game</a>
     </div>
   </header>
 
@@ -304,11 +304,10 @@
               <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3v11.2l3.6-3.6 1.4 1.4-6 6-6-6 1.4-1.4 3.6 3.6V3zM5 19h14v2H5z"/></svg>
               <span><small data-i18n="ctaAndroidSmall">Download for Android</small><b>Google Play</b></span>
             </a>
-            <span class="btn btn-ios" aria-disabled="true">
-              <span><small>iPhone · App Store</small><b data-i18n="ctaIosState">Update in review</b></span>
-            </span>
+            <a class="btn btn-ios" href="https://apps.apple.com/app/cheek-beat/id6814051177" target="_blank" rel="noopener noreferrer">
+              <span><small data-i18n="ctaIosState">Download for iPhone</small><b>App Store</b></span>
+            </a>
           </div>
-          <p class="ios-note" data-i18n="iosNote">The iPhone download link will be added after the update is approved.</p>
           <p class="ios-note" data-i18n="langNote" data-lang-note hidden>The game itself is currently in English and Simplified Chinese.</p>
           <ul class="promise" aria-label="The promise" data-i18n-label="promEyebrow">
             <li data-i18n="p1">Free to play</li><li data-i18n="p2">No ads</li><li data-i18n="p3">No gacha</li><li data-i18n="p4">No login required</li><li data-i18n="p5">Plays offline</li>
@@ -487,9 +486,8 @@
             <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3v11.2l3.6-3.6 1.4 1.4-6 6-6-6 1.4-1.4 3.6 3.6V3zM5 19h14v2H5z"/></svg>
             <span><small data-i18n="ctaAndroidSmall">Download for Android</small><b>Google Play</b></span>
           </a>
-          <span class="btn btn-ios" aria-disabled="true"><span><small>iPhone · App Store</small><b data-i18n="ctaIosState">Update in review</b></span></span>
+          <a class="btn btn-ios" href="https://apps.apple.com/app/cheek-beat/id6814051177" target="_blank" rel="noopener noreferrer"><span><small data-i18n="ctaIosState">Download for iPhone</small><b>App Store</b></span></a>
         </div>
-        <p class="ios-note reveal" data-i18n="iosNote">The iPhone download link will be added after the update is approved.</p>
         <p class="ios-note" data-i18n="langNote" data-lang-note hidden>The game itself is currently in English and Simplified Chinese.</p>
       </div>
     </section>
