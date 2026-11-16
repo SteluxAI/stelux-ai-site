@@ -92,9 +92,10 @@
     .btn-play:hover { filter: brightness(1.06); transform: translateY(-2px); box-shadow: 0 16px 40px rgba(247, 147, 30, .5), inset 0 -3px 0 rgba(58, 11, 46, .35), 0 0 0 3px var(--ink); }
     .btn-play small { display: block; font-weight: 600; font-size: 12px; opacity: .75; line-height: 1.1; }
     .btn-play b { display: block; font-family: var(--display); font-size: 21px; line-height: 1.05; }
-    .btn-ios { background: rgba(255, 244, 214, .06); border: 1px solid rgba(255, 244, 214, .18); color: var(--cream-2); cursor: pointer; }
-    .btn-ios small { display: block; font-weight: 500; font-size: 12px; opacity: .75; line-height: 1.1; }
-    .btn-ios b { display: block; font-size: 17px; line-height: 1.2; }
+    .btn-ios { background: linear-gradient(180deg, #fffaf0, var(--cream-2)); color: #2a0a1f; box-shadow: 0 10px 30px rgba(255, 244, 214, .12), inset 0 -3px 0 rgba(58, 11, 46, .2), 0 0 0 3px var(--ink); }
+    .btn-ios:hover { filter: brightness(1.04); transform: translateY(-2px); box-shadow: 0 16px 40px rgba(255, 244, 214, .2), inset 0 -3px 0 rgba(58, 11, 46, .2), 0 0 0 3px var(--ink); }
+    .btn-ios small { display: block; font-weight: 600; font-size: 12px; opacity: .75; line-height: 1.1; }
+    .btn-ios b { display: block; font-family: var(--display); font-size: 21px; line-height: 1.05; }
     .nav .btn-play { padding: 9px 16px; border-radius: 14px; font-size: 15px; box-shadow: 0 0 0 2px var(--ink); }
 
     /* ---------- hero ---------- */
@@ -113,6 +114,7 @@
     .tagline { font-size: clamp(30px, 3.6vw, 48px); margin: 18px 0 10px; }
     .hero .lede { margin: 0 0 28px; }
     .ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .ctas .btn { min-width: 212px; }
     .ios-note { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
     .promise { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; padding: 0; list-style: none; }
     .promise li { font: 600 13px var(--body); padding: 7px 12px; border-radius: 999px; background: rgba(111, 242, 208, .08); border: 1px solid rgba(111, 242, 208, .28); color: #c9fff0; }
@@ -305,6 +307,7 @@
               <span><small data-i18n="ctaAndroidSmall">Download for Android</small><b>Google Play</b></span>
             </a>
             <a class="btn btn-ios" href="https://apps.apple.com/app/cheek-beat/id6814051177" target="_blank" rel="noopener noreferrer">
+              <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3v11.2l3.6-3.6 1.4 1.4-6 6-6-6 1.4-1.4 3.6 3.6V3zM5 19h14v2H5z"/></svg>
               <span><small data-i18n="ctaIosState">Download for iPhone</small><b>App Store</b></span>
             </a>
           </div>
@@ -486,7 +489,10 @@
             <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3v11.2l3.6-3.6 1.4 1.4-6 6-6-6 1.4-1.4 3.6 3.6V3zM5 19h14v2H5z"/></svg>
             <span><small data-i18n="ctaAndroidSmall">Download for Android</small><b>Google Play</b></span>
           </a>
-          <a class="btn btn-ios" href="https://apps.apple.com/app/cheek-beat/id6814051177" target="_blank" rel="noopener noreferrer"><span><small data-i18n="ctaIosState">Download for iPhone</small><b>App Store</b></span></a>
+          <a class="btn btn-ios" href="https://apps.apple.com/app/cheek-beat/id6814051177" target="_blank" rel="noopener noreferrer">
+            <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3v11.2l3.6-3.6 1.4 1.4-6 6-6-6 1.4-1.4 3.6 3.6V3zM5 19h14v2H5z"/></svg>
+            <span><small data-i18n="ctaIosState">Download for iPhone</small><b>App Store</b></span>
+          </a>
         </div>
         <p class="ios-note" data-i18n="langNote" data-lang-note hidden>The game itself is currently in English and Simplified Chinese.</p>
       </div>
